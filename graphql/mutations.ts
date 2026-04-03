@@ -27,7 +27,7 @@ export const REGISTER_MUTATION = gql`
 
 export const LOGIN_MUTATION = gql`
   mutation Login($email: String, $password: String!) {
-    tokenAuth(input: { email: $email, password: $password }) {
+    tokenAuth(input: {email: $email, password: $password}) {
       success
       errors
       token
@@ -39,6 +39,14 @@ export const LOGIN_MUTATION = gql`
         firstName
         lastName
         verified
+        preferences{
+          lastCompanyId
+          currentRole
+          theme
+          itemsPerPage
+          emailNotifications
+          smsNotifications
+        }
         companyMemberships {
           edges {
             node {
@@ -138,6 +146,47 @@ export const CREATE_COMPANY_MUTATION = gql`
         companyType
         status
         email
+      }
+    }
+  }
+`;
+
+export const CREATE_BUILDING_MUTATION = gql`
+  mutation CreateBuilding(
+    $name: String!
+    $code: String
+    $buildingType: String!
+    $address: String!
+    $city: String!
+    $county: String
+    $numberOfFloors: Int
+    $yearBuilt: Int
+    $managerName: String
+    $managerPhone: String
+    $managerEmail: String
+    $description: String
+  ) {
+    createBuilding(
+      name: $name
+      code: $code
+      buildingType: $buildingType
+      address: $address
+      city: $city
+      county: $county
+      numberOfFloors: $numberOfFloors
+      yearBuilt: $yearBuilt
+      managerName: $managerName
+      managerPhone: $managerPhone
+      managerEmail: $managerEmail
+      description: $description
+    ) {
+      success
+      message
+      building {
+        id
+        name
+        code
+        buildingType
       }
     }
   }

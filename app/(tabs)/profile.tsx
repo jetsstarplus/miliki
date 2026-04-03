@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppHeader } from '../../components/AppHeader';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
@@ -43,8 +44,9 @@ export default function Profile() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.surface} />
+      <AppHeader title="Profile" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}

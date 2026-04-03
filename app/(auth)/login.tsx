@@ -55,8 +55,24 @@ export default function Login() {
         await signIn(result.token, result.refreshToken ?? '', result.user);
         const companies = result.user?.companyMemberships?.edges ?? [];
         if (companies.length > 0) {
-          const firstCompany = companies[0]?.node?.company;
-          if (firstCompany) await setActiveCompany(firstCompany);
+          if (result.user?.preferences?.lastCompanyId) {
+            const lastId = String(result.user.preferences.lastCompanyId);
+            const active = companies.find((c: any) => {
+              const relayId: string = c.node.company.id ?? '';
+              // Relay encodes IDs as base64("TypeName:rawId") — decode and extract the raw part
+              try {
+                const decoded = atob(relayId).split(':').pop() ?? '';
+                return decoded === lastId;
+              } catch {
+                return relayId === lastId;
+              }
+            });
+            if (active) await setActiveCompany(active.node.company);
+            else await setActiveCompany(companies[0].node.company);
+          } else {
+            const firstCompany = companies[0]?.node?.company;
+            if (firstCompany) await setActiveCompany(firstCompany);
+          }
           router.replace('/(tabs)/home' as any);
         } else {
           router.replace('/(onboarding)/create-company');
