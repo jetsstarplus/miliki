@@ -1,22 +1,15 @@
+import { Button } from '@/components/ui/Button';
+import { FormLayout } from '@/components/ui/FormLayout';
+import { Input } from '@/components/ui/Input';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ServerErrorBanner } from '@/components/ui/ServerErrorBanner';
+import { Colors, Radius, Spacing, Typography } from '@/constants/theme';
+import { CREATE_BUILDING_MUTATION } from '@/graphql/properties/mutations/building';
+import { BUILDING_LIST } from '@/graphql/properties/queries/building';
 import { useMutation } from '@apollo/client';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
-import { CREATE_BUILDING_MUTATION } from '@/graphql/mutations';
-import { BUILDING_LIST } from '@/graphql/properties/queries/building';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const BUILDING_TYPES = [
   { value: 'RESIDENTIAL', label: 'Residential' },
@@ -25,59 +18,6 @@ const BUILDING_TYPES = [
   { value: 'INDUSTRIAL', label: 'Industrial' },
   { value: 'OTHER', label: 'Other' },
 ];
-
-function Field({
-  label,
-  required,
-  children,
-  error,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  error?: string;
-}) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.label}>
-        {label}
-        {required && <Text style={styles.required}> *</Text>}
-      </Text>
-      {children}
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
-    </View>
-  );
-}
-
-function Input({
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-  multiline,
-  numberOfLines,
-}: {
-  value: string;
-  onChangeText: (v: string) => void;
-  placeholder?: string;
-  keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
-  multiline?: boolean;
-  numberOfLines?: number;
-}) {
-  return (
-    <TextInput
-      style={[styles.input, multiline && { height: (numberOfLines ?? 3) * 22, textAlignVertical: 'top' }]}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={Colors.textMuted}
-      keyboardType={keyboardType}
-      multiline={multiline}
-      numberOfLines={numberOfLines}
-      autoCapitalize="sentences"
-    />
-  );
-}
 
 export default function AddBuilding() {
   const router = useRouter();
@@ -152,206 +92,167 @@ export default function AddBuilding() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Building</Text>
-        <View style={{ width: 40 }} />
+    <FormLayout title="Add Building">
+      <ServerErrorBanner message={serverError} />
+
+      <SectionLabel>Basic information</SectionLabel>
+
+      <Input
+        label="Building name *"
+        error={errors.name}
+        value={form.name}
+        onChangeText={set('name')}
+        placeholder="e.g. Sunrise Apartments"
+        autoCapitalize="words"
+      />
+
+      <Input
+        label="Code / Reference"
+        error={errors.code}
+        value={form.code}
+        onChangeText={set('code')}
+        placeholder="e.g. BLD-001"
+      />
+
+      <View style={{ marginBottom: Spacing.sm }}>
+        <Text style={styles.typeLabel}>Building type *</Text>
+        <View style={styles.typeRow}>
+          {BUILDING_TYPES.map(t => (
+            <TouchableOpacity
+              key={t.value}
+              style={[styles.typeChip, form.buildingType === t.value && styles.typeChipActive]}
+              onPress={() => set('buildingType')(t.value)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.typeChipText, form.buildingType === t.value && styles.typeChipTextActive]}>
+                {t.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {errors.buildingType ? <Text style={styles.typeError}>{errors.buildingType}</Text> : null}
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {serverError ? (
-            <View style={styles.serverError}>
-              <Ionicons name="alert-circle-outline" size={16} color={Colors.error} />
-              <Text style={styles.serverErrorText}>{serverError}</Text>
-            </View>
-          ) : null}
+      <SectionLabel>Location</SectionLabel>
 
-          {/* ── Basic info ── */}
-          <Text style={styles.section}>Basic information</Text>
+      <Input
+        label="Address *"
+        error={errors.address}
+        value={form.address}
+        onChangeText={set('address')}
+        placeholder="Street address"
+        autoCapitalize="sentences"
+      />
 
-          <Field label="Building name" required error={errors.name}>
-            <Input value={form.name} onChangeText={set('name')} placeholder="e.g. Sunrise Apartments" />
-          </Field>
+      <View style={styles.row}>
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="City *"
+          error={errors.city}
+          value={form.city}
+          onChangeText={set('city')}
+          placeholder="City"
+          autoCapitalize="words"
+        />
+        <View style={{ width: Spacing.sm }} />
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="County"
+          error={errors.county}
+          value={form.county}
+          onChangeText={set('county')}
+          placeholder="County"
+          autoCapitalize="words"
+        />
+      </View>
 
-          <Field label="Code / Reference" error={errors.code}>
-            <Input value={form.code} onChangeText={set('code')} placeholder="e.g. BLD-001" />
-          </Field>
+      <SectionLabel>Details</SectionLabel>
 
-          <Field label="Building type" required error={errors.buildingType}>
-            <View style={styles.typeRow}>
-              {BUILDING_TYPES.map(t => (
-                <TouchableOpacity
-                  key={t.value}
-                  style={[styles.typeChip, form.buildingType === t.value && styles.typeChipActive]}
-                  onPress={() => set('buildingType')(t.value)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.typeChipText, form.buildingType === t.value && styles.typeChipTextActive]}>
-                    {t.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </Field>
+      <View style={styles.row}>
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="Floors"
+          error={errors.numberOfFloors}
+          value={form.numberOfFloors}
+          onChangeText={set('numberOfFloors')}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
+        <View style={{ width: Spacing.sm }} />
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="Year built"
+          error={errors.yearBuilt}
+          value={form.yearBuilt}
+          onChangeText={set('yearBuilt')}
+          placeholder="e.g. 2010"
+          keyboardType="number-pad"
+        />
+      </View>
 
-          {/* ── Location ── */}
-          <Text style={styles.section}>Location</Text>
+      <Input
+        label="Description"
+        error={errors.description}
+        value={form.description}
+        onChangeText={set('description')}
+        placeholder="Brief description…"
+        multiline
+        numberOfLines={3}
+        autoCapitalize="sentences"
+      />
 
-          <Field label="Address" required error={errors.address}>
-            <Input value={form.address} onChangeText={set('address')} placeholder="Street address" />
-          </Field>
+      <SectionLabel>Property manager</SectionLabel>
 
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Field label="City" required error={errors.city}>
-                <Input value={form.city} onChangeText={set('city')} placeholder="City" />
-              </Field>
-            </View>
-            <View style={{ width: Spacing.sm }} />
-            <View style={{ flex: 1 }}>
-              <Field label="County" error={errors.county}>
-                <Input value={form.county} onChangeText={set('county')} placeholder="County" />
-              </Field>
-            </View>
-          </View>
+      <Input
+        label="Name"
+        error={errors.managerName}
+        value={form.managerName}
+        onChangeText={set('managerName')}
+        placeholder="Full name"
+        autoCapitalize="words"
+      />
 
-          {/* ── Details ── */}
-          <Text style={styles.section}>Details</Text>
+      <View style={styles.row}>
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="Phone"
+          error={errors.managerPhone}
+          value={form.managerPhone}
+          onChangeText={set('managerPhone')}
+          placeholder="+254…"
+          keyboardType="phone-pad"
+        />
+        <View style={{ width: Spacing.sm }} />
+        <Input
+          containerStyle={{ flex: 1 }}
+          label="Email"
+          error={errors.managerEmail}
+          value={form.managerEmail}
+          onChangeText={set('managerEmail')}
+          placeholder="email@…"
+          keyboardType="email-address"
+        />
+      </View>
 
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Field label="Floors" error={errors.numberOfFloors}>
-                <Input value={form.numberOfFloors} onChangeText={set('numberOfFloors')} placeholder="0" keyboardType="number-pad" />
-              </Field>
-            </View>
-            <View style={{ width: Spacing.sm }} />
-            <View style={{ flex: 1 }}>
-              <Field label="Year built" error={errors.yearBuilt}>
-                <Input value={form.yearBuilt} onChangeText={set('yearBuilt')} placeholder="e.g. 2010" keyboardType="number-pad" />
-              </Field>
-            </View>
-          </View>
+      <Button
+        title="Add building"
+        onPress={submit}
+        loading={loading}
+        style={{ marginTop: Spacing.lg }}
+      />
 
-          <Field label="Description" error={errors.description}>
-            <Input value={form.description} onChangeText={set('description')} placeholder="Brief description…" multiline numberOfLines={3} />
-          </Field>
-
-          {/* ── Manager ── */}
-          <Text style={styles.section}>Property manager</Text>
-
-          <Field label="Name" error={errors.managerName}>
-            <Input value={form.managerName} onChangeText={set('managerName')} placeholder="Full name" />
-          </Field>
-
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Field label="Phone" error={errors.managerPhone}>
-                <Input value={form.managerPhone} onChangeText={set('managerPhone')} placeholder="+254…" keyboardType="phone-pad" />
-              </Field>
-            </View>
-            <View style={{ width: Spacing.sm }} />
-            <View style={{ flex: 1 }}>
-              <Field label="Email" error={errors.managerEmail}>
-                <Input value={form.managerEmail} onChangeText={set('managerEmail')} placeholder="email@…" keyboardType="email-address" />
-              </Field>
-            </View>
-          </View>
-
-          {/* Submit */}
-          <TouchableOpacity
-            style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
-            onPress={submit}
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.submitText}>Add building</Text>
-            }
-          </TouchableOpacity>
-
-          <View style={{ height: Spacing.xxl }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <View style={{ height: Spacing.xxl }} />
+    </FormLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: Typography.fontSizeLg,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
-  },
-
-  scroll: { padding: Spacing.md },
-
-  serverError: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    backgroundColor: 'rgba(239,68,68,0.08)',
-    borderRadius: Radius.sm,
-    padding: Spacing.sm,
-    marginBottom: Spacing.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.error,
-  },
-  serverErrorText: { flex: 1, fontSize: Typography.fontSizeSm, color: Colors.error },
-
-  section: {
-    fontSize: 11,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.md,
-  },
-
-  field: { marginBottom: Spacing.sm },
-  label: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: Colors.text, marginBottom: 6 },
-  required: { color: Colors.error },
-  fieldError: { fontSize: Typography.fontSizeXs, color: Colors.error, marginTop: 4 },
-
-  input: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.sm,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 10,
+  typeLabel: {
     fontSize: Typography.fontSizeSm,
+    fontWeight: Typography.fontWeightMedium,
     color: Colors.text,
-    ...Shadow.sm,
+    marginBottom: 6,
   },
-
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
   typeChip: {
     paddingHorizontal: Spacing.sm,
@@ -362,19 +263,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
   },
   typeChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  typeChipText: { fontSize: Typography.fontSizeXs, color: Colors.textSecondary, fontWeight: Typography.fontWeightMedium },
-  typeChipTextActive: { color: '#fff' },
-
-  row: { flexDirection: 'row' },
-
-  submitBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.md,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: Spacing.lg,
-    ...Shadow.md,
+  typeChipText: {
+    fontSize: Typography.fontSizeXs,
+    color: Colors.textSecondary,
+    fontWeight: Typography.fontWeightMedium,
   },
-  submitBtnDisabled: { opacity: 0.6 },
-  submitText: { color: '#fff', fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightSemibold },
+  typeChipTextActive: { color: '#fff' },
+  row: { flexDirection: 'row' },
+  typeError: { fontSize: Typography.fontSizeXs, color: Colors.error, marginTop: 4 },
 });

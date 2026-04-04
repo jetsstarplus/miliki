@@ -20,7 +20,7 @@ import { Input } from '../../components/ui/Input';
 import { SelectCard } from '../../components/ui/SelectCard';
 import { Colors, Spacing, Typography } from '../../constants/theme';
 import { useAuth } from '../../context/auth';
-import { CREATE_COMPANY_MUTATION } from '../../graphql/mutations';
+import { CREATE_COMPANY_MUTATION } from '@/graphql/companies/mutations';
 import { parseGqlErrors } from '../../lib/gql-errors';
 
 const COMPANY_TYPE_OPTIONS = [

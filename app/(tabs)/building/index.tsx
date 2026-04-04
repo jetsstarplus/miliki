@@ -1,7 +1,14 @@
-import { useQuery } from '@apollo/client';
+import { AppHeader } from '@/components/AppHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { OccupancyBar } from '@/components/ui/OccupancyBar';
+import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { BUILDING_LIST } from '@/graphql/properties/queries/building';
+import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -12,9 +19,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppHeader } from '@/components/AppHeader';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
-import { BUILDING_LIST } from '@/graphql/properties/queries/building';
 
 interface Building {
   id: string;
@@ -32,21 +36,6 @@ interface Building {
   yearBuilt: number;
   managerName: string;
 }
-
-function OccupancyBar({ rate }: { rate: number }) {
-  const pct = Math.min(100, Math.max(0, rate ?? 0));
-  const color = pct >= 80 ? Colors.success : pct >= 50 ? Colors.warning : Colors.error;
-  return (
-    <View style={bar.track}>
-      <View style={[bar.fill, { width: `${pct}%` as any, backgroundColor: color }]} />
-    </View>
-  );
-}
-
-const bar = StyleSheet.create({
-  track: { height: 4, borderRadius: 2, backgroundColor: Colors.borderLight, overflow: 'hidden', marginTop: 6 },
-  fill: { height: '100%', borderRadius: 2 },
-});
 
 function BuildingCard({ building }: { building: Building }) {
   const router = useRouter();
@@ -119,20 +108,10 @@ function BuildingCard({ building }: { building: Building }) {
 }
 
 export default function Buildings() {
-  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  const { data, loading, error, refetch } = useQuery(BUILDING_LIST, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try { await refetch(); } finally { setRefreshing(false); }
-  }, [refetch]);
-
-  const buildings: Building[] =
-    data?.buildings?.edges?.map((e: any) => e.node) ?? [];
+  const { nodes: buildings, loading, error, refreshing, onRefresh, onEndReached, hasMore, refetch } =
+    usePaginatedQuery<Building>(BUILDING_LIST, 'buildings', 50);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -149,21 +128,14 @@ export default function Buildings() {
         }
       />
 
-      {loading && !data && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      )}
+      {loading && buildings.length === 0 && <LoadingState />}
 
-      {error && !data && (
-        <View style={styles.center}>
-          <Ionicons name="cloud-offline-outline" size={48} color={Colors.textMuted} />
-          <Text style={styles.errorText}>Failed to load buildings</Text>
-          <Text style={styles.errorSub}>{error.message}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+      {error && buildings.length === 0 && (
+        <ErrorState
+          title="Failed to load buildings"
+          message={error.message}
+          onRetry={() => refetch()}
+        />
       )}
 
       {!error && (
@@ -173,16 +145,23 @@ export default function Buildings() {
           renderItem={({ item }) => <BuildingCard building={item} />}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.3}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
           }
+          ListFooterComponent={
+            hasMore && buildings.length > 0
+              ? <ActivityIndicator color={Colors.primary} style={styles.footer} />
+              : null
+          }
           ListEmptyComponent={
             !loading ? (
-              <View style={styles.empty}>
-                <Ionicons name="business-outline" size={52} color={Colors.primary} style={{ opacity: 0.3 }} />
-                <Text style={styles.emptyTitle}>No buildings yet</Text>
-                <Text style={styles.emptyText}>Add your first building to get started.</Text>
-              </View>
+              <EmptyState
+                icon="business-outline"
+                title="No buildings yet"
+                description="Add your first building to get started."
+              />
             ) : null
           }
         />
@@ -193,9 +172,8 @@ export default function Buildings() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  list: { padding: Spacing.md, paddingBottom: Spacing.xxl },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xl },
-
+  list: { padding: Spacing.md, paddingBottom: 80 },
+  footer: { paddingVertical: Spacing.md },
   card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.md,
@@ -233,15 +211,6 @@ const styles = StyleSheet.create({
 
   occupancyRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: Spacing.sm },
   occupancyLabel: { fontSize: 10, color: Colors.textMuted },
-
-  empty: { alignItems: 'center', paddingTop: Spacing.xxl },
-  emptyTitle: { fontSize: Typography.fontSizeLg, fontWeight: Typography.fontWeightSemibold, color: Colors.text, marginTop: Spacing.md },
-  emptyText: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.xs },
-
-  errorText: { fontSize: Typography.fontSizeLg, fontWeight: Typography.fontWeightSemibold, color: Colors.text, marginTop: Spacing.md },
-  errorSub: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary, marginTop: Spacing.xs, textAlign: 'center' },
-  retryBtn: { marginTop: Spacing.lg, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm, backgroundColor: Colors.primary, borderRadius: Radius.md },
-  retryText: { color: '#fff', fontWeight: Typography.fontWeightSemibold },
 
   addBtn: {
     width: 40,

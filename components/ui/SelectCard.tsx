@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
 
 interface SelectOption {
@@ -24,17 +24,18 @@ export function SelectCard({ options, value, onChange, label, error, style }: Se
         {options.map(opt => {
           const selected = value === opt.value;
           return (
-            <View
+            <TouchableOpacity
               key={opt.value}
               style={[styles.option, selected && styles.optionSelected]}
+              onPress={() => onChange(opt.value)}
+              activeOpacity={0.7}
             >
               <Text
                 style={[styles.optionText, selected && styles.optionTextSelected]}
-                onPress={() => onChange(opt.value)}
               >
                 {opt.label}
               </Text>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>

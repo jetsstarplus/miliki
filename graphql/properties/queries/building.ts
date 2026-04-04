@@ -32,8 +32,8 @@ query DASHBOARD{
 }`;
 
 export const BUILDING_LIST = gql`
-  query{
-  buildings{
+  query BuildingList($first: Int, $after: String) {
+  buildings(first: $first, after: $after) {
     edges{
       node{
         id
@@ -67,6 +67,12 @@ export const BUILDING_LIST = gql`
           }
         }
       }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+      hasPreviousPage
+      startCursor
     }
   }
 }

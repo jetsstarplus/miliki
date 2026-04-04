@@ -1,10 +1,10 @@
+import { DrawerMenu } from '@/components/DrawerMenu';
+import { Colors } from '@/constants/theme';
+import { DrawerProvider } from '@/context/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { DrawerMenu } from '../../components/DrawerMenu';
-import { Colors } from '../../constants/theme';
-import { DrawerProvider } from '../../context/drawer';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -23,7 +23,6 @@ const HIDDEN_SCREENS = [
   'portfolio', 'properties', 'units', 'leases', 'maintenance',
   'payments', 'communication', 'rent-schedules', 'arrears',
   'accounting', 'agent-statements', 'manual-transfer',
-  'building/[id]', 'building/add',
 ];
 
 export default function TabsLayout() {
@@ -46,7 +45,7 @@ export default function TabsLayout() {
             }}
           />
           <Tabs.Screen
-            name="building/index"
+            name="building"
             options={{
               tabBarIcon: ({ focused }) => <TabIcon name="business" outlineName="business-outline" focused={focused} />,
             }}

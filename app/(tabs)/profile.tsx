@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-    Alert,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
@@ -127,7 +127,7 @@ export default function Profile() {
           style={styles.signOutBtn}
         />
 
-        <Text style={styles.version}>Monerom v1.0.0</Text>
+        <Text style={styles.version}>miliki v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
