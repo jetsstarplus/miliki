@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { Radius, Spacing, Typography } from '../../constants/theme';
 
 export function ServerErrorBanner({ message }: { message: string }) {
   if (!message) return null;
   return (
     <View style={styles.banner}>
-      <Ionicons name="alert-circle-outline" size={16} color={Colors.error} />
+      <Ionicons name="alert-circle-outline" size={16} color="#EF4444" />
       <Text style={styles.text}>{message}</Text>
     </View>
   );
@@ -18,12 +18,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-    backgroundColor: 'rgba(239,68,68,0.08)',
+    backgroundColor: 'rgba(239,68,68,0.10)',
     borderRadius: Radius.sm,
     padding: Spacing.sm,
     marginBottom: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.error,
+    borderLeftColor: '#EF4444',
   },
-  text: { flex: 1, fontSize: Typography.fontSizeSm, color: Colors.error },
+  text: { flex: 1, fontSize: Typography.fontSizeSm, color: '#EF4444' },
 });

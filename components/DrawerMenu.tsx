@@ -13,9 +13,10 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Typography } from '../constants/theme';
+import { Spacing, Typography } from '../constants/theme';
 import { useAuth } from '../context/auth';
 import { useDrawer } from '../context/drawer';
+import { useTheme } from '../context/theme';
 
 const DRAWER_WIDTH = 288;
 
@@ -98,6 +99,7 @@ const NAV: NavSection[] = [
 export function DrawerMenu() {
   const { isOpen, close } = useDrawer();
   const { user, activeCompany } = useAuth();
+  const { colors } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -234,7 +236,7 @@ export function DrawerMenu() {
             />
             {activeCompany && (
               <View style={styles.companyRow}>
-                <View style={styles.companyBadge}>
+                <View style={[styles.companyBadge, { backgroundColor: colors.primary }]}>
                   <Text style={styles.companyBadgeText}>
                     {activeCompany.companyType === 'LANDLORD' ? 'Landlord' : 'Agent'}
                   </Text>
@@ -266,7 +268,7 @@ export function DrawerMenu() {
                 return (
                   <View key={item.label}>
                     <TouchableOpacity
-                      style={[styles.navItem, active && styles.navItemActive]}
+                      style={[styles.navItem, active && [styles.navItemActive, { backgroundColor: colors.primary }]]}
                       onPress={() => {
                         if (hasChildren) toggleExpand(item.label);
                         else navigate(item.route);
@@ -348,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   companyBadge: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1267CC',
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -399,7 +401,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   navItemActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1267CC',
   },
   navIcon: {
     width: 22,

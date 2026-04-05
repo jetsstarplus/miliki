@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     Image,
@@ -17,7 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Colors, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 import { REGISTER_MUTATION } from '../../graphql/mutations';
 import { parseGqlErrors } from '../../lib/gql-errors';
 
@@ -32,6 +33,8 @@ interface RegErrors {
 
 export default function Register() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -90,7 +93,7 @@ export default function Register() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -200,20 +203,22 @@ export default function Register() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   scroll: { flexGrow: 1, paddingHorizontal: Spacing.xl, paddingBottom: Spacing.xl },
   header: { paddingTop: Spacing.md, paddingBottom: Spacing.xl },
   backBtn: { marginBottom: Spacing.lg },
   logoSmall: { width: 64, height: 64, marginBottom: Spacing.md },
-  backText: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightMedium },
-  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: Colors.text, marginBottom: Spacing.xs },
-  subtitle: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
+  backText: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightMedium },
+  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: c.text, marginBottom: Spacing.xs },
+  subtitle: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
   card: { marginBottom: Spacing.lg },
   row: { flexDirection: 'row' },
-  terms: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, textAlign: 'center', marginTop: Spacing.md, lineHeight: 18 },
-  termsLink: { color: Colors.primary, fontWeight: Typography.fontWeightMedium },
+  terms: { fontSize: Typography.fontSizeXs, color: c.textMuted, textAlign: 'center', marginTop: Spacing.md, lineHeight: 18 },
+  termsLink: { color: c.primary, fontWeight: Typography.fontWeightMedium },
   footer: { flexDirection: 'row', justifyContent: 'center', paddingTop: Spacing.sm },
-  footerText: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
-  footerLink: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightSemibold },
-});
+  footerText: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
+  footerLink: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightSemibold },
+  });
+}

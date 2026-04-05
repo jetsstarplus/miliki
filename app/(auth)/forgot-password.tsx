@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -16,11 +16,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Colors, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 import { SEND_PASSWORD_RESET_EMAIL_MUTATION } from '../../graphql/mutations';
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [sent, setSent] = useState(false);
@@ -46,7 +49,7 @@ export default function ForgotPassword() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
@@ -94,24 +97,26 @@ export default function ForgotPassword() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   container: { flexGrow: 1, paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, paddingBottom: Spacing.xl },
   backBtn: { marginBottom: Spacing.xl },
-  backText: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightMedium },
+  backText: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightMedium },
   iconWrap: { alignItems: 'center', marginBottom: Spacing.lg },
   iconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: c.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconEmoji: { fontSize: 36 },
-  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: Colors.text, textAlign: 'center', marginBottom: Spacing.sm },
-  subtitle: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.xl },
+  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: c.text, textAlign: 'center', marginBottom: Spacing.sm },
+  subtitle: { fontSize: Typography.fontSizeMd, color: c.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.xl },
   card: {},
-});
+  });
+}

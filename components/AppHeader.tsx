@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors, Spacing, Typography } from '../constants/theme';
+import { AppColors, Spacing, Typography } from '../constants/theme';
 import { useDrawer } from '../context/drawer';
+import { useTheme } from '../context/theme';
 
 interface AppHeaderProps {
   title: string;
@@ -14,6 +15,8 @@ interface AppHeaderProps {
 export function AppHeader({ title, showBack = false, rightElement }: AppHeaderProps) {
   const { toggle } = useDrawer();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.header}>
@@ -25,7 +28,7 @@ export function AppHeader({ title, showBack = false, rightElement }: AppHeaderPr
         <Ionicons
           name={showBack ? 'arrow-back' : 'menu'}
           size={24}
-          color={Colors.text}
+          color={colors.text}
         />
       </TouchableOpacity>
 
@@ -38,32 +41,34 @@ export function AppHeader({ title, showBack = false, rightElement }: AppHeaderPr
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-    minHeight: 52,
-  },
-  leftBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: Typography.fontSizeLg,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
-  },
-  rightSlot: {
-    width: 40,
-    alignItems: 'flex-end',
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      backgroundColor: c.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: c.borderLight,
+      minHeight: 52,
+    },
+    leftBtn: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: Typography.fontSizeLg,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.text,
+    },
+    rightSlot: {
+      width: 40,
+      alignItems: 'flex-end',
+    },
+  });
+}

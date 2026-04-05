@@ -3,12 +3,13 @@ import { FormLayout } from '@/components/ui/FormLayout';
 import { Input } from '@/components/ui/Input';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ServerErrorBanner } from '@/components/ui/ServerErrorBanner';
-import { Colors, Radius, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { CREATE_BUILDING_MUTATION } from '@/graphql/properties/mutations/building';
 import { BUILDING_LIST } from '@/graphql/properties/queries/building';
 import { useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const BUILDING_TYPES = [
@@ -21,6 +22,8 @@ const BUILDING_TYPES = [
 
 export default function AddBuilding() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [serverError, setServerError] = useState('');
 
   const [form, setForm] = useState({
@@ -246,11 +249,12 @@ export default function AddBuilding() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
   typeLabel: {
     fontSize: Typography.fontSizeSm,
     fontWeight: Typography.fontWeightMedium,
-    color: Colors.text,
+    color: c.text,
     marginBottom: 6,
   },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
@@ -259,16 +263,17 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
+    borderColor: c.border,
+    backgroundColor: c.surface,
   },
-  typeChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  typeChipActive: { backgroundColor: c.primary, borderColor: c.primary },
   typeChipText: {
     fontSize: Typography.fontSizeXs,
-    color: Colors.textSecondary,
+    color: c.textSecondary,
     fontWeight: Typography.fontWeightMedium,
   },
   typeChipTextActive: { color: '#fff' },
   row: { flexDirection: 'row' },
   typeError: { fontSize: Typography.fontSizeXs, color: Colors.error, marginTop: 4 },
-});
+  });
+}

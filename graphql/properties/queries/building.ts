@@ -32,8 +32,8 @@ query DASHBOARD{
 }`;
 
 export const BUILDING_LIST = gql`
-  query BuildingList($first: Int, $after: String) {
-  buildings(first: $first, after: $after) {
+  query BuildingList($first: Int, $after: String, $search:String) {
+  buildings(first: $first, after: $after, search: $search) {
     edges{
       node{
         id
@@ -132,3 +132,16 @@ query BuildingDetail($id: ID!) {
     
   }
 }`;
+
+export const BUILDINGS_FOR_DROPDOWN = gql`
+query BuildingsForDropdown {
+  buildings(first: 200) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+`;

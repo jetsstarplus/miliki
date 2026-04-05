@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Radius, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 
 interface SelectOption {
   label: string;
@@ -17,6 +18,8 @@ interface SelectCardProps {
 }
 
 export function SelectCard({ options, value, onChange, label, error, style }: SelectCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -44,46 +47,48 @@ export function SelectCard({ options, value, onChange, label, error, style }: Se
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: Typography.fontSizeSm,
-    fontWeight: Typography.fontWeightMedium,
-    color: Colors.text,
-    marginBottom: Spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  option: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.inputBackground,
-    alignItems: 'center',
-  },
-  optionSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.overlay,
-  },
-  optionText: {
-    fontSize: Typography.fontSizeMd,
-    fontWeight: Typography.fontWeightMedium,
-    color: Colors.textSecondary,
-  },
-  optionTextSelected: {
-    color: Colors.primary,
-    fontWeight: Typography.fontWeightSemibold,
-  },
-  error: {
-    fontSize: Typography.fontSizeXs,
-    color: Colors.error,
-    marginTop: Spacing.xs,
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: Spacing.md,
+    },
+    label: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightMedium,
+      color: c.text,
+      marginBottom: Spacing.xs,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    option: {
+      flex: 1,
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.md,
+      borderRadius: Radius.md,
+      borderWidth: 1.5,
+      borderColor: c.border,
+      backgroundColor: c.inputBackground,
+      alignItems: 'center',
+    },
+    optionSelected: {
+      borderColor: c.primary,
+      backgroundColor: c.overlay,
+    },
+    optionText: {
+      fontSize: Typography.fontSizeMd,
+      fontWeight: Typography.fontWeightMedium,
+      color: c.textSecondary,
+    },
+    optionTextSelected: {
+      color: c.primary,
+      fontWeight: Typography.fontWeightSemibold,
+    },
+    error: {
+      fontSize: Typography.fontSizeXs,
+      color: c.error,
+      marginTop: Spacing.xs,
+    },
+  });
+}

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 
 interface SectionCardProps {
   title: string;
@@ -10,6 +11,8 @@ interface SectionCardProps {
 }
 
 export function SectionCard({ title, children, right, style }: SectionCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={[styles.card, style]}>
       <View style={styles.header}>
@@ -21,27 +24,29 @@ export function SectionCard({ title, children, right, style }: SectionCardProps)
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  title: {
-    fontSize: 11,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      ...Shadow.sm,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    title: {
+      fontSize: 11,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+  });
+}

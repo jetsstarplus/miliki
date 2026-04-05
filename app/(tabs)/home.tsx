@@ -1,20 +1,21 @@
 import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
 import { useAuth } from '../../context/auth';
 import { useDrawer } from '../../context/drawer';
+import { useTheme } from '../../context/theme';
 import { DASHBOARD } from '../../graphql/properties/queries/building';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -34,6 +35,8 @@ function MetricCard({
   iconBg: string;
   sub?: string;
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.metricCard}>
       <View style={[styles.metricIconWrap, { backgroundColor: iconBg }]}>
@@ -47,6 +50,8 @@ function MetricCard({
 }
 
 function AlertBadge({ count, label, icon, color }: { count: number; label: string; icon: IoniconName; color: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   if (!count) return null;
   return (
     <View style={[styles.alertBadge, { borderLeftColor: color }]}>
@@ -57,7 +62,7 @@ function AlertBadge({ count, label, icon, color }: { count: number; label: strin
         <Text style={[styles.alertCount, { color }]}>{count}</Text>
         <Text style={styles.alertLabel}>{label}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={14} color={Colors.textMuted} />
+      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
     </View>
   );
 }
@@ -73,6 +78,8 @@ function QuickAction({
   tint: string;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <TouchableOpacity style={styles.quickAction} onPress={onPress} activeOpacity={0.7}>
       <View style={[styles.quickIconWrap, { backgroundColor: tint + '18' }]}>
@@ -87,6 +94,8 @@ export default function Dashboard() {
   const { user, activeCompany } = useAuth();
   const { toggle } = useDrawer();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [refreshing, setRefreshing] = React.useState(false);
 
   const { data, refetch } = useQuery(DASHBOARD, {
@@ -119,18 +128,18 @@ export default function Dashboard() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* ── Header ── */}
         <View style={styles.topHeader}>
           <TouchableOpacity onPress={toggle} style={styles.menuBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="menu" size={26} color={Colors.text} />
+            <Ionicons name="menu" size={26} color={colors.text} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.companyName}>{activeCompany ? activeCompany.name : ''}</Text>
@@ -160,8 +169,8 @@ export default function Dashboard() {
             label="Buildings"
             value={stats?.totalBuildings ?? '—'}
             icon="business-outline"
-            iconColor={Colors.primary}
-            iconBg={Colors.overlay}
+            iconColor={colors.primary}
+            iconBg={colors.overlay}
           />
           <View style={styles.metricSep} />
           <MetricCard
@@ -197,7 +206,7 @@ export default function Dashboard() {
               <View style={[styles.segFill, { flex: reservedPct, backgroundColor: Colors.warning }]} />
             )}
             {vacantPct > 0 && (
-              <View style={[styles.segFill, { flex: Math.max(vacantPct, 1), backgroundColor: Colors.borderLight }]} />
+              <View style={[styles.segFill, { flex: Math.max(vacantPct, 1), backgroundColor: colors.borderLight }]} />
             )}
           </View>
 
@@ -213,7 +222,7 @@ export default function Dashboard() {
               <Text style={styles.legendVal}>{stats?.reservedUnits ?? '—'}</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.border }]} />
+              <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
               <Text style={styles.legendText}>Vacant</Text>
               <Text style={styles.legendVal}>{stats?.vacantUnits ?? '—'}</Text>
             </View>
@@ -239,7 +248,7 @@ export default function Dashboard() {
                 </Text>
                 <Text style={styles.arrearsLabel}>Outstanding arrears</Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
         )}
@@ -322,8 +331,8 @@ export default function Dashboard() {
                 label="Landlords"
                 value={admin.landlordsCount ?? '—'}
                 icon="home-outline"
-                iconColor={Colors.primary}
-                iconBg={Colors.overlay}
+                iconColor={colors.primary}
+                iconBg={colors.overlay}
               />
               <View style={styles.metricSep} />
               <MetricCard
@@ -343,7 +352,7 @@ export default function Dashboard() {
           <QuickAction
             icon="business-outline"
             label="Buildings"
-            tint={Colors.primary}
+            tint={colors.primary}
             onPress={() => router.push('/building' as any)}
           />
           <QuickAction
@@ -372,183 +381,185 @@ export default function Dashboard() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  scroll: { padding: Spacing.md, paddingBottom: Spacing.xxl },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.background },
+    scroll: { padding: Spacing.md, paddingBottom: Spacing.xxl },
 
-  // Header
-  topHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingBottom: Spacing.sm,
-  },
-  menuBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  greeting: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, lineHeight: 16 },
-  username: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: Colors.text, lineHeight: 26 },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: { color: '#fff', fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold },
+    // Header
+    topHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingBottom: Spacing.sm,
+    },
+    menuBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+    greeting: { fontSize: Typography.fontSizeXs, color: c.textMuted, lineHeight: 16 },
+    username: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: c.text, lineHeight: 26 },
+    avatar: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: c.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    avatarText: { color: '#fff', fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold },
 
-  // Company row
-  companyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  companyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.success },
-  companyName: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: Colors.text },
-  companySep: { fontSize: Typography.fontSizeSm, color: Colors.textMuted },
-  companyRole: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary },
+    // Company row
+    companyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: Spacing.sm,
+      marginBottom: Spacing.sm,
+    },
+    companyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.success },
+    companyName: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: c.text },
+    companySep: { fontSize: Typography.fontSizeSm, color: c.textMuted },
+    companyRole: { fontSize: Typography.fontSizeSm, color: c.textSecondary },
 
-  // Section label
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.textMuted,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.xs,
-  },
+    // Section label
+    sectionLabel: {
+      fontSize: 11,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.textMuted,
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+      marginBottom: Spacing.xs,
+    },
 
-  // Generic card
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.sm,
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  cardTitle: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: Colors.text },
+    // Generic card
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      ...Shadow.sm,
+    },
+    cardHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    cardTitle: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: c.text },
 
-  // Key metrics row
-  metricsRow: {
-    flexDirection: 'row',
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    paddingVertical: Spacing.md,
-    marginBottom: Spacing.sm,
-    ...Shadow.sm,
-  },
-  metricCard: { flex: 1, alignItems: 'center', gap: 3 },
-  metricIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
-  metricValue: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: Colors.text },
-  metricLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'center' },
-  metricSub: { fontSize: 10, color: Colors.textMuted },
-  metricSep: { width: 1, backgroundColor: Colors.borderLight, alignSelf: 'stretch', marginVertical: 4 },
+    // Key metrics row
+    metricsRow: {
+      flexDirection: 'row',
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      paddingVertical: Spacing.md,
+      marginBottom: Spacing.sm,
+      ...Shadow.sm,
+    },
+    metricCard: { flex: 1, alignItems: 'center', gap: 3 },
+    metricIconWrap: {
+      width: 34,
+      height: 34,
+      borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 2,
+    },
+    metricValue: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: c.text },
+    metricLabel: { fontSize: 11, color: c.textMuted, textAlign: 'center' },
+    metricSub: { fontSize: 10, color: c.textMuted },
+    metricSep: { width: 1, backgroundColor: c.borderLight, alignSelf: 'stretch', marginVertical: 4 },
 
-  // Occupancy
-  occupancyPct: { fontSize: Typography.fontSizeLg, fontWeight: Typography.fontWeightBold, color: Colors.success },
-  segBar: {
-    flexDirection: 'row',
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-    backgroundColor: Colors.borderLight,
-    marginBottom: Spacing.sm,
-  },
-  segFill: { height: '100%' },
-  segLegend: { flexDirection: 'row', justifyContent: 'space-between' },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: Colors.textSecondary },
-  legendVal: { fontSize: 11, fontWeight: Typography.fontWeightSemibold, color: Colors.text },
+    // Occupancy
+    occupancyPct: { fontSize: Typography.fontSizeLg, fontWeight: Typography.fontWeightBold, color: Colors.success },
+    segBar: {
+      flexDirection: 'row',
+      height: 8,
+      borderRadius: 4,
+      overflow: 'hidden',
+      backgroundColor: c.borderLight,
+      marginBottom: Spacing.sm,
+    },
+    segFill: { height: '100%' },
+    segLegend: { flexDirection: 'row', justifyContent: 'space-between' },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendText: { fontSize: 11, color: c.textSecondary },
+    legendVal: { fontSize: 11, fontWeight: Typography.fontWeightSemibold, color: c.text },
 
-  // Arrears
-  arrearsCard: { borderLeftWidth: 3, borderLeftColor: Colors.error },
-  arrearsInner: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  arrearsAmount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: Colors.error },
-  arrearsLabel: { fontSize: 11, color: Colors.textSecondary, marginTop: 1 },
+    // Arrears
+    arrearsCard: { borderLeftWidth: 3, borderLeftColor: Colors.error },
+    arrearsInner: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+    arrearsAmount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: Colors.error },
+    arrearsLabel: { fontSize: 11, color: c.textSecondary, marginTop: 1 },
 
-  // Revenue
-  revenueAmount: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: Colors.text, marginTop: 2 },
+    // Revenue
+    revenueAmount: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: c.text, marginTop: 2 },
 
-  // Alert badge
-  alertBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingLeft: Spacing.sm,
-    borderLeftWidth: 3,
-    marginBottom: Spacing.xs,
-    borderRadius: Radius.sm,
-    backgroundColor: Colors.surfaceAlt,
-  },
-  alertIconWrap: { width: 30, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  alertCount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold },
-  alertLabel: { fontSize: 11, color: Colors.textSecondary },
+    // Alert badge
+    alertBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingVertical: Spacing.sm,
+      paddingLeft: Spacing.sm,
+      borderLeftWidth: 3,
+      marginBottom: Spacing.xs,
+      borderRadius: Radius.sm,
+      backgroundColor: c.surfaceAlt,
+    },
+    alertIconWrap: { width: 30, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+    alertCount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold },
+    alertLabel: { fontSize: 11, color: c.textSecondary },
 
-  // Team
-  teamRow: { flexDirection: 'row', marginTop: Spacing.xs },
+    // Team
+    teamRow: { flexDirection: 'row', marginTop: Spacing.xs },
 
-  // Collections
-  collectionsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
-  collectionCard: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    padding: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderLeftWidth: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    ...Shadow.sm,
-  },
-  collectionAmount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: Colors.text },
-  collectionLabel: { fontSize: 10, color: Colors.textSecondary, marginTop: 1 },
+    // Collections
+    collectionsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
+    collectionCard: {
+      flex: 1,
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      padding: Spacing.sm,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      borderLeftWidth: 3,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      ...Shadow.sm,
+    },
+    collectionAmount: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: c.text },
+    collectionLabel: { fontSize: 10, color: c.textSecondary, marginTop: 1 },
 
-  // Quick actions
-  quickGrid: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  quickAction: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    ...Shadow.sm,
-  },
-  quickIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
-  quickLabel: { fontSize: 11, color: Colors.text, fontWeight: Typography.fontWeightMedium, textAlign: 'center' },
-});
+    // Quick actions
+    quickGrid: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+      marginBottom: Spacing.sm,
+    },
+    quickAction: {
+      flex: 1,
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      paddingVertical: Spacing.md,
+      paddingHorizontal: 4,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      ...Shadow.sm,
+    },
+    quickIconWrap: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: Spacing.xs,
+    },
+    quickLabel: { fontSize: 11, color: c.text, fontWeight: Typography.fontWeightMedium, textAlign: 'center' },
+  });
+}

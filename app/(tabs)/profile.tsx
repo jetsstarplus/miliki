@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Alert,
   ScrollView,
@@ -12,8 +12,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
 import { useAuth } from '../../context/auth';
+import { ThemeMode, useTheme } from '../../context/theme';
 
 interface InfoRowProps {
   label: string;
@@ -21,6 +22,8 @@ interface InfoRowProps {
 }
 
 function InfoRow({ label, value }: InfoRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
@@ -31,6 +34,8 @@ function InfoRow({ label, value }: InfoRowProps) {
 
 export default function Profile() {
   const { user, activeCompany, signOut } = useAuth();
+  const { colors, isDark, mode, setMode } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   function handleSignOut() {
     Alert.alert(
@@ -45,7 +50,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.surface} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.surface} />
       <AppHeader title="Profile" />
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -98,6 +103,31 @@ export default function Profile() {
           </>
         )}
 
+        {/* Appearance */}
+        <Text style={styles.sectionLabel}>Appearance</Text>
+        <Card style={styles.card} padded={false}>
+          {(['system', 'light', 'dark'] as ThemeMode[]).map((m, idx, arr) => (
+            <React.Fragment key={m}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => setMode(m)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.menuItemIcon}>
+                  {m === 'system' ? '⚙️' : m === 'light' ? '☀️' : '🌙'}
+                </Text>
+                <Text style={styles.menuItemText}>
+                  {m === 'system' ? 'Follow System' : m === 'light' ? 'Light' : 'Dark'}
+                </Text>
+                {mode === m && (
+                  <Text style={[styles.menuItemChevron, { color: colors.primary, fontSize: 18 }]}>✓</Text>
+                )}
+              </TouchableOpacity>
+              {idx < arr.length - 1 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
+        </Card>
+
         {/* Actions */}
         <Text style={styles.sectionLabel}>Actions</Text>
         <Card style={styles.card} padded={false}>
@@ -133,66 +163,68 @@ export default function Profile() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  scroll: { padding: Spacing.xl, paddingBottom: Spacing.xxl },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.background },
+    scroll: { padding: Spacing.xl, paddingBottom: Spacing.xxl },
 
-  avatarSection: { alignItems: 'center', marginBottom: Spacing.xl },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-    ...Shadow.md,
-  },
-  avatarText: { color: '#fff', fontSize: 32, fontWeight: Typography.fontWeightBold },
-  fullName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: Colors.text, marginBottom: 4 },
-  email: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary, marginBottom: Spacing.sm },
-  badge: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
-  },
-  badgeVerified: { backgroundColor: '#D1FAE5' },
-  badgePending: { backgroundColor: '#FEF3C7' },
-  badgeText: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: Colors.text },
+    avatarSection: { alignItems: 'center', marginBottom: Spacing.xl },
+    avatar: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: c.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: Spacing.md,
+      ...Shadow.md,
+    },
+    avatarText: { color: '#fff', fontSize: 32, fontWeight: Typography.fontWeightBold },
+    fullName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: c.text, marginBottom: 4 },
+    email: { fontSize: Typography.fontSizeMd, color: c.textSecondary, marginBottom: Spacing.sm },
+    badge: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs,
+      borderRadius: Radius.full,
+    },
+    badgeVerified: { backgroundColor: '#D1FAE5' },
+    badgePending: { backgroundColor: '#FEF3C7' },
+    badgeText: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
 
-  sectionLabel: {
-    fontSize: Typography.fontSizeSm,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.textSecondary,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  card: { marginBottom: Spacing.lg },
+    sectionLabel: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.textSecondary,
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+      marginBottom: Spacing.sm,
+      marginTop: Spacing.sm,
+    },
+    card: { marginBottom: Spacing.lg },
 
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  infoLabel: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary },
-  infoValue: { fontSize: Typography.fontSizeSm, color: Colors.text, fontWeight: Typography.fontWeightMedium, flex: 1, textAlign: 'right' },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: Spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: c.borderLight,
+    },
+    infoLabel: { fontSize: Typography.fontSizeSm, color: c.textSecondary },
+    infoValue: { fontSize: Typography.fontSizeSm, color: c.text, fontWeight: Typography.fontWeightMedium, flex: 1, textAlign: 'right' },
 
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-  },
-  menuItemIcon: { fontSize: 20, marginRight: Spacing.md },
-  menuItemText: { flex: 1, fontSize: Typography.fontSizeMd, color: Colors.text },
-  menuItemChevron: { fontSize: Typography.fontSizeLg, color: Colors.textMuted },
-  divider: { height: 1, backgroundColor: Colors.borderLight, marginHorizontal: Spacing.lg },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+    },
+    menuItemIcon: { fontSize: 20, marginRight: Spacing.md },
+    menuItemText: { flex: 1, fontSize: Typography.fontSizeMd, color: c.text },
+    menuItemChevron: { fontSize: Typography.fontSizeLg, color: c.textMuted },
+    divider: { height: 1, backgroundColor: c.borderLight, marginHorizontal: Spacing.lg },
 
-  signOutBtn: { marginTop: Spacing.sm },
-  version: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, textAlign: 'center', marginTop: Spacing.xl },
-});
+    signOutBtn: { marginTop: Spacing.sm },
+    version: { fontSize: Typography.fontSizeXs, color: c.textMuted, textAlign: 'center', marginTop: Spacing.xl },
+  });
+}

@@ -5,25 +5,28 @@ import { OccupancyBar } from '@/components/ui/OccupancyBar';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { StatRow } from '@/components/ui/StatRow';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { BUILDING_DETAIL } from '@/graphql/properties/queries/building';
 import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
-  Linking,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Linking,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BuildingDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const { data, loading, error, refetch } = useQuery(BUILDING_DETAIL, {
     variables: { id },
@@ -42,7 +45,7 @@ export default function BuildingDetail() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {building?.name ?? 'Building Detail'}
@@ -69,7 +72,7 @@ export default function BuildingDetail() {
           <View style={styles.heroCard}>
             <View style={styles.heroRow}>
               <View style={styles.heroIconWrap}>
-                <Ionicons name="business" size={28} color={Colors.primary} />
+                <Ionicons name="business" size={28} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.heroName}>{building.name}</Text>
@@ -86,7 +89,7 @@ export default function BuildingDetail() {
             </View>
             {typeLabel && (
               <View style={styles.typeBadge}>
-                <Ionicons name="layers-outline" size={12} color={Colors.primary} />
+                <Ionicons name="layers-outline" size={12} color={colors.primary} />
                 <Text style={styles.typeText}>{typeLabel}</Text>
               </View>
             )}
@@ -103,7 +106,7 @@ export default function BuildingDetail() {
               ]}
             />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: Spacing.sm }}>
-              <Text style={{ fontSize: Typography.fontSizeXs, color: Colors.textMuted }}>
+              <Text style={{ fontSize: Typography.fontSizeXs, color: colors.textMuted }}>
                 {(building.occupancyRate ?? 0).toFixed(0)}% occupancy
               </Text>
             </View>
@@ -181,11 +184,11 @@ export default function BuildingDetail() {
                   onPress={() => Linking.openURL(node.fileUrl)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="document-outline" size={18} color={Colors.primary} />
+                  <Ionicons name="document-outline" size={18} color={colors.primary} />
                   <Text style={styles.docText} numberOfLines={1}>
                     {node.fileUrl.split('/').pop() ?? 'Document'}
                   </Text>
-                  <Ionicons name="download-outline" size={16} color={Colors.textMuted} />
+                  <Ionicons name="download-outline" size={16} color={colors.textMuted} />
                 </TouchableOpacity>
               ))}
             </SectionCard>
@@ -198,17 +201,18 @@ export default function BuildingDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
   backBtn: {
     width: 40,
@@ -221,14 +225,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: Typography.fontSizeLg,
     fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
+    color: c.text,
   },
 
   scroll: { padding: Spacing.md },
 
   // Hero
   heroCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -239,26 +243,26 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 12,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: Colors.text },
-  heroCode: { fontSize: Typography.fontSizeSm, color: Colors.textMuted, marginTop: 2 },
+  heroName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: c.text },
+  heroCode: { fontSize: Typography.fontSizeSm, color: c.textMuted, marginTop: 2 },
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     alignSelf: 'flex-start',
-    backgroundColor: Colors.borderLight,
+    backgroundColor: c.borderLight,
     borderRadius: Radius.sm,
     paddingHorizontal: 8,
     paddingVertical: 3,
     marginTop: Spacing.sm,
   },
-  typeText: { fontSize: 11, color: Colors.textSecondary, fontWeight: Typography.fontWeightMedium, textTransform: 'capitalize' },
+  typeText: { fontSize: 11, color: c.textSecondary, fontWeight: Typography.fontWeightMedium, textTransform: 'capitalize' },
   // Description
-  description: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary, lineHeight: 20 },
+  description: { fontSize: Typography.fontSizeSm, color: c.textSecondary, lineHeight: 20 },
 
   // Documents
   docRow: {
@@ -267,7 +271,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
-  docText: { flex: 1, fontSize: Typography.fontSizeSm, color: Colors.primary },
-});
+  docText: { flex: 1, fontSize: Typography.fontSizeSm, color: c.primary },
+  });
+}

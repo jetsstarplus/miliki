@@ -4,25 +4,28 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { StatRow } from '@/components/ui/StatRow';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { TENANT_DETAIL_QUERY } from '@/graphql/properties/queries/tenants';
 import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
-  Linking,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Linking,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TenantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const { data, loading, error, refetch } = useQuery(TENANT_DETAIL_QUERY, {
     variables: { id },
@@ -45,7 +48,7 @@ export default function TenantDetail() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{displayName}</Text>
         {tenant && (
@@ -54,7 +57,7 @@ export default function TenantDetail() {
             onPress={() => router.push({ pathname: '/tenants/add', params: { id: tenant.id } } as any)}
             hitSlop={8}
           >
-            <Ionicons name="create-outline" size={20} color={Colors.primary} />
+            <Ionicons name="create-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         )}
         {!tenant && <View style={{ width: 40 }} />}
@@ -241,16 +244,17 @@ export default function TenantDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   editBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -259,13 +263,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: Typography.fontSizeLg,
     fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
+    color: c.text,
   },
   scroll: { padding: Spacing.md },
 
   // Hero
   heroCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -276,17 +280,17 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontSize: Typography.fontSizeXl,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.primary,
+    color: c.primary,
   },
-  heroName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: Colors.text },
-  heroSub: { fontSize: Typography.fontSizeSm, color: Colors.textMuted, marginTop: 2 },
+  heroName: { fontSize: Typography.fontSizeXl, fontWeight: Typography.fontWeightBold, color: c.text },
+  heroSub: { fontSize: Typography.fontSizeSm, color: c.textMuted, marginTop: 2 },
   arrearsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -299,28 +303,28 @@ const styles = StyleSheet.create({
   arrearsText: { fontSize: Typography.fontSizeSm, color: Colors.error, fontWeight: Typography.fontWeightMedium },
 
   notesBox: { paddingTop: Spacing.xs },
-  notesLabel: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, marginBottom: 2 },
-  notesText: { fontSize: Typography.fontSizeSm, color: Colors.textSecondary, lineHeight: 20 },
+  notesLabel: { fontSize: Typography.fontSizeXs, color: c.textMuted, marginBottom: 2 },
+  notesText: { fontSize: Typography.fontSizeSm, color: c.textSecondary, lineHeight: 20 },
 
   occupancyItem: {
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
   occupancyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs },
-  unitLabel: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: Colors.text, flex: 1 },
+  unitLabel: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, color: c.text, flex: 1 },
   occupancyDates: { marginTop: Spacing.xs },
-  datesText: { fontSize: Typography.fontSizeXs, color: Colors.textMuted },
+  datesText: { fontSize: Typography.fontSizeXs, color: c.textMuted },
 
   scheduleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: Spacing.xs + 2,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
-  scheduleUnit: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: Colors.text },
-  scheduleDue: { fontSize: Typography.fontSizeXs, color: Colors.textMuted },
+  scheduleUnit: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
+  scheduleDue: { fontSize: Typography.fontSizeXs, color: c.textMuted },
   scheduleAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, marginBottom: 2 },
 
   txRow: {
@@ -328,9 +332,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.xs + 2,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: c.borderLight,
   },
-  txRef: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: Colors.text },
-  txMode: { fontSize: Typography.fontSizeXs, color: Colors.textMuted },
+  txRef: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
+  txMode: { fontSize: Typography.fontSizeXs, color: c.textMuted },
   txAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, marginBottom: 2 },
-});
+  });
+}

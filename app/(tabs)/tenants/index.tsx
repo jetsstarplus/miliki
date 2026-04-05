@@ -3,20 +3,22 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { TENANTS_QUERY } from '@/graphql/properties/queries/tenants';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -32,6 +34,7 @@ interface Tenant {
   employer: string;
   isActive: boolean;
   totalArrears: number;
+  occupancies?: { edges: { node: { isCurrent: boolean; unit: { unitNumber: string; building: { name: string } } } }[] };
 }
 
 function initials(name: string) {
@@ -45,7 +48,10 @@ function initials(name: string) {
 
 function TenantCard({ tenant }: { tenant: Tenant }) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const displayName = tenant.fullName || `${tenant.firstName} ${tenant.lastName}`;
+  const currentOccupancy = tenant.occupancies?.edges?.find(e => e.node.isCurrent)?.node;
 
   return (
     <TouchableOpacity
@@ -72,17 +78,26 @@ function TenantCard({ tenant }: { tenant: Tenant }) {
       <View style={styles.contactRow}>
         {tenant.phone ? (
           <View style={styles.contactItem}>
-            <Ionicons name="call-outline" size={12} color={Colors.textMuted} />
+            <Ionicons name="call-outline" size={12} color={colors.textMuted} />
             <Text style={styles.contactText}>{tenant.phone}</Text>
           </View>
         ) : null}
         {tenant.email ? (
           <View style={styles.contactItem}>
-            <Ionicons name="mail-outline" size={12} color={Colors.textMuted} />
+            <Ionicons name="mail-outline" size={12} color={colors.textMuted} />
             <Text style={styles.contactText} numberOfLines={1}>{tenant.email}</Text>
           </View>
         ) : null}
       </View>
+
+      {currentOccupancy && (
+        <View style={styles.occupancyRow}>
+          <Ionicons name="home-outline" size={12} color={colors.textSecondary} />
+          <Text style={styles.occupancyText} numberOfLines={1}>
+            Unit {currentOccupancy.unit.unitNumber} · {currentOccupancy.unit.building.name}
+          </Text>
+        </View>
+      )}
 
       {(tenant.totalArrears ?? 0) > 0 && (
         <View style={styles.arrearsRow}>
@@ -98,9 +113,25 @@ function TenantCard({ tenant }: { tenant: Tenant }) {
 
 export default function Tenants() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearch = useCallback((text: string) => {
+    setSearch(text);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(text.trim()), 400);
+  }, []);
+
+  const queryVars = useMemo(
+    () => (debouncedSearch ? { search: debouncedSearch } : {}),
+    [debouncedSearch],
+  );
 
   const { nodes: tenants, loading, error, refreshing, onRefresh, onEndReached, hasMore, refetch } =
-    usePaginatedQuery<Tenant>(TENANTS_QUERY, 'tenants', 50);
+    usePaginatedQuery<Tenant>(TENANTS_QUERY, 'tenants', 50, queryVars);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -112,10 +143,32 @@ export default function Tenants() {
             onPress={() => router.push('/tenants/add' as any)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="add" size={22} color={Colors.primary} />
+            <Ionicons name="add" size={22} color={colors.primary} />
           </TouchableOpacity>
         }
       />
+
+      {/* Search bar */}
+      <View style={styles.searchWrap}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search-outline" size={16} color={colors.textMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by name, phone, ID…"
+            placeholderTextColor={colors.textMuted}
+            value={search}
+            onChangeText={handleSearch}
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+            autoCapitalize="none"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => { setSearch(''); setDebouncedSearch(''); }} hitSlop={6}>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
       {loading && tenants.length === 0 && <LoadingState />}
 
@@ -137,20 +190,20 @@ export default function Tenants() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.3}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
           }
           ListFooterComponent={
             hasMore && tenants.length > 0
-              ? <ActivityIndicator color={Colors.primary} style={styles.footer} />
+              ? <ActivityIndicator color={colors.primary} style={styles.footer} />
               : null
           }
           ListEmptyComponent={
             !loading ? (
               <EmptyState
                 icon="people-outline"
-                title="No tenants yet"
-                description="Add your first tenant to get started."
-                action={{ label: 'Add tenant', onPress: () => router.push('/tenants/add' as any) }}
+                title={debouncedSearch ? 'No tenants found' : 'No tenants yet'}
+                description={debouncedSearch ? 'Try a different search term.' : 'Add your first tenant to get started.'}
+                action={debouncedSearch ? undefined : { label: 'Add tenant', onPress: () => router.push('/tenants/add' as any) }}
               />
             ) : null
           }
@@ -160,14 +213,42 @@ export default function Tenants() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   list: { padding: Spacing.md, paddingBottom: 80 },
   footer: { paddingVertical: Spacing.md },
   addBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
 
+  // Search bar
+  searchWrap: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+    backgroundColor: c.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: c.borderLight,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    backgroundColor: c.inputBackground,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    borderColor: c.border,
+    paddingHorizontal: Spacing.md,
+    height: 42,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: Typography.fontSizeSm,
+    color: c.text,
+    paddingVertical: 0,
+  },
+
   card: {
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -178,25 +259,36 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontSize: Typography.fontSizeMd,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.primary,
+    color: c.primary,
   },
   name: {
     fontSize: Typography.fontSizeMd,
     fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
+    color: c.text,
     flex: 1,
   },
-  idText: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, marginTop: 1 },
+  idText: { fontSize: Typography.fontSizeXs, color: c.textMuted, marginTop: 1 },
   contactRow: { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.xs },
   contactItem: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
-  contactText: { fontSize: Typography.fontSizeXs, color: Colors.textSecondary, flex: 1 },
+  contactText: { fontSize: Typography.fontSizeXs, color: c.textSecondary, flex: 1 },
+  occupancyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: Spacing.xs,
+  },
+  occupancyText: {
+    fontSize: Typography.fontSizeXs,
+    color: c.textSecondary,
+    flex: 1,
+  },
   arrearsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,5 +305,6 @@ const styles = StyleSheet.create({
     color: Colors.error,
     fontWeight: Typography.fontWeightMedium,
   },
-});
+  });
+}
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -8,7 +8,8 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Radius, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -31,6 +32,8 @@ export function Input({
   secureTextEntry,
   ...rest
 }: InputProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isSecure, setIsSecure] = useState(secureTextEntry ?? false);
 
   return (
@@ -40,7 +43,7 @@ export function Input({
         {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
         <TextInput
           style={[styles.input, leftIcon ? styles.inputWithLeft : null]}
-          placeholderTextColor={Colors.textMuted}
+          placeholderTextColor={colors.textMuted}
           secureTextEntry={isSecure}
           autoCapitalize="none"
           {...rest}
@@ -67,58 +70,60 @@ export function Input({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: Spacing.md,
-  },
-  label: {
-    fontSize: Typography.fontSizeSm,
-    fontWeight: Typography.fontWeightMedium,
-    color: Colors.text,
-    marginBottom: Spacing.xs,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-  },
-  inputRowError: {
-    borderColor: Colors.error,
-  },
-  input: {
-    flex: 1,
-    fontSize: Typography.fontSizeMd,
-    color: Colors.text,
-    paddingVertical: Spacing.sm + 2,
-    paddingHorizontal: Spacing.md,
-    minHeight: 48,
-  },
-  inputWithLeft: {
-    paddingLeft: 0,
-  },
-  icon: {
-    paddingHorizontal: Spacing.sm + 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  toggleText: {
-    fontSize: Typography.fontSizeSm,
-    color: Colors.primary,
-    fontWeight: Typography.fontWeightMedium,
-  },
-  error: {
-    fontSize: Typography.fontSizeXs,
-    color: Colors.error,
-    marginTop: Spacing.xs,
-    marginLeft: 2,
-  },
-  hint: {
-    fontSize: Typography.fontSizeXs,
-    color: Colors.textMuted,
-    marginTop: Spacing.xs,
-    marginLeft: 2,
-  },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: Spacing.md,
+    },
+    label: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightMedium,
+      color: c.text,
+      marginBottom: Spacing.xs,
+    },
+    inputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.inputBackground,
+      borderRadius: Radius.md,
+      borderWidth: 1.5,
+      borderColor: c.border,
+    },
+    inputRowError: {
+      borderColor: c.error,
+    },
+    input: {
+      flex: 1,
+      fontSize: Typography.fontSizeMd,
+      color: c.text,
+      paddingVertical: Spacing.sm + 2,
+      paddingHorizontal: Spacing.md,
+      minHeight: 48,
+    },
+    inputWithLeft: {
+      paddingLeft: 0,
+    },
+    icon: {
+      paddingHorizontal: Spacing.sm + 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    toggleText: {
+      fontSize: Typography.fontSizeSm,
+      color: c.primary,
+      fontWeight: Typography.fontWeightMedium,
+    },
+    error: {
+      fontSize: Typography.fontSizeXs,
+      color: c.error,
+      marginTop: Spacing.xs,
+      marginLeft: 2,
+    },
+    hint: {
+      fontSize: Typography.fontSizeXs,
+      color: c.textMuted,
+      marginTop: Spacing.xs,
+      marginLeft: 2,
+    },
+  });
+}

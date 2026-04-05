@@ -1,24 +1,25 @@
 import { useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Colors, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Spacing, Typography } from '../../constants/theme';
 import { useAuth } from '../../context/auth';
+import { useTheme } from '../../context/theme';
 import { LOGIN_MUTATION } from '../../graphql/mutations';
 import { parseGqlErrors } from '../../lib/gql-errors';
 
@@ -30,6 +31,8 @@ interface LoginErrors {
 export default function Login() {
   const router = useRouter();
   const { signIn, setActiveCompany } = useAuth();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -88,7 +91,7 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -160,12 +163,13 @@ export default function Login() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   scroll: { flexGrow: 1, paddingHorizontal: Spacing.xl, paddingBottom: Spacing.xl },
   header: { paddingTop: Spacing.md, paddingBottom: Spacing.xl, alignItems: 'center' },
   backBtn: { alignSelf: 'flex-start', marginBottom: Spacing.lg },
-  backText: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightMedium },
+  backText: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightMedium },
   logoSmall: {
     width: 64,
     height: 64,
@@ -174,14 +178,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSize2xl,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.text,
+    color: c.text,
     marginBottom: Spacing.xs,
   },
-  subtitle: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
+  subtitle: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
   card: { marginBottom: Spacing.lg },
   forgotWrap: { alignSelf: 'flex-end', marginTop: -Spacing.xs, marginBottom: Spacing.md },
-  forgotText: { fontSize: Typography.fontSizeSm, color: Colors.primary, fontWeight: Typography.fontWeightMedium },
+  forgotText: { fontSize: Typography.fontSizeSm, color: c.primary, fontWeight: Typography.fontWeightMedium },
   footer: { flexDirection: 'row', justifyContent: 'center', paddingTop: Spacing.sm },
-  footerText: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
-  footerLink: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightSemibold },
-});
+  footerText: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
+  footerLink: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightSemibold },
+  });
+}

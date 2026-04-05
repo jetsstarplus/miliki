@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -15,12 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Colors, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Colors, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 import { RESEND_ACTIVATION_EMAIL_MUTATION, VERIFY_ACCOUNT_MUTATION } from '../../graphql/mutations';
 
 export default function Verify() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email?: string }>();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [token, setToken] = useState('');
   const [tokenError, setTokenError] = useState('');
@@ -65,7 +68,7 @@ export default function Verify() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.container}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
@@ -121,32 +124,34 @@ export default function Verify() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   container: { flex: 1, paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, paddingBottom: Spacing.xl },
   backBtn: { marginBottom: Spacing.xl },
-  backText: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightMedium },
+  backText: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightMedium },
   iconWrap: { alignItems: 'center', marginBottom: Spacing.lg },
   iconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: c.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconEmoji: { fontSize: 36 },
-  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: Colors.text, textAlign: 'center', marginBottom: Spacing.sm },
-  subtitle: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.sm },
-  emailText: { color: Colors.primary, fontWeight: Typography.fontWeightSemibold },
-  hint: { fontSize: Typography.fontSizeSm, color: Colors.textMuted, textAlign: 'center', marginBottom: Spacing.xl },
+  title: { fontSize: Typography.fontSize2xl, fontWeight: Typography.fontWeightBold, color: c.text, textAlign: 'center', marginBottom: Spacing.sm },
+  subtitle: { fontSize: Typography.fontSizeMd, color: c.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.sm },
+  emailText: { color: c.primary, fontWeight: Typography.fontWeightSemibold },
+  hint: { fontSize: Typography.fontSizeSm, color: c.textMuted, textAlign: 'center', marginBottom: Spacing.xl },
   card: { marginBottom: Spacing.lg },
   resendRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: Spacing.md },
-  resendText: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
-  resendLink: { fontSize: Typography.fontSizeMd, color: Colors.primary, fontWeight: Typography.fontWeightSemibold },
+  resendText: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
+  resendLink: { fontSize: Typography.fontSizeMd, color: c.primary, fontWeight: Typography.fontWeightSemibold },
   resendSent: { color: Colors.success },
   loginLink: { alignItems: 'center', marginTop: Spacing.sm },
-  loginLinkText: { fontSize: Typography.fontSizeMd, color: Colors.textSecondary },
-});
+  loginLinkText: { fontSize: Typography.fontSizeMd, color: c.textSecondary },
+  });
+}

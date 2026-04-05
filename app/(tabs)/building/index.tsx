@@ -3,18 +3,20 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { OccupancyBar } from '@/components/ui/OccupancyBar';
-import { Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { BUILDING_LIST } from '@/graphql/properties/queries/building';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
     RefreshControl,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -39,6 +41,8 @@ interface Building {
 
 function BuildingCard({ building }: { building: Building }) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const typeLabel = building.buildingType
     ? building.buildingType.replace(/_/g, ' ')
     : '—';
@@ -52,7 +56,7 @@ function BuildingCard({ building }: { building: Building }) {
       {/* Top row */}
       <View style={styles.cardHeader}>
         <View style={styles.iconWrap}>
-          <Ionicons name="business" size={22} color={Colors.primary} />
+          <Ionicons name="business" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.buildingName} numberOfLines={1}>{building.name}</Text>
@@ -66,7 +70,7 @@ function BuildingCard({ building }: { building: Building }) {
       {/* Location */}
       {(building.city || building.address) && (
         <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={13} color={Colors.textMuted} />
+          <Ionicons name="location-outline" size={13} color={colors.textMuted} />
           <Text style={styles.locationText} numberOfLines={1}>
             {[building.address, building.city, building.county].filter(Boolean).join(', ')}
           </Text>
@@ -109,9 +113,25 @@ function BuildingCard({ building }: { building: Building }) {
 
 export default function Buildings() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearch = useCallback((text: string) => {
+    setSearch(text);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(text.trim()), 400);
+  }, []);
+
+  const queryVars = useMemo(
+    () => (debouncedSearch ? { search: debouncedSearch } : {}),
+    [debouncedSearch],
+  );
 
   const { nodes: buildings, loading, error, refreshing, onRefresh, onEndReached, hasMore, refetch } =
-    usePaginatedQuery<Building>(BUILDING_LIST, 'buildings', 50);
+    usePaginatedQuery<Building>(BUILDING_LIST, 'buildings', 50, queryVars);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -123,10 +143,32 @@ export default function Buildings() {
             onPress={() => router.push('/building/add' as any)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="add" size={22} color={Colors.primary} />
+            <Ionicons name="add" size={22} color={colors.primary} />
           </TouchableOpacity>
         }
       />
+
+      {/* Search bar */}
+      <View style={styles.searchWrap}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search-outline" size={16} color={colors.textMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search buildings…"
+            placeholderTextColor={colors.textMuted}
+            value={search}
+            onChangeText={handleSearch}
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+            autoCapitalize="none"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => { setSearch(''); setDebouncedSearch(''); }} hitSlop={6}>
+              <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
       {loading && buildings.length === 0 && <LoadingState />}
 
@@ -148,19 +190,19 @@ export default function Buildings() {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.3}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
           }
           ListFooterComponent={
             hasMore && buildings.length > 0
-              ? <ActivityIndicator color={Colors.primary} style={styles.footer} />
+              ? <ActivityIndicator color={colors.primary} style={styles.footer} />
               : null
           }
           ListEmptyComponent={
             !loading ? (
               <EmptyState
                 icon="business-outline"
-                title="No buildings yet"
-                description="Add your first building to get started."
+                title={debouncedSearch ? 'No buildings found' : 'No buildings yet'}
+                description={debouncedSearch ? 'Try a different search term.' : 'Add your first building to get started.'}
               />
             ) : null
           }
@@ -170,12 +212,40 @@ export default function Buildings() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+  safe: { flex: 1, backgroundColor: c.background },
   list: { padding: Spacing.md, paddingBottom: 80 },
   footer: { paddingVertical: Spacing.md },
+
+  // Search
+  searchWrap: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+    backgroundColor: c.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: c.borderLight,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    backgroundColor: c.inputBackground,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    borderColor: c.border,
+    paddingHorizontal: Spacing.md,
+    height: 42,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: Typography.fontSizeSm,
+    color: c.text,
+    paddingVertical: 0,
+  },
   card: {
-    backgroundColor: Colors.surface,
+    backgroundColor: c.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -186,31 +256,31 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buildingName: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightSemibold, color: Colors.text },
-  buildingCode: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, marginTop: 1 },
+  buildingName: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightSemibold, color: c.text },
+  buildingCode: { fontSize: Typography.fontSizeXs, color: c.textMuted, marginTop: 1 },
   typeBadge: {
-    backgroundColor: Colors.borderLight,
+    backgroundColor: c.borderLight,
     borderRadius: Radius.sm,
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
-  typeText: { fontSize: 10, color: Colors.textSecondary, fontWeight: Typography.fontWeightMedium, textTransform: 'capitalize' },
+  typeText: { fontSize: 10, color: c.textSecondary, fontWeight: Typography.fontWeightMedium, textTransform: 'capitalize' },
 
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: Spacing.sm },
-  locationText: { fontSize: Typography.fontSizeXs, color: Colors.textMuted, flex: 1 },
+  locationText: { fontSize: Typography.fontSizeXs, color: c.textMuted, flex: 1 },
 
-  statsRow: { flexDirection: 'row', alignItems: 'center', paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: Colors.borderLight },
+  statsRow: { flexDirection: 'row', alignItems: 'center', paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: c.borderLight },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: Colors.text },
-  statLabel: { fontSize: 10, color: Colors.textMuted, marginTop: 1 },
-  statDivider: { width: 1, height: 28, backgroundColor: Colors.borderLight },
+  statValue: { fontSize: Typography.fontSizeMd, fontWeight: Typography.fontWeightBold, color: c.text },
+  statLabel: { fontSize: 10, color: c.textMuted, marginTop: 1 },
+  statDivider: { width: 1, height: 28, backgroundColor: c.borderLight },
 
   occupancyRow: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: Spacing.sm },
-  occupancyLabel: { fontSize: 10, color: Colors.textMuted },
+  occupancyLabel: { fontSize: 10, color: c.textMuted },
 
   addBtn: {
     width: 40,
@@ -218,4 +288,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+  });
+}

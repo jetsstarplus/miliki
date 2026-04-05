@@ -1,19 +1,20 @@
 import { DrawerMenu } from '@/components/DrawerMenu';
-import { Colors } from '@/constants/theme';
 import { DrawerProvider } from '@/context/drawer';
+import { useTheme } from '@/context/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function TabIcon({ name, outlineName, focused }: { name: IoniconName; outlineName: IoniconName; focused: boolean }) {
+  const { colors } = useTheme();
   return (
     <Ionicons
       name={focused ? name : outlineName}
       size={26}
-      color={focused ? Colors.primary : Colors.textMuted}
+      color={focused ? colors.primary : colors.textMuted}
     />
   );
 }
@@ -26,15 +27,30 @@ const HIDDEN_SCREENS = [
 ];
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
+
   return (
     <DrawerProvider>
       <View style={{ flex: 1 }}>
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarStyle: styles.tabBar,
-            tabBarActiveTintColor: Colors.primary,
-            tabBarInactiveTintColor: Colors.textMuted,
+            sceneStyle: { backgroundColor: colors.background },
+            tabBarStyle: {
+              backgroundColor: colors.surface,
+              borderTopWidth: 1,
+              borderTopColor: colors.borderLight,
+              height: 56,
+              paddingBottom: 4,
+              paddingTop: 4,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 8,
+              elevation: 8,
+            },
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.textMuted,
             tabBarShowLabel: false,
           }}
         >
@@ -74,19 +90,3 @@ export default function TabsLayout() {
     </DrawerProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    height: 56,
-    paddingBottom: 4,
-    paddingTop: 4,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-});

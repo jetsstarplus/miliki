@@ -1,6 +1,8 @@
+import { AppColors, Spacing, Typography } from '@/constants/theme';
+import { useTheme } from '@/context/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -11,7 +13,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, Typography } from '@/constants/theme';
 
 interface FormLayoutProps {
   title: string;
@@ -22,6 +23,8 @@ interface FormLayoutProps {
 
 export function FormLayout({ title, children, rightElement, onBack }: FormLayoutProps) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -31,7 +34,7 @@ export function FormLayout({ title, children, rightElement, onBack }: FormLayout
           onPress={onBack ?? (() => router.back())}
           hitSlop={8}
         >
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
         <View style={styles.headerRight}>
@@ -55,25 +58,27 @@ export function FormLayout({ title, children, rightElement, onBack }: FormLayout
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: Typography.fontSizeLg,
-    fontWeight: Typography.fontWeightSemibold,
-    color: Colors.text,
-  },
-  headerRight: { width: 40, alignItems: 'flex-end' },
-  scroll: { padding: Spacing.md },
-});
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: c.background },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      backgroundColor: c.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: c.borderLight,
+    },
+    headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: Typography.fontSizeLg,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.text,
+    },
+    headerRight: { width: 40, alignItems: 'flex-end' },
+    scroll: { padding: Spacing.md },
+  });
+}

@@ -1,14 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { Colors, Radius, Typography } from '../../constants/theme';
+import { Radius, Typography } from '../../constants/theme';
 
 export type StatusColor = 'success' | 'error' | 'warning' | 'info';
 
 const colorMap: Record<StatusColor, { bg: string; fg: string }> = {
-  success: { bg: 'rgba(16,185,129,0.1)', fg: Colors.success },
-  error: { bg: 'rgba(239,68,68,0.1)', fg: Colors.error },
-  warning: { bg: 'rgba(245,158,11,0.1)', fg: Colors.warning },
-  info: { bg: 'rgba(59,130,246,0.1)', fg: Colors.info },
+  success: { bg: 'rgba(16,185,129,0.12)', fg: '#10B981' },
+  error: { bg: 'rgba(239,68,68,0.12)', fg: '#EF4444' },
+  warning: { bg: 'rgba(245,158,11,0.12)', fg: '#F59E0B' },
+  info: { bg: 'rgba(59,130,246,0.12)', fg: '#3B82F6' },
 };
 
 interface StatusBadgeProps {

@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 
 
 export const TENANTS_QUERY = gql`
-query TENANTS($first: Int, $after: String) {
-  tenants(first: $first, after: $after){
+query TENANTS($first: Int, $after: String, $search: String) {
+  tenants(first: $first, after: $after, search: $search){
     edges{
       node{
         id
@@ -32,6 +32,19 @@ query TENANTS($first: Int, $after: String) {
           name
         }
         totalArrears
+        occupancies(first: 1) {
+          edges {
+            node {
+              isCurrent
+              unit {
+                unitNumber
+                building {
+                  name
+                }
+              }
+            }
+          }
+        }
       }
     }
     

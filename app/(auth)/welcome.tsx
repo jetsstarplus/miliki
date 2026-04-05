@@ -1,16 +1,19 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
-import { Colors, Radius, Spacing, Typography } from '../../constants/theme';
+import { AppColors, Radius, Spacing, Typography } from '../../constants/theme';
+import { useTheme } from '../../context/theme';
 
 export default function Welcome() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
 
       <View style={styles.container}>
         {/* Hero section */}
@@ -59,10 +62,11 @@ export default function Welcome() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(c: AppColors) {
+  return StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: c.background,
   },
   container: {
     flex: 1,
@@ -86,14 +90,14 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: Typography.fontSize2xl,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.text,
+    color: c.text,
     textAlign: 'center',
     lineHeight: Typography.fontSize2xl * Typography.lineHeightTight,
     marginBottom: Spacing.md,
   },
   subtitle: {
     fontSize: Typography.fontSizeMd,
-    color: Colors.textSecondary,
+    color: c.textSecondary,
     textAlign: 'center',
     lineHeight: Typography.fontSizeMd * Typography.lineHeightNormal,
     paddingHorizontal: Spacing.md,
@@ -108,14 +112,14 @@ const styles = StyleSheet.create({
   pill: {
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.overlay,
+    backgroundColor: c.overlay,
     borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: c.border,
   },
   pillText: {
     fontSize: Typography.fontSizeSm,
-    color: Colors.primary,
+    color: c.primary,
     fontWeight: Typography.fontWeightMedium,
   },
   cta: {
@@ -129,11 +133,12 @@ const styles = StyleSheet.create({
   },
   loginPrompt: {
     fontSize: Typography.fontSizeMd,
-    color: Colors.textSecondary,
+    color: c.textSecondary,
   },
   loginLink: {
     fontSize: Typography.fontSizeMd,
-    color: Colors.primary,
+    color: c.primary,
     fontWeight: Typography.fontWeightSemibold,
   },
-});
+  });
+}

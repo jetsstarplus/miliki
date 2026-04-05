@@ -5,12 +5,13 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Colors } from '../constants/theme';
 import { AuthProvider, useAuth } from '../context/auth';
+import { ThemeProvider, useTheme } from '../context/theme';
 import { apolloClient } from '../lib/apollo';
 
 function RootNavigator() {
   const { isAuthenticated, isLoading, hasCompany } = useAuth();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const segments = useSegments();
 
@@ -32,33 +33,37 @@ function RootNavigator() {
 
   if (isLoading) {
     return (
-      <View style={styles.splash}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.splash, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(onboarding)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </>
   );
 }
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ApolloProvider client={apolloClient}>
-          <AuthProvider>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </AuthProvider>
-        </ApolloProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ApolloProvider client={apolloClient}>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </ApolloProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
 
@@ -67,6 +72,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
   },
 });
