@@ -1,21 +1,24 @@
 import { gql } from "@apollo/client";
 
 export const CREATE_BUILDING_MUTATION = gql`
-  mutation CreateBuilding(
+  mutation CreateUpdateBuilding(
+    $id: ID
     $name: String!
-    $code: String
+    $code: String!
     $buildingType: String!
     $address: String!
     $city: String!
     $county: String
-    $numberOfFloors: Int
+    $numberOfFloors: Int!
+    $totalUnits: Int!
     $yearBuilt: Int
     $managerName: String
     $managerPhone: String
     $managerEmail: String
     $description: String
   ) {
-    createBuilding(
+    createUpdateBuilding(
+      id: $id
       name: $name
       code: $code
       buildingType: $buildingType
@@ -23,6 +26,7 @@ export const CREATE_BUILDING_MUTATION = gql`
       city: $city
       county: $county
       numberOfFloors: $numberOfFloors
+      totalUnits: $totalUnits
       yearBuilt: $yearBuilt
       managerName: $managerName
       managerPhone: $managerPhone

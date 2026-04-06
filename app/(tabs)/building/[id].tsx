@@ -50,7 +50,13 @@ export default function BuildingDetail() {
         <Text style={styles.headerTitle} numberOfLines={1}>
           {building?.name ?? 'Building Detail'}
         </Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.push({ pathname: '/(tabs)/building/add', params: { buildingId: id } } as any)}
+          hitSlop={8}
+        >
+          <Ionicons name="create-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       {loading && !data && <LoadingState />}

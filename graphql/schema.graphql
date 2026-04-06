@@ -1,0 +1,6298 @@
+type Query {
+  subscriptionsViewsApplyDiscount(payload: JSONString): ViewOpResult
+  subscriptionsViewsCancelStandingOrder(payload: JSONString): ViewOpResult
+  subscriptionsViewsChangeBillingCycle(payload: JSONString): ViewOpResult
+  subscriptionsViewsCheckPaymentStatus(payload: JSONString): ViewOpResult
+  subscriptionsViewsCheckPaymentStatusApi(payload: JSONString): ViewOpResult
+  subscriptionsViewsProcessCardPayment(payload: JSONString): ViewOpResult
+  subscriptionsViewsProcessMpesaPayment(payload: JSONString): ViewOpResult
+  subscriptionsViewsReactivateStandingOrder(payload: JSONString): ViewOpResult
+  subscriptionsViewsVerifyPaystackPayment(payload: JSONString): ViewOpResult
+  subscriptionPlans(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, name: String, isActive: Boolean, planType: SubscriptionsSubscriptionPlanPlanTypeChoices): SubscriptionPlanTypeConnection
+  subscriptionPlan(
+    """The ID of the object"""
+    id: ID!
+  ): SubscriptionPlanType
+  companySubscriptions(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, planId: ID, status: SubscriptionsCompanySubscriptionStatusChoices, billingCycle: SubscriptionsCompanySubscriptionBillingCycleChoices): CompanySubscriptionTypeConnection
+  companySubscription(
+    """The ID of the object"""
+    id: ID!
+  ): CompanySubscriptionType
+  usageMetrics(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID, periodStart: DateTime, periodEnd: DateTime): UsageMetricsTypeConnection
+  subscriptionPayments(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID, status: SubscriptionsSubscriptionPaymentStatusChoices, paymentMethod: SubscriptionsSubscriptionPaymentPaymentMethodChoices): SubscriptionPaymentTypeConnection
+  paymentReminders(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID, reminderType: SubscriptionsPaymentReminderReminderTypeChoices): PaymentReminderTypeConnection
+  subscriptionRefunds(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, paymentId: ID): SubscriptionRefundTypeConnection
+  messagingQuotaAlerts(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID): MessagingQuotaAlertTypeConnection
+  messagingBalances(companyId: UUID!): MessagingBalancesType
+  subscriptionAmounts(subscriptionId: Int!): SubscriptionAmountsType
+  subscriptionStatus(companyId: UUID!): SubscriptionStatusType
+  paymentStatus(paymentId: Int!): PaymentStatusType
+  paymentHistory(companyId: UUID!, limit: Int): [SubscriptionPaymentType]
+
+  """Setup progress / onboarding checklist for the Getting Started guide."""
+  subscriptionGettingStartedData(companyId: UUID!): GenericScalar
+
+  """Relay-paginated payment history with summary stats."""
+  subscriptionPaymentHistoryData(companyId: UUID!, first: Int, after: String): GenericScalar
+
+  """
+  Context data for the payment initiation page (amounts, balances, waiver info).
+  """
+  subscriptionInitiatePaymentData(companyId: UUID!, paymentFor: String): GenericScalar
+  notificationCampaigns(companyId: UUID!, status: String, buildingId: Int, offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationCampaignTypeConnection
+  notificationCampaign(id: Int!): TenantNotificationCampaignType
+  notificationLogs(campaignId: Int, tenantId: Int, offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationLogTypeConnection
+  userNotifications(userId: Int, isRead: Boolean, offset: Int, before: String, after: String, first: Int, last: Int): UserNotificationTypeConnection
+  notificationsContext: GenericScalar
+  notificationCampaignListData(search: String, status: String, frequency: String, buildingId: Int, first: Int, after: String): GenericScalar
+  notificationCampaignDetailData(campaignId: Int!): GenericScalar
+  notificationLogsListData(scenario: String, search: String, first: Int, after: String): GenericScalar
+  tenantInboxListData(status: String, notificationType: String, priority: String, first: Int, after: String): GenericScalar
+  tenantInboxDetailData(notificationId: Int!): GenericScalar
+  maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int, buildingId: ID, status: MaintenanceMaintenanceRequestStatusChoices, priority: MaintenanceMaintenanceRequestPriorityChoices, search: String): MaintenanceRequestTypeConnection
+  maintenanceRequest(
+    """The ID of the object"""
+    id: ID!
+  ): MaintenanceRequestType
+
+  """Dashboard view: filtered list with stats and Relay cursor pagination."""
+  maintenanceDashboardData(status: String, priority: String, buildingId: ID, first: Int, after: String): GenericScalar
+  companyViewsAddMemberManually(payload: JSONString): ViewOpResult
+  companyViewsAssignUserRole(payload: JSONString): ViewOpResult
+  companyViewsBulkInviteMembers(payload: JSONString): ViewOpResult
+  companyViewsDeclineInvitation(payload: JSONString): ViewOpResult
+  companyViewsGetMemberPermissions(payload: JSONString): ViewOpResult
+  companyViewsInviteMember(payload: JSONString): ViewOpResult
+  companyViewsNavMessagingBalanceApi(payload: JSONString): ViewOpResult
+  companyViewsRemoveUserRole(payload: JSONString): ViewOpResult
+  companyViewsResendInvitation(payload: JSONString): ViewOpResult
+  companyViewsUpdateMemberPermissions(payload: JSONString): ViewOpResult
+  companies(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, name: String, status: String, companyType: String, isVerified: Boolean): CompanyTypeConnection
+  company(
+    """The ID of the object"""
+    id: ID!
+  ): CompanyType
+  companyMemberships(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, userId: ID, role: CompaniesCompanyMembershipRoleChoices, status: CompaniesCompanyMembershipStatusChoices): CompanyMembershipTypeConnection
+  buildingOwnerships(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, buildingId: ID, landlordCompanyId: ID, managingCompanyId: ID, isActive: Boolean): BuildingOwnershipTypeConnection
+  companyInvitations(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, email: String, isAccepted: Boolean, isDeclined: Boolean): CompanyInvitationTypeConnection
+  userRoles(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, userId: ID, role: KccauthUserRoleRoleChoices, companyId: ID, tenantId: ID, buildingId: ID, isActive: Boolean): UserRoleTypeConnection
+  safeBalance(creditValue: Decimal!, consumedValue: Decimal!): Decimal
+  companiesContext: GenericScalar
+  viewsAccountTrendData(payload: JSONString): ViewOpResult
+  viewsBalanceSheetData(payload: JSONString): ViewOpResult
+  viewsCashFlowStatementData(payload: JSONString): ViewOpResult
+  viewsComparativePerformanceData(payload: JSONString): ViewOpResult
+  viewsGetTenantCreditsAjax(payload: JSONString): ViewOpResult
+  viewsIncomeStatementData(payload: JSONString): ViewOpResult
+  viewsJournalEntryTemplateUpload(payload: JSONString): ViewOpResult
+  viewsRetainedEarningsData(payload: JSONString): ViewOpResult
+  viewsRevenueTrendData(payload: JSONString): ViewOpResult
+  viewsTrialBalanceData(payload: JSONString): ViewOpResult
+  viewsUnitsByBuilding(payload: JSONString): ViewOpResult
+  accountsConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, accountType: AccountingAccountAccountTypeChoices, isActive: Boolean, cashAccount: Boolean, code: String, name: String): AccountTypeConnection
+  journalEntriesConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, status: AccountingJournalEntryStatusChoices, entryType: AccountingJournalEntryEntryTypeChoices, entryDate: Date): JournalEntryTypeConnection
+  journalLinesConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, journalEntryId: ID, accountId: ID, debitCredit: AccountingJournalLineDebitCreditChoices): JournalLineTypeConnection
+  tenantCreditsConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, tenantId: ID, unitId: ID, creditType: AccountingTenantCreditCreditTypeChoices, isActive: Boolean): TenantCreditTypeConnection
+  tenantRefundsConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, tenantId: ID, unitId: ID, status: AccountingTenantRefundStatusChoices, refundType: AccountingTenantRefundRefundTypeChoices): TenantRefundTypeConnection
+  accounts(companyId: UUID!, isActive: Boolean, search: String): [AccountType]
+  account(id: UUID!): AccountType
+  journalEntries(companyId: UUID!, status: String, entryType: String): [JournalEntryType]
+  journalEntry(id: UUID!): JournalEntryType
+  journalLines(entryId: UUID!): [JournalLineType]
+  tenantCredits(tenantId: Int, companyId: UUID!): [TenantCreditType]
+  tenantRefunds(tenantId: Int, companyId: UUID!): [TenantRefundType]
+  buildings(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    id: ID
+    name: String
+    code: String
+    buildingType: PropertiesBuildingBuildingTypeChoices
+    city: String
+    isActive: Boolean
+    createdByCompanyId: ID
+
+    """Search"""
+    search: String
+  ): BuildingTypeConnection
+  oneBuilding(
+    """The ID of the object"""
+    id: ID!
+  ): BuildingType
+  unitTypes(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    id: ID
+    buildingId: ID
+    status: PropertiesUnitStatusChoices
+    unitType: ID
+    isAvailableForRent: Boolean
+    isAvailableForPurchase: Boolean
+
+    """Search"""
+    search: String
+  ): UnitTypeNodeConnection
+  units(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    id: ID
+    buildingId: ID
+    status: PropertiesUnitStatusChoices
+    unitType: ID
+    isAvailableForRent: Boolean
+    isAvailableForPurchase: Boolean
+
+    """Search"""
+    search: String
+  ): UnitNodeConnection
+  unit(
+    """The ID of the object"""
+    id: ID!
+  ): UnitNode
+  tenants(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    id: ID
+    isActive: Boolean
+
+    """Search"""
+    search: String
+  ): TenantTypeConnection
+  tenant(
+    """The ID of the object"""
+    id: ID!
+  ): TenantType
+  occupancies(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, unitId: ID, tenantId: ID, isCurrent: Boolean): UnitOccupancyTypeConnection
+  rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, unitId: ID, tenantId: ID, status: PropertiesRentScheduleStatusChoices): RentScheduleTypeConnection
+  purchaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, unitId: ID, buyerId: ID, status: PropertiesUnitPurchaseAgreementStatusChoices): UnitPurchaseAgreementTypeConnection
+  buildingDocumentsConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, buildingId: ID): BuildingDocumentTypeConnection
+  buildingImagesConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, buildingId: ID, isPrimary: Boolean): BuildingImageTypeConnection
+  rentScheduleConfigsConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, buildingId: ID, companyId: ID, isEnabled: Boolean): BuildingRentScheduleConfigTypeConnection
+  penaltyRulesConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, companyId: ID, buildingId: ID, isActive: Boolean, name: String): PenaltyRuleTypeConnection
+  appliedPenaltiesConnection(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, rentScheduleId: ID, penaltyRuleId: ID, notificationSent: Boolean): AppliedPenaltyTypeConnection
+  leases(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, status: PropertiesLeaseAgreementStatusChoices, leaseType: PropertiesLeaseAgreementLeaseTypeChoices, companyId: ID, occupancyId: ID, search: String, buildingId: Decimal, tenantId: Decimal, unitId: Decimal): LeaseAgreementTypeConnection
+  allBuildings: [BuildingType]
+  building(id: Int): BuildingType
+  allOccupancies(unitId: Int, tenantId: Int, isCurrent: Boolean): [UnitOccupancyType]
+  occupancy(id: Int): UnitOccupancyType
+  allRentSchedules(unitId: Int, tenantId: Int, status: String): [RentScheduleType]
+  rentSchedule(id: Int): RentScheduleType
+  allPurchaseAgreements(unitId: Int, buyerId: Int, status: String): [UnitPurchaseAgreementType]
+  purchaseAgreement(id: Int): UnitPurchaseAgreementType
+  buildingDocuments(buildingId: Int): [BuildingDocumentType]
+  buildingImages(buildingId: Int): [BuildingImageType]
+  rentScheduleConfigs(buildingId: Int): [BuildingRentScheduleConfigType]
+  rentScheduleConfig(id: Int): BuildingRentScheduleConfigType
+  penaltyRules(buildingId: Int, isActive: Boolean, search: String): [PenaltyRuleType]
+  penaltyRule(id: Int): PenaltyRuleType
+  appliedPenalties(buildingId: Int, notificationSent: Boolean, search: String, limit: Int): [AppliedPenaltyType]
+  paymentReceipts(buildingId: Int, unitId: Int, tenantId: Int, dateFrom: Date, dateTo: Date, allocationStatus: String): [TransactionType]
+  paymentReceiptPdf(paymentId: Int!): PaymentReceiptPdfPayload
+  verifyPaymentReceipt(paymentId: Int!, issuedAt: String!, signature: String!): PaymentReceiptVerificationResult
+  allLeases(status: String, buildingId: Int, occupancyId: Int, search: String): [LeaseAgreementType]
+  lease(
+    """The ID of the object"""
+    id: ID!
+  ): LeaseAgreementType
+  dashboard: DashboardType
+  arrearsReport(statuses: [String]): ArrearsReportPayload
+  occupancyReport: [BuildingOccupancyType]
+  unmatchedPayments: GenericScalar
+  paymentAllocationBreakdown(unitId: Int!): GenericScalar
+  previewPaymentAllocation(unitId: Int!, amount: Decimal!): GenericScalar
+  buildingExtraChargesData(buildingId: Int!, historyMonth: String, historySearch: String, page: Int): GenericScalar
+  tenantChargesHistory(tenantId: Int!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  unitChargesHistory(unitId: Int!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  buildingChargesReport(buildingId: Int!, search: String, unitId: Int, tenantId: Int, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  tenantPaymentLinkData(token: String!): GenericScalar
+  smsBalance: BalanceType
+  initiatedPaymentLine(
+    """The ID of the object"""
+    id: ID!
+  ): InitiateLineNode
+  MpesaExpresses(offset: Int, before: String, after: String, first: Int, last: Int, createdAt: DateTime, modifiedAt: DateTime, createdBy: ID, modifiedBy: ID, CheckoutRequestID: String, MerchantRequestID: String, ResultCode: Int, ResultDesc: String, Amount: Float, MpesaReceiptNumber: String, Balance: String, TransationDate: DateTime, phonenumber: String, state: String): MpesaExpressNodeConnection
+  MpesaExpress(
+    """The ID of the object"""
+    id: ID!
+  ): MpesaExpressNode
+  c2bpayments(offset: Int, before: String, after: String, first: Int, last: Int, createdAt: DateTime, modifiedAt: DateTime, createdBy: ID, modifiedBy: ID, TransactionType: String, TransID: String, TransTime: String, TransAmount: Float, BusinessShortCode: String, BillRefNumber: String, InvoiceNumber: String, OrgAccountBalance: Float, ThirdPartyTransID: String, payee: ID, MSISDN: String, FirstName: String, MiddleName: String, LastName: String, user: ID, state: DarajaC2BPaymentModelStateChoices, origin: DarajaC2BPaymentModelOriginChoices, company: ID, setup: ID): C2BPaymentModelNodeConnection
+  c2bpayment(
+    """The ID of the object"""
+    id: ID!
+  ): C2BPaymentModelNode
+  initiatedPayments(offset: Int, before: String, after: String, first: Int, last: Int, CheckoutRequestID: String, MerchantRequestID: String, phone: String, reference: String, externalReference: String): InitiateNodeConnection
+  initiatedPayment(
+    """The ID of the object"""
+    id: ID!
+  ): InitiateNode
+
+  """List configurable payment types for current company."""
+  configPaymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection
+  configPaymentType(
+    """The ID of the object"""
+    id: ID!
+  ): ConfigurablePaymentTypeNode
+
+  """List configurable payment modes for current company."""
+  configPaymentModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentModeNodeConnection
+  configPaymentMode(
+    """The ID of the object"""
+    id: ID!
+  ): ConfigurablePaymentModeNode
+
+  """List allowed type-mode combinations for current company."""
+  configPaymentTypeModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection
+
+  """Full dashboard data: payment types, modes, and category/mode choices."""
+  paymentConfigDashboardData: GenericScalar
+  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int, paymentType: ID, documentNo: ID, createdAt: DateTime): TransactionLineNodeConnection
+  transactionLine(
+    """The ID of the object"""
+    id: ID!
+  ): TransactionLineNode
+  paymentTypes(offset: Int, before: String, after: String, first: Int, last: Int, active: Boolean, id: ID, code: String): PaymentTypeNodeConnection
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int, no: String, id: ID, reference: String, confirmationCode: String, notificationId: UUID, amount: Float, createdAt: DateTime): TransactionNodeConnection
+  transaction(
+    """The ID of the object"""
+    id: ID!
+  ): TransactionNode
+  quickbooksItems: GenericScalar
+  quickbooksAccounts: GenericScalar
+  quickbooksCustomerTransactions: GenericScalar
+  quickbooksCustomer: GenericScalar
+  mapQuickbooksCustomers: Boolean
+  quickbooksCustomerQuery: GenericScalar
+  quickbooksQueryTest: GenericScalar
+  setupContext: GenericScalar
+  staticPages(offset: Int, before: String, after: String, first: Int, last: Int, type: SetupStaticPagesTypeChoices, slug: String, published: Boolean): StaticPagesNodeConnection
+  staticPage(
+    """The ID of the object"""
+    id: ID!
+  ): StaticPagesNode
+  totalAnalytic: Int
+  totalDistinctVisits: Int
+  pageVisits(offset: Int, before: String, after: String, first: Int, last: Int, datetime: DateTime, datetime_Range: [DateTime]): PageVisitsNodeConnection
+  pageVisit(
+    """The ID of the object"""
+    id: ID!
+  ): PageVisitsNode
+  authContext: GenericScalar
+  user(
+    """The ID of the object"""
+    id: ID!
+  ): UserNode
+  userPreference(
+    """The ID of the object"""
+    id: ID!
+  ): UserPreferenceNode
+  users(offset: Int, before: String, after: String, first: Int, last: Int, email: String, username: String, username_Icontains: String, username_Istartswith: String, isActive: Boolean, archived: Boolean, verified: Boolean, secondaryEmail: String, searchName: String, searchName_Icontains: String, searchName_Istartswith: String): UserNodeConnection
+  me: UserNode
+  allUsers(where: UserAccountWhereInput, orderBy: [UserAccountOrderByInput], offset: Int, before: String, after: String, first: Int, last: Int): UserAccountTypeConnection
+}
+
+type ViewOpResult {
+  name: String
+  module: String
+  status: String
+  detail: String
+  payload: JSONString
+}
+
+"""
+Allows use of a JSON String for input / output from the GraphQL schema.
+
+Use of this type is *not recommended* as you lose the benefits of having a defined, static
+schema (one of the key benefits of GraphQL).
+"""
+scalar JSONString
+
+type SubscriptionPlanTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [SubscriptionPlanTypeEdge]!
+}
+
+"""
+The Relay compliant `PageInfo` type, containing data necessary to paginate this connection.
+"""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+"""A Relay edge containing a `SubscriptionPlanType` and its cursor."""
+type SubscriptionPlanTypeEdge {
+  """The item at the end of the edge"""
+  node: SubscriptionPlanType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type SubscriptionPlanType implements Node {
+  """The ID of the object"""
+  id: ID!
+  name: String!
+  planType: SubscriptionsSubscriptionPlanPlanTypeChoices!
+  description: String!
+  priceMonthly: Decimal!
+  priceQuarterly: Decimal!
+  priceAnnually: Decimal!
+
+  """Maximum number of users per company. -1 for unlimited."""
+  maxUsers: Int!
+
+  """Maximum storage space in gigabytes. -1 for unlimited."""
+  maxStorageGb: Decimal!
+
+  """Maximum number of transactions per month. -1 for unlimited."""
+  maxTransactionsPerMonth: Int!
+
+  """Maximum number of properties that can be managed. -1 for unlimited."""
+  maxPropertiesPerMonth: Int!
+
+  """Maximum number of units across all properties. -1 for unlimited."""
+  maxUnitsPerMonth: Int!
+
+  """Maximum number of active tenants. -1 for unlimited."""
+  maxTenants: Int!
+
+  """
+  Number of SMS messages included per month. 0 = disabled, -1 = unlimited.
+  """
+  smsQuota: Int!
+
+  """
+  Number of WhatsApp messages included per month. 0 = disabled, -1 = unlimited.
+  """
+  whatsappQuota: Int!
+
+  """Number of emails included per month. 0 = disabled, -1 = unlimited."""
+  emailQuota: Int!
+
+  """Cost per SMS after quota is exceeded"""
+  smsOverageRate: Decimal!
+
+  """Cost per WhatsApp message after quota is exceeded"""
+  whatsappOverageRate: Decimal!
+
+  """Cost per email after quota is exceeded"""
+  emailOverageRate: Decimal!
+
+  """Block SMS sending when quota is exceeded (no overage charges)"""
+  enforceSmsHardLimit: Boolean!
+
+  """Block WhatsApp sending when quota is exceeded (no overage charges)"""
+  enforceWhatsappHardLimit: Boolean!
+
+  """Block email sending when quota is exceeded (no overage charges)"""
+  enforceEmailHardLimit: Boolean!
+
+  """
+  Send warning when quota usage reaches this percentage (e.g., 80 for 80%)
+  """
+  quotaWarningThreshold: Int!
+
+  """
+  Send critical warning when quota usage reaches this percentage (e.g., 90 for 90%)
+  """
+  quotaCriticalThreshold: Int!
+  hasAdvancedReporting: Boolean!
+  hasApiAccess: Boolean!
+  hasCustomBranding: Boolean!
+  hasBulkSms: Boolean!
+  hasEmailSupport: Boolean!
+  hasPrioritySupport: Boolean!
+  hasMultiCompany: Boolean!
+  hasAccountingIntegration: Boolean!
+  hasMobileApp: Boolean!
+
+  """Number of days for free trial"""
+  trialDays: Int!
+  isActive: Boolean!
+  isVisible: Boolean!
+  sortOrder: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  subscriptions(offset: Int, before: String, after: String, first: Int, last: Int): CompanySubscriptionTypeConnection!
+}
+
+"""An object with an ID"""
+interface Node {
+  """The ID of the object"""
+  id: ID!
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionPlanPlanTypeChoices {
+  """Free Plan"""
+  FREE
+
+  """Starter Plan"""
+  STARTER
+
+  """Professional Plan"""
+  PROFESSIONAL
+
+  """Enterprise Plan"""
+  ENTERPRISE
+
+  """Custom Pricing"""
+  CUSTOM
+}
+
+"""The `Decimal` scalar type represents a python Decimal."""
+scalar Decimal
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+type CompanySubscriptionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CompanySubscriptionTypeEdge]!
+}
+
+"""A Relay edge containing a `CompanySubscriptionType` and its cursor."""
+type CompanySubscriptionTypeEdge {
+  """The item at the end of the edge"""
+  node: CompanySubscriptionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type CompanySubscriptionType implements Node {
+  """The ID of the object"""
+  id: ID!
+  company: CompanyType!
+  plan: SubscriptionPlanType!
+  billingCycle: SubscriptionsCompanySubscriptionBillingCycleChoices!
+  status: SubscriptionsCompanySubscriptionStatusChoices!
+  startDate: DateTime!
+  trialEndDate: DateTime
+  currentPeriodStart: DateTime!
+  currentPeriodEnd: DateTime
+  cancelledAt: DateTime
+  lastPaymentDate: DateTime
+  nextPaymentDate: DateTime
+
+  """
+  Set the agreed amount for CUSTOM plan billing before initiating payments.
+  """
+  customAmount: Decimal
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: UserNode
+  usageMetrics(offset: Int, before: String, after: String, first: Int, last: Int): UsageMetricsTypeConnection!
+  payments(offset: Int, before: String, after: String, first: Int, last: Int): SubscriptionPaymentTypeConnection!
+  paymentReminders(offset: Int, before: String, after: String, first: Int, last: Int): PaymentReminderTypeConnection!
+  quotaAlerts(offset: Int, before: String, after: String, first: Int, last: Int): MessagingQuotaAlertTypeConnection!
+}
+
+type CompanyType implements Node {
+  """The ID of the object"""
+  id: ID!
+  name: String!
+  companyType: CompaniesCompanyCompanyTypeChoices!
+
+  """Business registration number or certificate number"""
+  registrationNumber: String
+  taxNumber: String
+  logo: String
+  email: String!
+  phone: String!
+  alternativePhone: String
+  physicalAddress: String!
+  postalAddress: String
+  city: String!
+  county: String
+  country: String!
+
+  """
+  If a tenant starts within this many days from the start of a billing period, charge the full amount; otherwise generate prorated charges.
+  """
+  prorationThresholdDays: Int!
+
+  """Day of the month when rent is due for buildings under this company."""
+  dueDateDays: Int!
+  bankName: String
+  bankAccountNumber: String
+  bankBranch: String
+  bankAccountName: String
+  status: CompaniesCompanyStatusChoices!
+  isVerified: Boolean!
+  verificationDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  """
+  Tracks the most recent meaningful activity. Used to detect stale companies.
+  """
+  lastActivityAt: DateTime
+  staleWarning1SentAt: DateTime
+  staleWarning2SentAt: DateTime
+
+  """
+  When enabled, this company is excluded from all automated stale-company cleanup. Set this for companies that must never be automatically deleted.
+  """
+  isDeletionProtected: Boolean!
+  createdBy: UserNode
+
+  """Company this role is associated with"""
+  userRoles(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
+  paymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): PaymentTypeNodeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
+
+  """Leave blank for system-wide default types"""
+  configurablePaymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection!
+
+  """Leave blank for system-wide default modes"""
+  configurablePaymentModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentModeNodeConnection!
+  c2bPaymentCompany(offset: Int, before: String, after: String, first: Int, last: Int): C2BPaymentModelNodeConnection!
+  initiateCompany(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  initiatedWithCompany(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+
+  """Company that created this building"""
+  createdBuildings(offset: Int, before: String, after: String, first: Int, last: Int): BuildingTypeConnection!
+
+  """Leave blank for system-wide defaults available to all organizations."""
+  unitTypes(offset: Int, before: String, after: String, first: Int, last: Int): UnitTypeNodeConnection!
+  units(offset: Int, before: String, after: String, first: Int, last: Int): UnitNodeConnection!
+
+  """Company that created this building"""
+  createdTenants(offset: Int, before: String, after: String, first: Int, last: Int): TenantTypeConnection!
+
+  """Company this charge is associated with"""
+  unitOccupancies(offset: Int, before: String, after: String, first: Int, last: Int): UnitOccupancyTypeConnection!
+  schedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
+  rentScheduleConfigs(offset: Int, before: String, after: String, first: Int, last: Int): BuildingRentScheduleConfigTypeConnection!
+  penaltyRules(offset: Int, before: String, after: String, first: Int, last: Int): PenaltyRuleTypeConnection!
+  leaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): LeaseAgreementTypeConnection!
+  memberships(offset: Int, before: String, after: String, first: Int, last: Int): CompanyMembershipTypeConnection!
+  ownedBuildings(offset: Int, before: String, after: String, first: Int, last: Int): BuildingOwnershipTypeConnection!
+  managedBuildings(offset: Int, before: String, after: String, first: Int, last: Int): BuildingOwnershipTypeConnection!
+  invitations(offset: Int, before: String, after: String, first: Int, last: Int): CompanyInvitationTypeConnection!
+  accounts(offset: Int, before: String, after: String, first: Int, last: Int): AccountTypeConnection!
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  journalLines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  tenantRefunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  subscription: CompanySubscriptionType
+  notificationCampaigns(offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationCampaignTypeConnection!
+
+  """Company this notification is related to"""
+  userNotifications(offset: Int, before: String, after: String, first: Int, last: Int): UserNotificationTypeConnection!
+  maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+}
+
+"""An enumeration."""
+enum CompaniesCompanyCompanyTypeChoices {
+  """Landlord Organization"""
+  LANDLORD
+
+  """Property Management Agent"""
+  AGENT
+}
+
+"""An enumeration."""
+enum CompaniesCompanyStatusChoices {
+  """Active"""
+  ACTIVE
+
+  """Inactive"""
+  INACTIVE
+
+  """Suspended"""
+  SUSPENDED
+
+  """Pending Verification"""
+  PENDING_VERIFICATION
+}
+
+type UserNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  lastLogin: DateTime
+
+  """Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."""
+  username: String!
+  firstName: String!
+  lastName: String!
+
+  """Designates whether the user can log into this admin site."""
+  isStaff: Boolean!
+
+  """
+  Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+  """
+  isActive: Boolean!
+  dateJoined: DateTime!
+  verified: Boolean!
+  archived: Boolean!
+  secondaryEmail: String
+  phoneNumber: String
+  address: String
+  avatar: String
+  suffix: String
+  Title: String
+  middleName: String!
+  no: String
+  searchName: String!
+  email: String!
+  cookieconsentSet(offset: Int, before: String, after: String, first: Int, last: Int): CookieConsentNodeConnection!
+
+  """User account"""
+  userRoles(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
+
+  """Who assigned this role"""
+  rolesAssigned(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
+  preferences: UserPreferenceNode
+  transactionSet(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  c2bpaymentmodelSet(offset: Int, before: String, after: String, first: Int, last: Int): C2BPaymentModelNodeConnection!
+  initiated(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  tenantProfile: TenantType
+  createdCompanies(offset: Int, before: String, after: String, first: Int, last: Int): CompanyTypeConnection!
+  companyMemberships(offset: Int, before: String, after: String, first: Int, last: Int): CompanyMembershipTypeConnection!
+  sentInvitations(offset: Int, before: String, after: String, first: Int, last: Int): CompanyMembershipTypeConnection!
+  createdOwnerships(offset: Int, before: String, after: String, first: Int, last: Int): BuildingOwnershipTypeConnection!
+  createdInvitations(offset: Int, before: String, after: String, first: Int, last: Int): CompanyInvitationTypeConnection!
+  companyInvitations(offset: Int, before: String, after: String, first: Int, last: Int): CompanyInvitationTypeConnection!
+  createdAccounts(offset: Int, before: String, after: String, first: Int, last: Int): AccountTypeConnection!
+  createdJournalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  postedJournalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  createdTenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  createdRefunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  approvedRefunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  createdSubscriptions(offset: Int, before: String, after: String, first: Int, last: Int): CompanySubscriptionTypeConnection!
+  subscriptionPayments(offset: Int, before: String, after: String, first: Int, last: Int): SubscriptionPaymentTypeConnection!
+  requestedRefunds(offset: Int, before: String, after: String, first: Int, last: Int): SubscriptionRefundTypeConnection!
+  processedRefunds(offset: Int, before: String, after: String, first: Int, last: Int): SubscriptionRefundTypeConnection!
+  userNotifications(offset: Int, before: String, after: String, first: Int, last: Int): UserNotificationTypeConnection!
+  maintenanceAssignments(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  pk: Int
+}
+
+type CookieConsentNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CookieConsentNodeEdge]!
+}
+
+"""A Relay edge containing a `CookieConsentNode` and its cursor."""
+type CookieConsentNodeEdge {
+  """The item at the end of the edge"""
+  node: CookieConsentNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type CookieConsentNode implements Node {
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """The ID of the object"""
+  id: ID!
+
+  """"""
+  sequenceNo: BigInt!
+  consented: Boolean!
+  user: UserNode
+}
+
+"""
+The `BigInt` scalar type represents non-fractional whole numeric values.
+`BigInt` is not constrained to 32-bit like the `Int` type and thus is a less
+compatible type.
+"""
+scalar BigInt
+
+type UserRoleTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UserRoleTypeEdge]!
+}
+
+"""A Relay edge containing a `UserRoleType` and its cursor."""
+type UserRoleTypeEdge {
+  """The item at the end of the edge"""
+  node: UserRoleType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UserRoleType implements Node {
+  """The ID of the object"""
+  id: ID!
+
+  """User account"""
+  user: UserNode!
+
+  """Role assigned to user"""
+  role: KccauthUserRoleRoleChoices!
+
+  """Company this role is associated with"""
+  company: CompanyType
+
+  """Link to tenant record if role is TENANT (for API/portal use)"""
+  tenant: TenantType
+
+  """Building this user manages (for AGENT/LANDLORD)"""
+  building: BuildingType
+
+  """Is this role currently active?"""
+  isActive: Boolean!
+
+  """Is this the user's primary/default role?"""
+  isPrimary: Boolean!
+  assignedAt: DateTime!
+
+  """Who assigned this role"""
+  assignedBy: UserNode
+
+  """Notes about this role assignment"""
+  notes: String!
+}
+
+"""An enumeration."""
+enum KccauthUserRoleRoleChoices {
+  """Administrator"""
+  ADMINISTRATOR
+
+  """Landlord / Property Owner"""
+  LANDLORD
+
+  """Agent / Property Manager / Company Employee"""
+  AGENT
+
+  """Tenant"""
+  TENANT
+
+  """Accountant"""
+  ACCOUNTANT
+
+  """Maintenance Staff"""
+  MAINTENANCE
+}
+
+"""GraphQL type for Tenant"""
+type TenantType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  firstName: String!
+  lastName: String!
+  middleName: String
+  idNumber: String!
+  phone: String!
+  email: String
+  alternativePhone: String
+  emergencyContactName: String
+  emergencyContactPhone: String
+  emergencyContactRelationship: String
+  occupation: String
+  employer: String
+  permanentAddress: String
+  isActive: Boolean!
+
+  """
+  When enabled, automatic notifications (welcome, receipts, vacation notices, and similar completion messages) for this tenant are suppressed.
+  """
+  blockAutomaticNotifications: Boolean!
+
+  """
+  Optional default due day (1-31) for this tenant when occupancy due day is not set.
+  """
+  defaultDueDay: Int
+  notes: String
+  user: UserNode
+
+  """Company that created this building"""
+  createdByCompany: CompanyType
+
+  """Link to tenant record if role is TENANT (for API/portal use)"""
+  userRoleLinks(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  initiatedTenant(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  occupancies(offset: Int, before: String, after: String, first: Int, last: Int): UnitOccupancyTypeConnection!
+  rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
+  purchaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): UnitPurchaseAgreementTypeConnection!
+  journalLines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  credits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  refunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  customNotifications(offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationCampaignTypeConnection!
+  notificationLogs(offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationLogTypeConnection!
+  maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  fullName: String
+  totalArrears: Decimal
+}
+
+type TransactionTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TransactionTypeEdge]!
+}
+
+"""A Relay edge containing a `TransactionType` and its cursor."""
+type TransactionTypeEdge {
+  """The item at the end of the edge"""
+  node: TransactionType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for Transaction (payment receipts)"""
+type TransactionType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  no: String
+  reference: String!
+  status: PaymentsTransactionStatusChoices!
+  user: UserNode
+  confirmationCode: String!
+  amount: Float!
+  paymentAccount: String!
+  responseStatusCode: Int!
+  paymentStatusCode: String!
+  notificationId: UUID!
+  notified: Boolean!
+  mailed: Boolean!
+  currency: String!
+  description: String!
+  synced: Boolean!
+
+  """DEPRECATED: Use payment_mode_config instead"""
+  paymentMode: PaymentsTransactionPaymentModeChoices!
+
+  """Configurable payment mode for this transaction"""
+  paymentModeConfig: ConfigurablePaymentModeNode
+  syncedFrom: PaymentsTransactionSyncedFromChoices!
+  name: String
+  email: String
+  phone: String
+  syncReference: String
+  transactionDate: DateTime!
+  thirdPartyPhone: String
+  invoiceReference: String
+  building: BuildingType
+  unit: UnitNode
+  tenant: TenantType
+
+  """Which month/period is this payment for"""
+  paymentForPeriod: Date
+
+  """Amount carried forward to next period"""
+  excessAmount: Float!
+  company: CompanyType
+  propertyTransactionType: PaymentsTransactionPropertyTransactionTypeChoices
+  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  refunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+}
+
+"""An enumeration."""
+enum PaymentsTransactionStatusChoices {
+  """New"""
+  NEW
+
+  """Success"""
+  SUCCESS
+
+  """Failed"""
+  FAILED
+
+  """Pending"""
+  PENDING
+}
+
+"""
+Leverages the internal Python implementation of UUID (uuid.UUID) to provide native UUID objects
+in fields, resolvers and input.
+"""
+scalar UUID
+
+"""An enumeration."""
+enum PaymentsTransactionPaymentModeChoices {
+  """_"""
+  _
+
+  """Mpesa Online"""
+  MPESA
+
+  """Mpesa Paybill"""
+  MPESA_PAYBILL
+
+  """Cash"""
+  CASH
+
+  """KCB Bank"""
+  BANK
+
+  """NCBA Bank"""
+  NCBA
+}
+
+type ConfigurablePaymentModeNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Leave blank for system-wide default modes"""
+  company: CompanyType
+
+  """e.g., M-Pesa, Bank Transfer, Cash"""
+  name: String!
+
+  """Unique code (e.g., MPESA, BANK, CASH)"""
+  code: String!
+  category: PaymentsConfigurablePaymentModeCategoryChoices!
+  description: String
+
+  """Bank or Cash account to debit when payment is received"""
+  paymentAccount: AccountType
+  isActive: Boolean!
+
+  """Use this as default payment mode if none specified"""
+  isDefault: Boolean!
+
+  """Whether this mode requires a reference/confirmation code"""
+  requiresReference: Boolean!
+
+  """Can automatically match payments (e.g., via API callbacks)"""
+  supportsAutoReconciliation: Boolean!
+
+  """JSON configuration for API integration"""
+  apiConfig: JSONString
+  sortOrder: Int!
+
+  """Configurable payment mode for this transaction"""
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  allowedTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection!
+}
+
+"""An enumeration."""
+enum PaymentsConfigurablePaymentModeCategoryChoices {
+  """Mobile Money"""
+  MOBILE_MONEY
+
+  """Bank Transfer"""
+  BANK_TRANSFER
+
+  """Cash"""
+  CASH
+
+  """Cheque"""
+  CHEQUE
+
+  """Card Payment"""
+  CARD
+
+  """Other"""
+  OTHER
+}
+
+type AccountType implements Node {
+  """The ID of the object"""
+  id: ID!
+  code: String!
+  name: String!
+  accountType: AccountingAccountAccountTypeChoices!
+  parent: AccountType
+  description: String!
+  isActive: Boolean!
+
+  """System accounts cannot be deleted"""
+  isSystem: Boolean!
+
+  """DEPRECATED: This field is kept for backward compatibility"""
+  paymentType: PaymentTypeNode
+
+  """Configurable payment type linked to this account"""
+  paymentTypeConfig: ConfigurablePaymentTypeNode
+
+  """Indicates if this is a cash or bank account"""
+  cashAccount: Boolean!
+  company: CompanyType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserNode
+
+  """Account to credit when payment is received"""
+  paymentTypesRevenue(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection!
+
+  """
+  Account used when allocating this payment (defaults to revenue account)
+  """
+  paymentTypesAllocation(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection!
+
+  """Bank or Cash account to debit when payment is received"""
+  paymentModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentModeNodeConnection!
+  subAccounts(offset: Int, before: String, after: String, first: Int, last: Int): AccountTypeConnection!
+  journalLines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  maintenanceExpenses(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  maintenancePayables(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  balance: Decimal
+}
+
+"""An enumeration."""
+enum AccountingAccountAccountTypeChoices {
+  """Asset"""
+  ASSET
+
+  """Liability"""
+  LIABILITY
+
+  """Equity"""
+  EQUITY
+
+  """Revenue"""
+  REVENUE
+
+  """Expense"""
+  EXPENSE
+}
+
+type PaymentTypeNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  code: String!
+  name: String!
+  description: String!
+  active: Boolean!
+  priority: Boolean!
+  sequenceNo: Int
+  accountNo: String
+  accountName: String
+  shortName: String!
+  hasAllocation: Boolean!
+  otherAccountNames: String
+  backgroundImage: String
+  heroImage: String
+  company: CompanyType
+
+  """DEPRECATED: This field is kept for backward compatibility"""
+  linkedAccounts(offset: Int, before: String, after: String, first: Int, last: Int): AccountTypeConnection!
+}
+
+type AccountTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AccountTypeEdge]!
+}
+
+"""A Relay edge containing a `AccountType` and its cursor."""
+type AccountTypeEdge {
+  """The item at the end of the edge"""
+  node: AccountType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ConfigurablePaymentTypeNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Leave blank for system-wide default types"""
+  company: CompanyType
+
+  """e.g., Monthly Rent, Water Bill, Electricity"""
+  name: String!
+
+  """Unique code for this payment type (e.g., RENT, DEPOSIT)"""
+  code: String!
+  category: PaymentsConfigurablePaymentTypeCategoryChoices!
+  description: String
+
+  """Account to credit when payment is received"""
+  revenueAccount: AccountType
+
+  """
+  Account used when allocating this payment (defaults to revenue account)
+  """
+  allocationAccount: AccountType
+  isActive: Boolean!
+
+  """Use this as default payment type if none specified"""
+  isDefault: Boolean!
+
+  """Whether this payment type must be associated with a unit"""
+  requiresUnit: Boolean!
+
+  """Automatically allocate received payments to pending charges"""
+  autoAllocate: Boolean!
+  sortOrder: Int!
+
+  """Allow this payment type to be used for prepayments or credits"""
+  prepayment: Boolean!
+
+  """Configurable payment type for this transaction line"""
+  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
+  allowedModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection!
+
+  """Configurable payment type for this initiation line"""
+  initiateLines(offset: Int, before: String, after: String, first: Int, last: Int): InitiateLineNodeConnection!
+
+  """Configurable payment type linked to this account"""
+  linkedAccounts(offset: Int, before: String, after: String, first: Int, last: Int): AccountTypeConnection!
+}
+
+"""An enumeration."""
+enum PaymentsConfigurablePaymentTypeCategoryChoices {
+  """Rent Payment"""
+  RENT
+
+  """Security Deposit"""
+  DEPOSIT
+
+  """Utility Payment"""
+  UTILITY
+
+  """Service Charge"""
+  SERVICE
+
+  """Penalty/Fine"""
+  PENALTY
+
+  """Other"""
+  OTHER
+}
+
+type TransactionLineNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TransactionLineNodeEdge]!
+}
+
+"""A Relay edge containing a `TransactionLineNode` and its cursor."""
+type TransactionLineNodeEdge {
+  """The item at the end of the edge"""
+  node: TransactionLineNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TransactionLineNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  documentNo: TransactionType!
+
+  """Configurable payment type for this transaction line"""
+  paymentType: ConfigurablePaymentTypeNode!
+  amount: Float!
+  transactionDate: DateTime!
+  company: CompanyType
+}
+
+type ConfigurablePaymentTypeModeNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ConfigurablePaymentTypeModeNodeEdge]!
+}
+
+"""
+A Relay edge containing a `ConfigurablePaymentTypeModeNode` and its cursor.
+"""
+type ConfigurablePaymentTypeModeNodeEdge {
+  """The item at the end of the edge"""
+  node: ConfigurablePaymentTypeModeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ConfigurablePaymentTypeModeNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  paymentType: ConfigurablePaymentTypeNode!
+  paymentMode: ConfigurablePaymentModeNode!
+
+  """Mark as preferred payment mode for this type"""
+  isPreferred: Boolean!
+
+  """Override the default payment account for this type+mode combination"""
+  overridePaymentAccount: AccountType
+
+  """Override the default revenue account for this type+mode combination"""
+  overrideRevenueAccount: AccountType
+}
+
+type InitiateLineNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [InitiateLineNodeEdge]!
+}
+
+"""A Relay edge containing a `InitiateLineNode` and its cursor."""
+type InitiateLineNodeEdge {
+  """The item at the end of the edge"""
+  node: InitiateLineNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type InitiateLineNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  documentNo: InitiateNode!
+
+  """Configurable payment type for this initiation line"""
+  paymentType: ConfigurablePaymentTypeNode!
+  amount: Float!
+}
+
+type InitiateNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  CheckoutRequestID: String
+  MerchantRequestID: String
+  ResultCode: Int
+  mode: String
+  ResultDescription: String
+  user: UserNode
+  reference: String!
+  externalReference: String
+  state: DarajaInitiateStateChoices!
+  phone: String
+  email: String
+  name: String
+  company: CompanyType
+  initiatedWithCompany: CompanyType
+  tenant: TenantType
+  unit: UnitNode
+  documentNo(offset: Int, before: String, after: String, first: Int, last: Int): InitiateLineNodeConnection!
+}
+
+"""An enumeration."""
+enum DarajaInitiateStateChoices {
+  """Initiated"""
+  INITIATED
+
+  """Completed"""
+  COMPLETED
+
+  """Failed"""
+  FAILED
+}
+
+"""GraphQL type for Unit"""
+type UnitNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  building: BuildingType!
+  unitNumber: String!
+
+  """Unique account number for payments"""
+  accountNumber: String!
+  uniqueAccountNumber: String
+  floor: String
+
+  """Type/category of this unit"""
+  unitType: UnitTypeNode
+
+  """Legacy unit type - will be migrated to UnitType model"""
+  unitTypeLegacy: PropertiesUnitUnitTypeLegacyChoices
+  bedrooms: Int!
+  bathrooms: Int!
+  squareFeet: Float
+  monthlyRent: Decimal!
+  serviceCharge: Decimal!
+  depositAmount: Decimal!
+  purchasePrice: Decimal
+  paymentPeriod: PropertiesUnitPaymentPeriodChoices!
+  status: PropertiesUnitStatusChoices!
+  description: String
+  isAvailableForRent: Boolean!
+  isAvailableForPurchase: Boolean!
+  company: CompanyType
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  initiatedUnit(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  occupancies(offset: Int, before: String, after: String, first: Int, last: Int): UnitOccupancyTypeConnection!
+  rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
+  purchaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): UnitPurchaseAgreementTypeConnection!
+
+  """
+  Leave empty to generate for all occupied units, or select specific units
+  """
+  rentScheduleConfigs(offset: Int, before: String, after: String, first: Int, last: Int): BuildingRentScheduleConfigTypeConnection!
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  journalLines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  tenantRefunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  currentBalance: Decimal
+  arrears: Decimal
+  advancePayment: Decimal
+}
+
+"""GraphQL type for Building"""
+type BuildingType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  name: String!
+  code: String!
+  buildingType: PropertiesBuildingBuildingTypeChoices!
+  address: String!
+  city: String!
+  county: String
+  latitude: Decimal
+  longitude: Decimal
+  numberOfFloors: Int!
+  totalUnits: Int!
+  yearBuilt: Int
+  managerName: String
+  managerPhone: String
+  managerEmail: String
+  description: String
+  isActive: Boolean!
+
+  """Company that created this building"""
+  createdByCompany: CompanyType
+
+  """Building-specific balance mode. Leave empty to use system default."""
+  balanceCalculationMode: PropertiesBuildingBalanceCalculationModeChoices
+
+  """
+  Building-specific threshold for 'due soon' charges. Leave empty to use system default.
+  """
+  balanceDueThresholdDays: Int
+
+  """
+  If set, overrides company proration threshold for this building. Set to 0 to disable proration for this building.
+  """
+  prorationThresholdDays: Int
+
+  """
+  When enabled, automatic notifications (welcome, receipts, vacation notices, and similar completion messages) for this building are suppressed.
+  """
+  blockAutomaticNotifications: Boolean!
+
+  """
+  Per-notification controls for automatic tenant notifications. Set individual notification types on/off for this building.
+  """
+  notificationPreferences: JSONString!
+
+  """Building this user manages (for AGENT/LANDLORD)"""
+  managerRoles(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  images(offset: Int, before: String, after: String, first: Int, last: Int): BuildingImageTypeConnection!
+  documents(offset: Int, before: String, after: String, first: Int, last: Int): BuildingDocumentTypeConnection!
+  units(offset: Int, before: String, after: String, first: Int, last: Int): UnitNodeConnection!
+  rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
+  rentScheduleConfig: BuildingRentScheduleConfigType
+
+  """Specific building (leave empty for company-wide rule)"""
+  penaltyRules(offset: Int, before: String, after: String, first: Int, last: Int): PenaltyRuleTypeConnection!
+  ownerships(offset: Int, before: String, after: String, first: Int, last: Int): BuildingOwnershipTypeConnection!
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  journalLines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  tenantRefunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+
+  """Specific building (leave empty for company-wide)"""
+  notificationCampaigns(offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationCampaignTypeConnection!
+  maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  occupiedUnitsCount: Int
+  vacantUnitsCount: Int
+  registeredUnitsCount: Int
+  occupancyRate: Float
+  totalMonthlyRent: Decimal
+  thumbnailUrl: String
+}
+
+"""An enumeration."""
+enum PropertiesBuildingBuildingTypeChoices {
+  """Residential"""
+  RESIDENTIAL
+
+  """Commercial"""
+  COMMERCIAL
+
+  """Mixed Use"""
+  MIXED_USE
+}
+
+"""An enumeration."""
+enum PropertiesBuildingBalanceCalculationModeChoices {
+  """Due Charges Only"""
+  DUE_ONLY
+
+  """Full Balance (all pending charges)"""
+  FULL
+
+  """Use System Default"""
+  A_
+}
+
+type BuildingImageTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BuildingImageTypeEdge]!
+}
+
+"""A Relay edge containing a `BuildingImageType` and its cursor."""
+type BuildingImageTypeEdge {
+  """The item at the end of the edge"""
+  node: BuildingImageType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for BuildingImage"""
+type BuildingImageType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  building: BuildingType!
+  image: String!
+  thumbnail: String
+  caption: String!
+  isPrimary: Boolean!
+  imageUrl: String
+  thumbnailUrl: String
+}
+
+type BuildingDocumentTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BuildingDocumentTypeEdge]!
+}
+
+"""A Relay edge containing a `BuildingDocumentType` and its cursor."""
+type BuildingDocumentTypeEdge {
+  """The item at the end of the edge"""
+  node: BuildingDocumentType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for BuildingDocument"""
+type BuildingDocumentType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  building: BuildingType!
+  file: String!
+  name: String!
+  fileUrl: String
+}
+
+type UnitNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UnitNodeEdge]!
+}
+
+"""A Relay edge containing a `UnitNode` and its cursor."""
+type UnitNodeEdge {
+  """The item at the end of the edge"""
+  node: UnitNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type RentScheduleTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [RentScheduleTypeEdge]!
+}
+
+"""A Relay edge containing a `RentScheduleType` and its cursor."""
+type RentScheduleTypeEdge {
+  """The item at the end of the edge"""
+  node: RentScheduleType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type RentScheduleType implements Node {
+  """The ID of the object"""
+  id: ID!
+  unit: UnitNode!
+  occupancy: UnitOccupancyType!
+  tenant: TenantType!
+  periodStart: Date!
+  periodEnd: Date!
+  dueDate: Date!
+  rentAmount: Decimal!
+  serviceCharge: Decimal!
+  penalty: Decimal!
+  expectedAmount: Decimal!
+  paidAmount: Decimal!
+  status: PropertiesRentScheduleStatusChoices!
+  notes: String
+  building: BuildingType
+  company: CompanyType
+  daysOverdue: Int
+  balance: Decimal
+  isOverdue: Boolean
+}
+
+"""GraphQL type for UnitOccupancy"""
+type UnitOccupancyType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  unit: UnitNode!
+  tenant: TenantType!
+  startDate: Date!
+  endDate: Date
+  depositPaid: Decimal!
+  depositRefunded: Decimal!
+  isCurrent: Boolean!
+  moveOutReason: String
+  finalBalance: Decimal
+
+  """
+  Check this if the deposit has already been paid and should not create a charge
+  """
+  skipDepositCharge: Boolean!
+  notes: String
+
+  """
+  Optional due day (1-31). Overrides tenant/company defaults for this occupancy.
+  """
+  dueDayOfPeriod: Int
+
+  """Company this charge is associated with"""
+  company: CompanyType
+  rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
+  leaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): LeaseAgreementTypeConnection!
+  durationMonths: Float
+}
+
+"""
+The `Date` scalar type represents a Date
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar Date
+
+type LeaseAgreementTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [LeaseAgreementTypeEdge]!
+}
+
+"""A Relay edge containing a `LeaseAgreementType` and its cursor."""
+type LeaseAgreementTypeEdge {
+  """The item at the end of the edge"""
+  node: LeaseAgreementType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for LeaseAgreement"""
+type LeaseAgreementType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  occupancy: UnitOccupancyType!
+  company: CompanyType!
+  leaseNumber: String!
+  leaseType: PropertiesLeaseAgreementLeaseTypeChoices!
+  status: PropertiesLeaseAgreementStatusChoices!
+  startDate: Date!
+
+  """Leave blank for month-to-month leases"""
+  endDate: Date
+  signedDate: Date
+  rentAmount: Decimal!
+  serviceCharge: Decimal!
+  depositAmount: Decimal!
+  paymentFrequency: PropertiesLeaseAgreementPaymentFrequencyChoices!
+
+  """Day of the billing period when rent falls due (1-31)"""
+  paymentDueDay: Int!
+
+  """Annual rent escalation percentage (e.g. 5 for 5%)"""
+  rentEscalationRate: Decimal
+
+  """Date of the next scheduled rent review / escalation"""
+  nextEscalationDate: Date
+
+  """Tenant has the right or option to renew this lease"""
+  renewalOption: Boolean!
+
+  """Days notice the tenant must give before lease end to exercise renewal"""
+  renewalNoticeDays: Int
+  renewalTerms: String
+
+  """Lease contains an early-termination break clause"""
+  breakClause: Boolean!
+  breakClauseDetails: String
+  latePaymentPenalty: Boolean!
+  penaltyGraceDays: Int
+  penaltyFlatAmount: Decimal
+  penaltyRatePct: Decimal
+
+  """Upload the executed/signed lease document"""
+  signedCopy: String
+  specialConditions: String
+
+  """Internal notes — not visible to tenants"""
+  internalNotes: String
+  renewedFrom: LeaseAgreementType
+  terminationDate: Date
+  terminationReason: String
+  terminatedBy: PropertiesLeaseAgreementTerminatedByChoices
+  renewals(offset: Int, before: String, after: String, first: Int, last: Int): LeaseAgreementTypeConnection!
+  signedCopyUrl: String
+}
+
+"""An enumeration."""
+enum PropertiesLeaseAgreementLeaseTypeChoices {
+  """Standard Lease"""
+  STANDARD
+
+  """Commercial Lease"""
+  COMMERCIAL
+
+  """Short-term Lease"""
+  SHORT_TERM
+
+  """Month-to-Month"""
+  MONTH_TO_MONTH
+
+  """Fixed Term"""
+  FIXED_TERM
+}
+
+"""An enumeration."""
+enum PropertiesLeaseAgreementStatusChoices {
+  """Draft"""
+  DRAFT
+
+  """Active"""
+  ACTIVE
+
+  """Expired"""
+  EXPIRED
+
+  """Terminated"""
+  TERMINATED
+
+  """Renewed (Superseded)"""
+  RENEWED
+}
+
+"""An enumeration."""
+enum PropertiesLeaseAgreementPaymentFrequencyChoices {
+  """Weekly"""
+  WEEKLY
+
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+
+  """Annually"""
+  ANNUALLY
+}
+
+"""An enumeration."""
+enum PropertiesLeaseAgreementTerminatedByChoices {
+  """Landlord"""
+  LANDLORD
+
+  """Tenant"""
+  TENANT
+
+  """Mutual Agreement"""
+  MUTUAL
+
+  """Court Order"""
+  COURT
+}
+
+"""An enumeration."""
+enum PropertiesRentScheduleStatusChoices {
+  """Pending"""
+  PENDING
+
+  """Paid"""
+  PAID
+
+  """Partial"""
+  PARTIAL
+
+  """Overdue"""
+  OVERDUE
+
+  """Waived"""
+  WAIVED
+}
+
+"""GraphQL type for BuildingRentScheduleConfig"""
+type BuildingRentScheduleConfigType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+
+  """Building this configuration applies to"""
+  building: BuildingType
+
+  """Descriptive name for this schedule"""
+  name: String!
+
+  """Enable automatic rent schedule generation for this building"""
+  isEnabled: Boolean!
+
+  """Generate schedules this many days before the rent due date"""
+  daysBeforeDue: Int!
+
+  """Number of rent periods to generate at a time"""
+  periodsToGenerate: Int!
+
+  """When the schedule generation last ran"""
+  lastRunAt: DateTime
+  company: CompanyType
+
+  """
+  Leave empty to generate for all occupied units, or select specific units
+  """
+  specificUnits(offset: Int, before: String, after: String, first: Int, last: Int): UnitNodeConnection!
+}
+
+type PenaltyRuleTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [PenaltyRuleTypeEdge]!
+}
+
+"""A Relay edge containing a `PenaltyRuleType` and its cursor."""
+type PenaltyRuleTypeEdge {
+  """The item at the end of the edge"""
+  node: PenaltyRuleType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for PenaltyRule"""
+type PenaltyRuleType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Descriptive name for this penalty rule"""
+  name: String!
+  company: CompanyType!
+
+  """Specific building (leave empty for company-wide rule)"""
+  building: BuildingType
+
+  """Enable or disable this penalty rule"""
+  isActive: Boolean!
+
+  """Number of days after due date before penalty is applied"""
+  gracePeriodDays: Int!
+
+  """How to calculate the penalty amount"""
+  calculationType: PropertiesPenaltyRuleCalculationTypeChoices!
+
+  """Fixed penalty amount (for FIXED_AMOUNT type)"""
+  fixedAmount: Decimal!
+
+  """
+  Percentage for calculation (for PERCENTAGE or PERCENTAGE_PER_DAY types)
+  """
+  percentage: Decimal!
+
+  """Daily penalty rate (for DAILY_RATE type)"""
+  dailyRate: Decimal!
+
+  """Maximum penalty that can be charged (optional cap)"""
+  maxPenaltyAmount: Decimal
+
+  """Maximum penalty as percentage of rent (optional cap)"""
+  maxPenaltyPercentage: Decimal
+
+  """Send notification to tenant when penalty is applied"""
+  sendNotification: Boolean!
+
+  """Custom message to include in penalty notification (optional)"""
+  notificationMessage: String
+
+  """Apply penalty only once per rent period (recommended)"""
+  applyOnce: Boolean!
+
+  """
+  Rule priority (lower number = higher priority, used when multiple rules apply)
+  """
+  priority: Int!
+
+  """Internal notes about this penalty rule"""
+  description: String
+  appliedPenalties(offset: Int, before: String, after: String, first: Int, last: Int): AppliedPenaltyTypeConnection!
+}
+
+"""An enumeration."""
+enum PropertiesPenaltyRuleCalculationTypeChoices {
+  """Fixed Amount"""
+  FIXED_AMOUNT
+
+  """Percentage of Rent"""
+  PERCENTAGE
+
+  """Daily Rate"""
+  DAILY_RATE
+
+  """Percentage Per Day"""
+  PERCENTAGE_PER_DAY
+}
+
+type AppliedPenaltyTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [AppliedPenaltyTypeEdge]!
+}
+
+"""A Relay edge containing a `AppliedPenaltyType` and its cursor."""
+type AppliedPenaltyTypeEdge {
+  """The item at the end of the edge"""
+  node: AppliedPenaltyType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for AppliedPenalty"""
+type AppliedPenaltyType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  rentSchedule: RentScheduleType!
+  penaltyRule: PenaltyRuleType!
+  amount: Decimal!
+
+  """Number of days rent was overdue when penalty was applied"""
+  daysOverdue: Int!
+  appliedAt: DateTime!
+  notificationSent: Boolean!
+  notificationSentAt: DateTime
+  notes: String
+}
+
+type BuildingOwnershipTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BuildingOwnershipTypeEdge]!
+}
+
+"""A Relay edge containing a `BuildingOwnershipType` and its cursor."""
+type BuildingOwnershipTypeEdge {
+  """The item at the end of the edge"""
+  node: BuildingOwnershipType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type BuildingOwnershipType implements Node {
+  """The ID of the object"""
+  id: ID!
+  building: BuildingType!
+  landlordCompany: CompanyType!
+  managingCompany: CompanyType
+  ownershipType: CompaniesBuildingOwnershipOwnershipTypeChoices!
+  delegationStartDate: Date
+  delegationEndDate: Date
+
+  """Percentage of rent collected as management fee"""
+  managementFeePercentage: Decimal
+
+  """Use percentage of collections or a fixed agreed amount"""
+  managementFeeType: CompaniesBuildingOwnershipManagementFeeTypeChoices!
+
+  """Fixed fee for the statement period when fee type is fixed"""
+  fixedManagementFee: Decimal
+
+  """How tenant payments are collected and remitted for this building"""
+  collectionFlow: CompaniesBuildingOwnershipCollectionFlowChoices!
+  isActive: Boolean!
+  landlordConfirmed: Boolean!
+  landlordConfirmationDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: UserNode
+}
+
+"""An enumeration."""
+enum CompaniesBuildingOwnershipOwnershipTypeChoices {
+  """Owned by Landlord"""
+  OWNED
+
+  """Managed by Agent"""
+  MANAGED
+
+  """Delegated Management"""
+  DELEGATED
+}
+
+"""An enumeration."""
+enum CompaniesBuildingOwnershipManagementFeeTypeChoices {
+  """Percentage Of Collections"""
+  PERCENTAGE
+
+  """Fixed Fee"""
+  FIXED
+}
+
+"""An enumeration."""
+enum CompaniesBuildingOwnershipCollectionFlowChoices {
+  """Owner Collects, Agent Receipts In System"""
+  DIRECT_TO_OWNER
+
+  """Agent Collects And Remits Net Amount"""
+  AGENT_COLLECTS
+}
+
+type JournalEntryTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [JournalEntryTypeEdge]!
+}
+
+"""A Relay edge containing a `JournalEntryType` and its cursor."""
+type JournalEntryTypeEdge {
+  """The item at the end of the edge"""
+  node: JournalEntryType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type JournalEntryType implements Node {
+  """The ID of the object"""
+  id: ID!
+  entryNumber: String!
+  entryDate: Date!
+  entryType: AccountingJournalEntryEntryTypeChoices!
+  status: AccountingJournalEntryStatusChoices!
+  description: String!
+  reference: String!
+  paymentTransaction: TransactionType
+  refund: TenantRefundType
+  company: CompanyType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserNode!
+  postedAt: DateTime
+  postedBy: UserNode
+  building: BuildingType
+  unit: UnitNode
+  lines(offset: Int, before: String, after: String, first: Int, last: Int): JournalLineTypeConnection!
+  maintenanceExpenseEntries(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+  maintenancePayableSettlements(offset: Int, before: String, after: String, first: Int, last: Int): MaintenanceRequestTypeConnection!
+}
+
+"""An enumeration."""
+enum AccountingJournalEntryEntryTypeChoices {
+  """General Journal"""
+  GENERAL
+
+  """Payment"""
+  PAYMENT
+
+  """Receipt"""
+  RECEIPT
+
+  """Refund"""
+  REFUND
+
+  """Charge Allocation"""
+  ALLOCATION
+
+  """Adjustment"""
+  ADJUSTMENT
+
+  """Transfer"""
+  TRANSFER
+
+  """Invoice"""
+  INVOICE
+}
+
+"""An enumeration."""
+enum AccountingJournalEntryStatusChoices {
+  """Draft"""
+  DRAFT
+
+  """Posted"""
+  POSTED
+
+  """Void"""
+  VOID
+}
+
+type TenantRefundType implements Node {
+  """The ID of the object"""
+  id: ID!
+  refundNumber: String!
+  refundDate: Date!
+  refundType: AccountingTenantRefundRefundTypeChoices!
+  status: AccountingTenantRefundStatusChoices!
+  tenant: TenantType!
+  unit: UnitNode
+  building: BuildingType
+  amount: Decimal!
+  sourcePayment: TransactionType
+
+  """e.g., M-Pesa, Bank Transfer, Cash, Cheque"""
+  refundMethod: String!
+
+  """Transaction reference or cheque number"""
+  refundReference: String!
+  description: String!
+  notes: String!
+  company: CompanyType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserNode!
+  approvedBy: UserNode
+  approvedAt: DateTime
+  completedAt: DateTime
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+}
+
+"""An enumeration."""
+enum AccountingTenantRefundRefundTypeChoices {
+  """Deposit Return"""
+  DEPOSIT_RETURN
+
+  """Overpayment Refund"""
+  OVERPAYMENT
+
+  """Adjustment"""
+  ADJUSTMENT
+
+  """Other"""
+  OTHER
+}
+
+"""An enumeration."""
+enum AccountingTenantRefundStatusChoices {
+  """Pending"""
+  PENDING
+
+  """Approved"""
+  APPROVED
+
+  """Processing"""
+  PROCESSING
+
+  """Completed"""
+  COMPLETED
+
+  """Cancelled"""
+  CANCELLED
+}
+
+type JournalLineTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [JournalLineTypeEdge]!
+}
+
+"""A Relay edge containing a `JournalLineType` and its cursor."""
+type JournalLineTypeEdge {
+  """The item at the end of the edge"""
+  node: JournalLineType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type JournalLineType implements Node {
+  """The ID of the object"""
+  id: ID!
+  journalEntry: JournalEntryType!
+  account: AccountType!
+  debitCredit: AccountingJournalLineDebitCreditChoices!
+  amount: Decimal!
+  description: String!
+  tenant: TenantType
+  building: BuildingType
+  unit: UnitNode
+  createdAt: DateTime!
+  company: CompanyType
+  entryNo: Int
+  creditAmount: Decimal!
+  debitAmount: Decimal!
+  runningTotal: Decimal
+}
+
+"""An enumeration."""
+enum AccountingJournalLineDebitCreditChoices {
+  """Debit"""
+  DEBIT
+
+  """Credit"""
+  CREDIT
+}
+
+type MaintenanceRequestTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [MaintenanceRequestTypeEdge]!
+}
+
+"""A Relay edge containing a `MaintenanceRequestType` and its cursor."""
+type MaintenanceRequestTypeEdge {
+  """The item at the end of the edge"""
+  node: MaintenanceRequestType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type MaintenanceRequestType implements Node {
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """The ID of the object"""
+  id: ID!
+  company: CompanyType
+  building: BuildingType!
+  unit: UnitNode
+  tenant: TenantType
+  title: String!
+  description: String!
+  category: MaintenanceMaintenanceRequestCategoryChoices!
+  priority: MaintenanceMaintenanceRequestPriorityChoices!
+  status: MaintenanceMaintenanceRequestStatusChoices!
+  requestedDate: Date!
+  scheduledDate: Date
+  resolvedDate: Date
+  slaHours: Int!
+  assignedTo: UserNode
+  vendorName: String!
+  estimatedCost: Decimal
+  actualCost: Decimal
+  attachment: String
+  tenantImpact: Boolean!
+  itemsUsed: String!
+  expenseAccount: AccountType
+  payableAccount: AccountType
+  payableAmount: Decimal
+  payableStatus: MaintenanceMaintenanceRequestPayableStatusChoices!
+  payablePaidDate: Date
+  expenseJournalEntry: JournalEntryType
+  payableSettlementEntry: JournalEntryType
+}
+
+"""An enumeration."""
+enum MaintenanceMaintenanceRequestCategoryChoices {
+  """Plumbing"""
+  PLUMBING
+
+  """Electrical"""
+  ELECTRICAL
+
+  """HVAC / AC"""
+  HVAC
+
+  """Safety & Security"""
+  SAFETY
+
+  """Appliance"""
+  APPLIANCE
+
+  """Structural"""
+  STRUCTURAL
+
+  """Finishes / Paint"""
+  FINISHES
+
+  """Other"""
+  OTHER
+}
+
+"""An enumeration."""
+enum MaintenanceMaintenanceRequestPriorityChoices {
+  """Low"""
+  LOW
+
+  """Medium"""
+  MEDIUM
+
+  """High"""
+  HIGH
+
+  """Critical"""
+  CRITICAL
+}
+
+"""An enumeration."""
+enum MaintenanceMaintenanceRequestStatusChoices {
+  """New / Logged"""
+  NEW
+
+  """Triaged"""
+  TRIAGE
+
+  """Scheduled"""
+  SCHEDULED
+
+  """In Progress"""
+  IN_PROGRESS
+
+  """On Hold"""
+  ON_HOLD
+
+  """Completed"""
+  COMPLETED
+
+  """Cancelled"""
+  CANCELLED
+}
+
+"""An enumeration."""
+enum MaintenanceMaintenanceRequestPayableStatusChoices {
+  """No Payable"""
+  NONE
+
+  """Due to Vendor/Technician"""
+  DUE
+
+  """Paid Out"""
+  PAID
+}
+
+type TenantCreditTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TenantCreditTypeEdge]!
+}
+
+"""A Relay edge containing a `TenantCreditType` and its cursor."""
+type TenantCreditTypeEdge {
+  """The item at the end of the edge"""
+  node: TenantCreditType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TenantCreditType implements Node {
+  """The ID of the object"""
+  id: ID!
+  creditNumber: String!
+  creditDate: Date!
+  creditType: AccountingTenantCreditCreditTypeChoices!
+  tenant: TenantType!
+  building: BuildingType
+  unit: UnitNode
+  amount: Decimal!
+  allocatedAmount: Decimal!
+  paymentTransaction: TransactionType
+  description: String!
+  isActive: Boolean!
+  company: CompanyType
+  createdAt: DateTime!
+  createdBy: UserNode!
+}
+
+"""An enumeration."""
+enum AccountingTenantCreditCreditTypeChoices {
+  """Overpayment"""
+  OVERPAYMENT
+
+  """Prepayment/Advance"""
+  PREPAYMENT
+
+  """Deposit in Credit"""
+  DEPOSIT_CREDIT
+
+  """Manual Adjustment"""
+  ADJUSTMENT
+}
+
+type TenantRefundTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TenantRefundTypeEdge]!
+}
+
+"""A Relay edge containing a `TenantRefundType` and its cursor."""
+type TenantRefundTypeEdge {
+  """The item at the end of the edge"""
+  node: TenantRefundType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TenantNotificationCampaignTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TenantNotificationCampaignTypeEdge]!
+}
+
+"""
+A Relay edge containing a `TenantNotificationCampaignType` and its cursor.
+"""
+type TenantNotificationCampaignTypeEdge {
+  """The item at the end of the edge"""
+  node: TenantNotificationCampaignType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TenantNotificationCampaignType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Descriptive name for this notification campaign"""
+  name: String!
+  company: CompanyType!
+
+  """Specific building (leave empty for company-wide)"""
+  building: BuildingType
+
+  """Email subject / SMS preview"""
+  subject: String!
+
+  """
+  Notification message. Use {tenant_name}, {unit_number}, {building_name}, {balance}, {rent_amount}, {tenant_payment_link} as placeholders
+  """
+  message: String!
+  filterType: NotificationsTenantNotificationCampaignFilterTypeChoices!
+
+  """Only notify tenants with balance >= this amount"""
+  minBalanceAmount: Decimal
+
+  """Threshold value for utility consumption"""
+  consumptionThreshold: Decimal
+  selectedTenants(offset: Int, before: String, after: String, first: Int, last: Int): TenantTypeConnection!
+  sendEmail: Boolean!
+  sendSms: Boolean!
+  sendWhatsapp: Boolean!
+
+  """
+  Comma-separated days overdue to target (e.g., 1,3,7). Applies to Overdue Rent filter.
+  """
+  overdueDayOffsets: String
+  frequency: NotificationsTenantNotificationCampaignFrequencyChoices!
+
+  """When to send the notification (leave empty to send immediately)"""
+  scheduledDatetime: DateTime
+
+  """Hour to run (0-23) for recurring notifications"""
+  cronHour: Int
+
+  """Minute to run (0-59) for recurring notifications"""
+  cronMinute: Int
+
+  """For weekly: 0=Monday, 6=Sunday. For monthly: day of month (1-31)"""
+  cronDayOfWeek: String
+  status: NotificationsTenantNotificationCampaignStatusChoices!
+
+  """Enable or disable this campaign"""
+  isActive: Boolean!
+
+  """
+  Internal identifier for system-managed campaigns. Prevents deletion or renaming.
+  """
+  campaignKey: String
+  lastSentAt: DateTime
+  totalSent: Int!
+
+  """Internal notes about this campaign"""
+  description: String
+  notificationLogs(offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationLogTypeConnection!
+}
+
+"""An enumeration."""
+enum NotificationsTenantNotificationCampaignFilterTypeChoices {
+  """All Tenants"""
+  ALL
+
+  """Tenants with Outstanding Balance"""
+  WITH_BALANCE
+
+  """Tenants with Overdue Rent"""
+  OVERDUE_RENT
+
+  """High Utility Consumers"""
+  HIGH_CONSUMPTION
+
+  """Custom Selection"""
+  CUSTOM
+}
+
+type TenantTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TenantTypeEdge]!
+}
+
+"""A Relay edge containing a `TenantType` and its cursor."""
+type TenantTypeEdge {
+  """The item at the end of the edge"""
+  node: TenantType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""An enumeration."""
+enum NotificationsTenantNotificationCampaignFrequencyChoices {
+  """Send Once"""
+  ONCE
+
+  """Daily"""
+  DAILY
+
+  """Weekly"""
+  WEEKLY
+
+  """Monthly"""
+  MONTHLY
+
+  """Custom Schedule"""
+  CUSTOM
+}
+
+"""An enumeration."""
+enum NotificationsTenantNotificationCampaignStatusChoices {
+  """Draft"""
+  DRAFT
+
+  """Scheduled"""
+  SCHEDULED
+
+  """Sending"""
+  SENDING
+
+  """Sent"""
+  SENT
+
+  """Failed"""
+  FAILED
+
+  """Cancelled"""
+  CANCELLED
+}
+
+type TenantNotificationLogTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TenantNotificationLogTypeEdge]!
+}
+
+"""A Relay edge containing a `TenantNotificationLogType` and its cursor."""
+type TenantNotificationLogTypeEdge {
+  """The item at the end of the edge"""
+  node: TenantNotificationLogType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TenantNotificationLogType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  campaign: TenantNotificationCampaignType!
+  tenant: TenantType!
+  emailSent: Boolean!
+  smsSent: Boolean!
+  whatsappSent: Boolean!
+  sentAt: DateTime!
+  emailError: String
+  smsError: String
+  whatsappError: String
+
+  """The actual message sent with placeholders replaced"""
+  messageContent: String!
+}
+
+"""GraphQL type for Unit with Node interface"""
+type UnitTypeNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Leave blank for system-wide defaults available to all organizations."""
+  company: CompanyType
+
+  """Unique code for this unit type (e.g., 1BR, 2BR, STUDIO)"""
+  code: String!
+
+  """Display name (e.g., '1 Bedroom', 'Studio', 'Office Space')"""
+  name: String!
+
+  """Detailed description of this unit type"""
+  description: String!
+
+  """Default number of bedrooms for this unit type"""
+  defaultBedrooms: Int!
+
+  """Default number of bathrooms for this unit type"""
+  defaultBathrooms: Int!
+
+  """Default square footage for this unit type"""
+  defaultSquareFeet: Float
+
+  """Category of this unit type"""
+  category: PropertiesUnitTypeCategoryChoices!
+
+  """Only active unit types can be assigned to new units"""
+  isActive: Boolean!
+
+  """Display order in dropdowns (lower numbers appear first)"""
+  sortOrder: Int!
+
+  """Type/category of this unit"""
+  units(offset: Int, before: String, after: String, first: Int, last: Int): UnitNodeConnection!
+}
+
+"""An enumeration."""
+enum PropertiesUnitTypeCategoryChoices {
+  """Residential"""
+  RESIDENTIAL
+
+  """Commercial"""
+  COMMERCIAL
+
+  """Mixed Use"""
+  MIXED
+
+  """Industrial"""
+  INDUSTRIAL
+
+  """Other"""
+  OTHER
+}
+
+"""An enumeration."""
+enum PropertiesUnitUnitTypeLegacyChoices {
+  """Studio"""
+  STUDIO
+
+  """1 Bedroom"""
+  A_1BR
+
+  """2 Bedrooms"""
+  A_2BR
+
+  """3 Bedrooms"""
+  A_3BR
+
+  """4 Bedrooms"""
+  A_4BR
+
+  """Penthouse"""
+  PENTHOUSE
+
+  """Shop"""
+  SHOP
+
+  """Office"""
+  OFFICE
+
+  """Warehouse"""
+  WAREHOUSE
+}
+
+"""An enumeration."""
+enum PropertiesUnitPaymentPeriodChoices {
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+
+  """Semi-Annual"""
+  SEMI_ANNUAL
+
+  """Annual"""
+  ANNUAL
+}
+
+"""An enumeration."""
+enum PropertiesUnitStatusChoices {
+  """Vacant"""
+  VACANT
+
+  """Occupied"""
+  OCCUPIED
+
+  """Under Maintenance"""
+  MAINTENANCE
+
+  """Reserved"""
+  RESERVED
+}
+
+type InitiateNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [InitiateNodeEdge]!
+}
+
+"""A Relay edge containing a `InitiateNode` and its cursor."""
+type InitiateNodeEdge {
+  """The item at the end of the edge"""
+  node: InitiateNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UnitOccupancyTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UnitOccupancyTypeEdge]!
+}
+
+"""A Relay edge containing a `UnitOccupancyType` and its cursor."""
+type UnitOccupancyTypeEdge {
+  """The item at the end of the edge"""
+  node: UnitOccupancyType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UnitPurchaseAgreementTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UnitPurchaseAgreementTypeEdge]!
+}
+
+"""A Relay edge containing a `UnitPurchaseAgreementType` and its cursor."""
+type UnitPurchaseAgreementTypeEdge {
+  """The item at the end of the edge"""
+  node: UnitPurchaseAgreementType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""GraphQL type for UnitPurchaseAgreement"""
+type UnitPurchaseAgreementType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  unit: UnitNode!
+  buyer: TenantType!
+  agreementNumber: String!
+  agreementDate: Date!
+  totalPrice: Decimal!
+  downPayment: Decimal!
+  installmentAmount: Decimal!
+  installmentPeriod: PropertiesUnitPurchaseAgreementInstallmentPeriodChoices!
+  numberOfInstallments: Int!
+  startDate: Date!
+  expectedEndDate: Date!
+  actualEndDate: Date
+  status: PropertiesUnitPurchaseAgreementStatusChoices!
+  interestRate: Decimal!
+  notes: String
+  totalPaid: Decimal
+  balanceRemaining: Decimal
+  paymentProgress: Float
+}
+
+"""An enumeration."""
+enum PropertiesUnitPurchaseAgreementInstallmentPeriodChoices {
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+
+  """Semi-Annual"""
+  SEMI_ANNUAL
+
+  """Annual"""
+  ANNUAL
+}
+
+"""An enumeration."""
+enum PropertiesUnitPurchaseAgreementStatusChoices {
+  """Active"""
+  ACTIVE
+
+  """Completed"""
+  COMPLETED
+
+  """Defaulted"""
+  DEFAULTED
+
+  """Cancelled"""
+  CANCELLED
+}
+
+type BuildingRentScheduleConfigTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BuildingRentScheduleConfigTypeEdge]!
+}
+
+"""
+A Relay edge containing a `BuildingRentScheduleConfigType` and its cursor.
+"""
+type BuildingRentScheduleConfigTypeEdge {
+  """The item at the end of the edge"""
+  node: BuildingRentScheduleConfigType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ConfigurablePaymentTypeNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ConfigurablePaymentTypeNodeEdge]!
+}
+
+"""
+A Relay edge containing a `ConfigurablePaymentTypeNode` and its cursor.
+"""
+type ConfigurablePaymentTypeNodeEdge {
+  """The item at the end of the edge"""
+  node: ConfigurablePaymentTypeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ConfigurablePaymentModeNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ConfigurablePaymentModeNodeEdge]!
+}
+
+"""
+A Relay edge containing a `ConfigurablePaymentModeNode` and its cursor.
+"""
+type ConfigurablePaymentModeNodeEdge {
+  """The item at the end of the edge"""
+  node: ConfigurablePaymentModeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""An enumeration."""
+enum PaymentsTransactionSyncedFromChoices {
+  """_"""
+  _
+
+  """Quickbooks"""
+  QUICKBOOKS
+}
+
+"""An enumeration."""
+enum PaymentsTransactionPropertyTransactionTypeChoices {
+  """Rent Payment"""
+  RENT
+
+  """Deposit"""
+  DEPOSIT
+
+  """Service Charge"""
+  SERVICE_CHARGE
+
+  """Unit Purchase"""
+  PURCHASE
+
+  """Rent to Own Installment"""
+  RENT_TO_OWN
+
+  """Penalty/Late Fee"""
+  PENALTY
+
+  """Refund"""
+  REFUND
+}
+
+type UserPreferenceNode implements Node {
+  user: UserNode!
+
+  """Currently active role for this user"""
+  currentRole: KccauthUserPreferenceCurrentRoleChoices
+
+  """UI theme preference"""
+  theme: KccauthUserPreferenceThemeChoices!
+
+  """Custom dashboard widget layout"""
+  dashboardLayout: JSONString!
+
+  """Receive email notifications"""
+  emailNotifications: Boolean!
+
+  """Receive SMS notifications"""
+  smsNotifications: Boolean!
+  notificationFrequency: KccauthUserPreferenceNotificationFrequencyChoices!
+
+  """Number of items per page in lists"""
+  itemsPerPage: KccauthUserPreferenceItemsPerPageChoices!
+
+  """Preferred date format"""
+  dateFormat: String!
+
+  """Currency symbol to display"""
+  currencySymbol: String!
+
+  """Interface language"""
+  language: String!
+
+  """
+  The company the user was last working in. Restored automatically on next login.
+  """
+  lastCompanyId: UUID
+
+  """The ID of the object"""
+  id: ID!
+}
+
+"""An enumeration."""
+enum KccauthUserPreferenceCurrentRoleChoices {
+  """Administrator"""
+  ADMINISTRATOR
+
+  """Landlord / Property Owner"""
+  LANDLORD
+
+  """Agent / Property Manager / Company Employee"""
+  AGENT
+
+  """Tenant"""
+  TENANT
+
+  """Accountant"""
+  ACCOUNTANT
+
+  """Maintenance Staff"""
+  MAINTENANCE
+}
+
+"""An enumeration."""
+enum KccauthUserPreferenceThemeChoices {
+  """Light"""
+  LIGHT
+
+  """Dark"""
+  DARK
+
+  """Auto"""
+  AUTO
+}
+
+"""An enumeration."""
+enum KccauthUserPreferenceNotificationFrequencyChoices {
+  """Instant"""
+  INSTANT
+
+  """Daily Digest"""
+  DAILY
+
+  """Weekly Summary"""
+  WEEKLY
+
+  """Never"""
+  NEVER
+}
+
+"""An enumeration."""
+enum KccauthUserPreferenceItemsPerPageChoices {
+  """10"""
+  A_10
+
+  """25"""
+  A_25
+
+  """50"""
+  A_50
+
+  """100"""
+  A_100
+}
+
+type C2BPaymentModelNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [C2BPaymentModelNodeEdge]!
+}
+
+"""A Relay edge containing a `C2BPaymentModelNode` and its cursor."""
+type C2BPaymentModelNodeEdge {
+  """The item at the end of the edge"""
+  node: C2BPaymentModelNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type C2BPaymentModelNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  TransactionType: String!
+  TransID: String!
+  TransTime: String!
+  TransAmount: Float!
+  BusinessShortCode: String!
+  BillRefNumber: String!
+  InvoiceNumber: String!
+  OrgAccountBalance: Float!
+  ThirdPartyTransID: String!
+  MSISDN: String!
+  FirstName: String!
+  MiddleName: String!
+  LastName: String!
+  user: UserNode
+  state: DarajaC2BPaymentModelStateChoices!
+  origin: DarajaC2BPaymentModelOriginChoices!
+  company: CompanyType
+}
+
+"""An enumeration."""
+enum DarajaC2BPaymentModelStateChoices {
+  """Initiated"""
+  INITIATED
+
+  """Reconciled"""
+  RECONCILED
+}
+
+"""An enumeration."""
+enum DarajaC2BPaymentModelOriginChoices {
+  """Manual"""
+  MANUAL
+
+  """Online"""
+  ONLINE
+}
+
+type CompanyTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CompanyTypeEdge]!
+}
+
+"""A Relay edge containing a `CompanyType` and its cursor."""
+type CompanyTypeEdge {
+  """The item at the end of the edge"""
+  node: CompanyType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type CompanyMembershipTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CompanyMembershipTypeEdge]!
+}
+
+"""A Relay edge containing a `CompanyMembershipType` and its cursor."""
+type CompanyMembershipTypeEdge {
+  """The item at the end of the edge"""
+  node: CompanyMembershipType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type CompanyMembershipType implements Node {
+  """The ID of the object"""
+  id: ID!
+  company: CompanyType!
+  user: UserNode!
+  role: CompaniesCompanyMembershipRoleChoices!
+  status: CompaniesCompanyMembershipStatusChoices!
+  canManageProperties: Boolean!
+  canManageTenants: Boolean!
+  canManagePayments: Boolean!
+  canValidatePayments: Boolean!
+  canViewAccounting: Boolean!
+  canManageMembers: Boolean!
+  canViewReports: Boolean!
+  canModifyCompany: Boolean!
+  canInviteUsers: Boolean!
+  invitationToken: UUID!
+  invitationSentAt: DateTime
+  invitationAcceptedAt: DateTime
+  invitedBy: UserNode
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""An enumeration."""
+enum CompaniesCompanyMembershipRoleChoices {
+  """Company Owner"""
+  OWNER
+
+  """Administrator"""
+  ADMIN
+
+  """Property Manager"""
+  MANAGER
+
+  """Company Accountant"""
+  ACCOUNTANT
+
+  """Field Agent"""
+  AGENT
+
+  """Employee"""
+  EMPLOYEE
+}
+
+"""An enumeration."""
+enum CompaniesCompanyMembershipStatusChoices {
+  """Active"""
+  ACTIVE
+
+  """Inactive"""
+  INACTIVE
+
+  """Pending Invitation"""
+  PENDING_INVITATION
+
+  """Invitation Declined"""
+  INVITATION_DECLINED
+}
+
+type CompanyInvitationTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CompanyInvitationTypeEdge]!
+}
+
+"""A Relay edge containing a `CompanyInvitationType` and its cursor."""
+type CompanyInvitationTypeEdge {
+  """The item at the end of the edge"""
+  node: CompanyInvitationType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type CompanyInvitationType implements Node {
+  """The ID of the object"""
+  id: ID!
+  company: CompanyType!
+  email: String!
+  role: CompaniesCompanyInvitationRoleChoices!
+  canManageProperties: Boolean!
+  canManageTenants: Boolean!
+  canManagePayments: Boolean!
+  canValidatePayments: Boolean!
+  canManageMembers: Boolean!
+  canViewAccounting: Boolean!
+  canInviteUsers: Boolean!
+  canViewReports: Boolean!
+  canModifyCompany: Boolean!
+  invitationToken: UUID!
+  message: String
+  expiresAt: DateTime!
+  isAccepted: Boolean!
+  isDeclined: Boolean!
+  acceptedAt: DateTime
+  declinedAt: DateTime
+  createdAt: DateTime!
+  createdBy: UserNode!
+  invitedBy: UserNode
+}
+
+"""An enumeration."""
+enum CompaniesCompanyInvitationRoleChoices {
+  """Company Owner"""
+  OWNER
+
+  """Administrator"""
+  ADMIN
+
+  """Property Manager"""
+  MANAGER
+
+  """Company Accountant"""
+  ACCOUNTANT
+
+  """Field Agent"""
+  AGENT
+
+  """Employee"""
+  EMPLOYEE
+}
+
+type SubscriptionPaymentTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [SubscriptionPaymentTypeEdge]!
+}
+
+"""A Relay edge containing a `SubscriptionPaymentType` and its cursor."""
+type SubscriptionPaymentTypeEdge {
+  """The item at the end of the edge"""
+  node: SubscriptionPaymentType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type SubscriptionPaymentType implements Node {
+  """The ID of the object"""
+  id: ID!
+  subscription: CompanySubscriptionType!
+  amount: Decimal!
+  currency: String!
+  status: SubscriptionsSubscriptionPaymentStatusChoices!
+  paymentFor: SubscriptionsSubscriptionPaymentPaymentForChoices!
+  paymentMethod: SubscriptionsSubscriptionPaymentPaymentMethodChoices!
+  transactionRef: String!
+  mpesaCheckoutRequestId: String!
+  mpesaReceiptNumber: String!
+  phoneNumber: String!
+  cardLastFour: String!
+  cardBrand: String!
+  paymentGatewayRef: String!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+  isExtension: Boolean!
+  standingOrderCharge: Boolean!
+  paidAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: UserNode
+  notes: String!
+  failureReason: String!
+  retryCount: Int!
+  refund: SubscriptionRefundType
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionPaymentStatusChoices {
+  """Pending"""
+  PENDING
+
+  """Processing"""
+  PROCESSING
+
+  """Completed"""
+  COMPLETED
+
+  """Failed"""
+  FAILED
+
+  """Refunded"""
+  REFUNDED
+
+  """Cancelled"""
+  CANCELLED
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionPaymentPaymentForChoices {
+  """Subscription"""
+  SUBSCRIPTION
+
+  """SMS Top-up"""
+  SMS_TOPUP
+
+  """WhatsApp Top-up"""
+  WHATSAPP_TOPUP
+
+  """Email Top-up"""
+  EMAIL_TOPUP
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionPaymentPaymentMethodChoices {
+  """M-Pesa"""
+  MPESA
+
+  """Card Payment"""
+  CARD
+
+  """Bank Transfer"""
+  BANK_TRANSFER
+
+  """Manual Payment"""
+  MANUAL
+}
+
+type SubscriptionRefundType implements Node {
+  """The ID of the object"""
+  id: ID!
+  payment: SubscriptionPaymentType!
+  refundAmount: Decimal!
+  refundType: SubscriptionsSubscriptionRefundRefundTypeChoices!
+  reason: SubscriptionsSubscriptionRefundReasonChoices!
+  description: String!
+  gatewayRefundId: String!
+  gatewayStatus: String!
+  status: SubscriptionsSubscriptionRefundStatusChoices!
+  requestedAt: DateTime!
+  processedAt: DateTime
+  completedAt: DateTime
+  requestedBy: UserNode
+  processedBy: UserNode
+  notes: String!
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionRefundRefundTypeChoices {
+  """Full Refund"""
+  FULL
+
+  """Partial Refund"""
+  PARTIAL
+
+  """Proration Refund"""
+  PRORATION
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionRefundReasonChoices {
+  """Duplicate Payment"""
+  DUPLICATE
+
+  """Subscription Cancelled"""
+  CANCELLED
+
+  """Plan Downgrade"""
+  DOWNGRADE
+
+  """Payment Error"""
+  ERROR
+
+  """Customer Request"""
+  CUSTOMER_REQUEST
+
+  """Other"""
+  OTHER
+}
+
+"""An enumeration."""
+enum SubscriptionsSubscriptionRefundStatusChoices {
+  """Pending"""
+  PENDING
+
+  """Processing"""
+  PROCESSING
+
+  """Completed"""
+  COMPLETED
+
+  """Failed"""
+  FAILED
+}
+
+type SubscriptionRefundTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [SubscriptionRefundTypeEdge]!
+}
+
+"""A Relay edge containing a `SubscriptionRefundType` and its cursor."""
+type SubscriptionRefundTypeEdge {
+  """The item at the end of the edge"""
+  node: SubscriptionRefundType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UserNotificationTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UserNotificationTypeEdge]!
+}
+
+"""A Relay edge containing a `UserNotificationType` and its cursor."""
+type UserNotificationTypeEdge {
+  """The item at the end of the edge"""
+  node: UserNotificationType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UserNotificationType implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  user: UserNode!
+
+  """Company this notification is related to"""
+  company: CompanyType
+  title: String!
+  message: String!
+  notificationType: NotificationsUserNotificationNotificationTypeChoices!
+  priority: NotificationsUserNotificationPriorityChoices!
+  isRead: Boolean!
+  readAt: DateTime
+  isArchived: Boolean!
+  archivedAt: DateTime
+
+  """URL to navigate to when notification is clicked"""
+  actionUrl: String
+
+  """Text for action button (e.g., 'View Details', 'Pay Now')"""
+  actionText: String
+
+  """Notification will be auto-archived after this date"""
+  expiresAt: DateTime
+
+  """e.g., 'subscription', 'payment', 'tenant'"""
+  relatedObjectType: String
+  relatedObjectId: Int
+  sentViaEmail: Boolean!
+  sentViaSms: Boolean!
+  sentViaWhatsapp: Boolean!
+}
+
+"""An enumeration."""
+enum NotificationsUserNotificationNotificationTypeChoices {
+  """System"""
+  SYSTEM
+
+  """Subscription"""
+  SUBSCRIPTION
+
+  """Payment"""
+  PAYMENT
+
+  """Tenant Activity"""
+  TENANT_ACTIVITY
+
+  """Property Update"""
+  PROPERTY
+
+  """Report"""
+  REPORT
+
+  """Alert"""
+  ALERT
+
+  """Announcement"""
+  ANNOUNCEMENT
+
+  """Approval Request"""
+  APPROVAL
+
+  """Task Assignment"""
+  TASK
+}
+
+"""An enumeration."""
+enum NotificationsUserNotificationPriorityChoices {
+  """Low"""
+  LOW
+
+  """Normal"""
+  NORMAL
+
+  """High"""
+  HIGH
+
+  """Urgent"""
+  URGENT
+}
+
+type PaymentTypeNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [PaymentTypeNodeEdge]!
+}
+
+"""A Relay edge containing a `PaymentTypeNode` and its cursor."""
+type PaymentTypeNodeEdge {
+  """The item at the end of the edge"""
+  node: PaymentTypeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type BuildingTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [BuildingTypeEdge]!
+}
+
+"""A Relay edge containing a `BuildingType` and its cursor."""
+type BuildingTypeEdge {
+  """The item at the end of the edge"""
+  node: BuildingType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UnitTypeNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UnitTypeNodeEdge]!
+}
+
+"""A Relay edge containing a `UnitTypeNode` and its cursor."""
+type UnitTypeNodeEdge {
+  """The item at the end of the edge"""
+  node: UnitTypeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""An enumeration."""
+enum SubscriptionsCompanySubscriptionBillingCycleChoices {
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+
+  """Annually"""
+  ANNUALLY
+}
+
+"""An enumeration."""
+enum SubscriptionsCompanySubscriptionStatusChoices {
+  """Trial"""
+  TRIAL
+
+  """Active"""
+  ACTIVE
+
+  """Past Due"""
+  PAST_DUE
+
+  """Suspended"""
+  SUSPENDED
+
+  """Cancelled"""
+  CANCELLED
+
+  """Expired"""
+  EXPIRED
+}
+
+type UsageMetricsTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UsageMetricsTypeEdge]!
+}
+
+"""A Relay edge containing a `UsageMetricsType` and its cursor."""
+type UsageMetricsTypeEdge {
+  """The item at the end of the edge"""
+  node: UsageMetricsType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UsageMetricsType implements Node {
+  """The ID of the object"""
+  id: ID!
+  subscription: CompanySubscriptionType!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+  activeUsersCount: Int!
+
+  """"""
+  storageUsedBytes: BigInt!
+  transactionsCount: Int!
+  propertiesCount: Int!
+  unitsCount: Int!
+  tenantsCount: Int!
+  apiCallsCount: Int!
+  smsSentCount: Int!
+  whatsappSentCount: Int!
+  emailsSentCount: Int!
+  smsOverageCharges: Decimal!
+  whatsappOverageCharges: Decimal!
+  emailOverageCharges: Decimal!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PaymentReminderTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [PaymentReminderTypeEdge]!
+}
+
+"""A Relay edge containing a `PaymentReminderType` and its cursor."""
+type PaymentReminderTypeEdge {
+  """The item at the end of the edge"""
+  node: PaymentReminderType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type PaymentReminderType implements Node {
+  """The ID of the object"""
+  id: ID!
+  subscription: CompanySubscriptionType!
+  reminderType: SubscriptionsPaymentReminderReminderTypeChoices!
+  emailSent: Boolean!
+  emailSentAt: DateTime
+  smsSent: Boolean!
+  smsSentAt: DateTime
+  amountDue: Decimal!
+  dueDate: DateTime!
+  createdAt: DateTime!
+}
+
+"""An enumeration."""
+enum SubscriptionsPaymentReminderReminderTypeChoices {
+  """7 Days Before"""
+  A_7_DAYS
+
+  """3 Days Before"""
+  A_3_DAYS
+
+  """1 Day Before"""
+  A_1_DAY
+
+  """On Due Date"""
+  DUE_DATE
+
+  """Overdue"""
+  OVERDUE
+}
+
+type MessagingQuotaAlertTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [MessagingQuotaAlertTypeEdge]!
+}
+
+"""A Relay edge containing a `MessagingQuotaAlertType` and its cursor."""
+type MessagingQuotaAlertTypeEdge {
+  """The item at the end of the edge"""
+  node: MessagingQuotaAlertType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type MessagingQuotaAlertType implements Node {
+  """The ID of the object"""
+  id: ID!
+  subscription: CompanySubscriptionType!
+  alertType: SubscriptionsMessagingQuotaAlertAlertTypeChoices!
+  messageType: SubscriptionsMessagingQuotaAlertMessageTypeChoices!
+  quotaLimit: Int!
+  currentUsage: Int!
+  usagePercentage: Decimal!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+  alertSent: Boolean!
+  sentAt: DateTime
+
+  """List of email addresses that received the alert"""
+  sentToEmails: JSONString!
+  createdAt: DateTime!
+}
+
+"""An enumeration."""
+enum SubscriptionsMessagingQuotaAlertAlertTypeChoices {
+  """Warning - 80% quota reached"""
+  WARNING
+
+  """Critical - 90% quota reached"""
+  CRITICAL
+
+  """Quota Exceeded"""
+  EXCEEDED
+
+  """Quota Reset - New Billing Period"""
+  RESET
+}
+
+"""An enumeration."""
+enum SubscriptionsMessagingQuotaAlertMessageTypeChoices {
+  """SMS"""
+  SMS
+
+  """WhatsApp"""
+  WHATSAPP
+
+  """Email"""
+  EMAIL
+}
+
+type MessagingBalancesType {
+  smsBalance: Decimal
+  whatsappBalance: Decimal
+  smsTopupRate: Decimal
+  whatsappTopupRate: Decimal
+}
+
+type SubscriptionAmountsType {
+  baseAmount: Decimal
+  finalAmount: Decimal
+  discountAmount: Decimal
+  discountName: String
+}
+
+type SubscriptionStatusType {
+  subscription: CompanySubscriptionType
+  metrics: UsageMetricsType
+  usageStats: JSONString
+  hasStandingOrder: Boolean
+  amounts: SubscriptionAmountsType
+}
+
+type PaymentStatusType {
+  status: String
+  message: String
+  payment: SubscriptionPaymentType
+  gatewayPayload: JSONString
+}
+
+"""
+The `GenericScalar` scalar type represents a generic
+GraphQL scalar value that could be:
+String, Boolean, Int, Float, List or Object.
+"""
+scalar GenericScalar
+
+type PaymentReceiptPdfPayload {
+  success: Boolean
+  message: String
+  filename: String
+  pdfBase64: String
+}
+
+type PaymentReceiptVerificationResult {
+  success: Boolean
+  message: String
+  receipt: PaymentReceiptType
+}
+
+type PaymentReceiptType {
+  reference: String
+  paymentReference: String
+  amount: String
+  status: String
+  transactionDate: String
+  issuedAt: String
+  tenant: String
+  unit: String
+  verificationCode: String
+}
+
+type DashboardType {
+  currentRole: String
+  stats: DashboardStatsType
+  recentPayments: [RecentPaymentType]
+  overdueSchedules: [OverdueScheduleType]
+  buildingOccupancy: [BuildingOccupancyType]
+  companyContext: DashboardCompanyContextType
+  adminSection: DashboardAdminSectionType
+  landlordSection: DashboardLandlordSectionType
+  agentSection: DashboardAgentSectionType
+  tenantSection: DashboardTenantSectionType
+  accountantSection: DashboardAccountantSectionType
+}
+
+type DashboardStatsType {
+  totalBuildings: Int
+  totalUnits: Int
+  occupiedUnits: Int
+  vacantUnits: Int
+  maintenanceUnits: Int
+  reservedUnits: Int
+  activeTenants: Int
+  totalArrears: Decimal
+}
+
+type RecentPaymentType {
+  id: Int
+  amount: Decimal
+  tenantName: String
+  unitNumber: String
+  buildingName: String
+  createdAt: DateTime
+  status: String
+  reference: String
+}
+
+type OverdueScheduleType {
+  id: Int
+  tenantName: String
+  unitNumber: String
+  buildingName: String
+  amount: Decimal
+  dueDate: Date
+  status: String
+}
+
+type BuildingOccupancyType {
+  id: Int
+  name: String
+  occupied: Int
+  vacant: Int
+}
+
+type DashboardCompanyContextType {
+  showSetupGuide: Boolean
+  showResumeGuide: Boolean
+  companyUnitsCount: Int
+  isTrial: Boolean
+  trialEndDate: Date
+  hasSubscription: Boolean
+}
+
+type DashboardAdminSectionType {
+  unmatchedPaymentsCount: Int
+  totalRevenue: Decimal
+  pendingValidations: Int
+  agentsCount: Int
+  landlordsCount: Int
+  accountantsCount: Int
+  tenantsCount: Int
+}
+
+type DashboardLandlordSectionType {
+  myUnitsCount: Int
+  monthlyRevenue: Decimal
+  myBuildings: [BuildingType]
+}
+
+type DashboardAgentSectionType {
+  managedUnits: Int
+  vacantUnitsCount: Int
+  pendingMoveIns: Int
+  managedBuildings: [BuildingType]
+}
+
+type DashboardTenantSectionType {
+  myBalance: Decimal
+  myUnits: [UnitNode]
+  mpesaPaymentInstructions: [MpesaPaymentInstructionType]
+  myPayments: [RecentPaymentType]
+  myCharges: [OverdueScheduleType]
+}
+
+type MpesaPaymentInstructionType {
+  shortCode: String
+  setupName: String
+  unitNumber: String
+  buildingName: String
+}
+
+type DashboardAccountantSectionType {
+  totalCollected: Decimal
+  pendingReconciliation: Int
+  arrearsByBuilding: [ArrearsbyBuildingType]
+}
+
+type ArrearsbyBuildingType {
+  id: Int
+  name: String
+  buildingArrears: Decimal
+}
+
+type ArrearsReportPayload {
+  summary: ArrearsSummaryType
+  schedules(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, buildingId: Decimal, tenantId: Decimal, unitId: Decimal, status: String): RentScheduleTypeConnection
+}
+
+type ArrearsSummaryType {
+  totalExpected: Decimal
+  totalPaid: Decimal
+  totalArrears: Decimal
+}
+
+type BalanceType {
+  balance: Float
+  currency: String
+}
+
+type MpesaExpressNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [MpesaExpressNodeEdge]!
+}
+
+"""A Relay edge containing a `MpesaExpressNode` and its cursor."""
+type MpesaExpressNodeEdge {
+  """The item at the end of the edge"""
+  node: MpesaExpressNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type MpesaExpressNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  CheckoutRequestID: String
+  MerchantRequestID: String
+  ResultCode: Int
+  ResultDesc: String
+  Amount: Float
+  MpesaReceiptNumber: String
+  Balance: String
+  TransationDate: DateTime!
+  phonenumber: String
+  state: String!
+}
+
+type TransactionNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [TransactionNodeEdge]!
+}
+
+"""A Relay edge containing a `TransactionNode` and its cursor."""
+type TransactionNodeEdge {
+  """The item at the end of the edge"""
+  node: TransactionNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TransactionNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  no: String
+  reference: String!
+  status: PaymentsTransactionStatusChoices!
+  user: UserNode
+  confirmationCode: String!
+  amount: Float!
+  paymentAccount: String!
+  responseStatusCode: Int!
+  paymentStatusCode: String!
+  notificationId: UUID!
+  notified: Boolean!
+  mailed: Boolean!
+  currency: String!
+  description: String!
+  synced: Boolean!
+
+  """DEPRECATED: Use payment_mode_config instead"""
+  paymentMode: PaymentsTransactionPaymentModeChoices!
+
+  """Configurable payment mode for this transaction"""
+  paymentModeConfig: ConfigurablePaymentModeNode
+  syncedFrom: PaymentsTransactionSyncedFromChoices!
+  name: String
+  email: String
+  phone: String
+  syncReference: String
+  transactionDate: DateTime!
+  thirdPartyPhone: String
+  invoiceReference: String
+  building: BuildingType
+  unit: UnitNode
+  tenant: TenantType
+
+  """Which month/period is this payment for"""
+  paymentForPeriod: Date
+
+  """Amount carried forward to next period"""
+  excessAmount: Float!
+  company: CompanyType
+  propertyTransactionType: PaymentsTransactionPropertyTransactionTypeChoices
+  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
+  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
+  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
+  refunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+}
+
+type StaticPagesNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [StaticPagesNodeEdge]!
+}
+
+"""A Relay edge containing a `StaticPagesNode` and its cursor."""
+type StaticPagesNodeEdge {
+  """The item at the end of the edge"""
+  node: StaticPagesNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type StaticPagesNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  type: SetupStaticPagesTypeChoices!
+  name: String!
+  background: String
+  slug: String!
+
+  """"""
+  sequenceNo: BigInt!
+  published: Boolean!
+  content: String!
+}
+
+"""An enumeration."""
+enum SetupStaticPagesTypeChoices {
+  """Policies"""
+  POLICIES
+
+  """Other"""
+  OTHER
+}
+
+type PageVisitsNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [PageVisitsNodeEdge]!
+}
+
+"""A Relay edge containing a `PageVisitsNode` and its cursor."""
+type PageVisitsNodeEdge {
+  """The item at the end of the edge"""
+  node: PageVisitsNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type PageVisitsNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  siteName: String!
+  siteUrl: String!
+  sitePath: String!
+  scheme: String!
+  domain: String!
+  clientIp: String
+  clientBrowser: String!
+  latitude: Float!
+  longitude: Float!
+  datetime: DateTime!
+  device: String!
+  identity: String!
+}
+
+type UserNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UserNodeEdge]!
+}
+
+"""A Relay edge containing a `UserNode` and its cursor."""
+type UserNodeEdge {
+  """The item at the end of the edge"""
+  node: UserNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type UserAccountTypeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [UserAccountTypeEdge]!
+}
+
+"""A Relay edge containing a `UserAccountType` and its cursor."""
+type UserAccountTypeEdge {
+  """The item at the end of the edge"""
+  node: UserAccountType
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""type for UserAccount model"""
+type UserAccountType implements Node {
+  """The ID of the object"""
+  id: ID!
+
+  """Title"""
+  Title: String
+
+  """address"""
+  address: String
+
+  """"""
+  archived: Boolean
+  avatar: String
+
+  """date joined"""
+  dateJoined: DateTime
+
+  """email"""
+  email: String
+
+  """first name"""
+  firstName: String
+
+  """
+  Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+  """
+  isActive: Boolean
+
+  """Designates whether the user can log into this admin site."""
+  isStaff: Boolean
+
+  """last login"""
+  lastLogin: DateTime
+
+  """last name"""
+  lastName: String
+
+  """middle name"""
+  middleName: String
+
+  """no"""
+  no: String
+
+  """Phone Number"""
+  phoneNumber: String
+
+  """Search Name"""
+  searchName: String
+
+  """secondary email"""
+  secondaryEmail: String
+
+  """suffix"""
+  suffix: String
+
+  """Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."""
+  username: String
+
+  """"""
+  verified: Boolean
+  pk: Int
+}
+
+input UserAccountWhereInput {
+  id: IDFilter
+  OR: [UserAccountWhereInput]
+  AND: [UserAccountWhereInput]
+  NOT: UserAccountWhereInput
+
+  """Title"""
+  Title: StringFilter
+
+  """address"""
+  address: StringFilter
+
+  """archived"""
+  archived: BooleanFilter
+
+  """avatar"""
+  avatar: StringFilter
+
+  """date joined"""
+  dateJoined: DatetimeFilter
+
+  """email"""
+  email: StringFilter
+
+  """first name"""
+  firstName: StringFilter
+
+  """
+  Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+  """
+  isActive: BooleanFilter
+
+  """Designates whether the user can log into this admin site."""
+  isStaff: BooleanFilter
+
+  """last login"""
+  lastLogin: DatetimeFilter
+
+  """last name"""
+  lastName: StringFilter
+
+  """middle name"""
+  middleName: StringFilter
+
+  """no"""
+  no: StringFilter
+
+  """Phone Number"""
+  phoneNumber: StringFilter
+
+  """Search Name"""
+  searchName: StringFilter
+
+  """secondary email"""
+  secondaryEmail: StringFilter
+
+  """suffix"""
+  suffix: StringFilter
+
+  """Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."""
+  username: StringFilter
+
+  """verified"""
+  verified: BooleanFilter
+}
+
+input IDFilter {
+  """Exact match."""
+  exact: ID
+  in: [ID]
+
+  """Is null."""
+  isnull: Boolean
+}
+
+input StringFilter {
+  """Exact match."""
+  exact: String
+  in: [String]
+
+  """Is null."""
+  isnull: Boolean
+
+  """Containment test."""
+  contains: String
+
+  """Starts-with."""
+  startswith: String
+
+  """Ends-with."""
+  endswith: String
+
+  """regular expression match."""
+  regex: String
+
+  """Case-insensitive exact match."""
+  iexact: String
+
+  """Case-insensitive containment test."""
+  icontains: String
+
+  """Case-insensitive starts-with."""
+  istartswith: String
+
+  """Case-insensitive ends-with."""
+  iendswith: String
+}
+
+input BooleanFilter {
+  """Exact match."""
+  exact: Boolean
+  in: [Boolean]
+
+  """Is null."""
+  isnull: Boolean
+}
+
+input DatetimeFilter {
+  """Exact match."""
+  exact: DateTime
+  in: [DateTime]
+
+  """Is null."""
+  isnull: Boolean
+
+  """Greater than."""
+  gt: DateTime
+
+  """Greater than or equal to."""
+  gte: DateTime
+
+  """Less than."""
+  lt: DateTime
+
+  """Less than or equal to."""
+  lte: DateTime
+
+  """An exact year match."""
+  year: IntFilter
+
+  """
+  An exact month match. Takes an integer 1 (January) through 12 (December).
+  """
+  month: IntFilter
+
+  """An exact day match."""
+  day: IntFilter
+
+  """
+  A ‘day of the week’ match. Takes an integer value representing the day of week from 1 (Sunday) to 7 (Saturday).
+  """
+  weekDay: IntFilter
+
+  """An exact hour match. Takes an integer between 0 and 23."""
+  hour: IntFilter
+
+  """An exact minute match. Takes an integer between 0 and 59."""
+  minute: IntFilter
+
+  """an exact second match. Takes an integer between 0 and 59."""
+  second: IntFilter
+}
+
+input IntFilter {
+  """Exact match."""
+  exact: Int
+  in: [Int]
+
+  """Is null."""
+  isnull: Boolean
+
+  """Greater than."""
+  gt: Int
+
+  """Greater than or equal to."""
+  gte: Int
+
+  """Less than."""
+  lt: Int
+
+  """Less than or equal to."""
+  lte: Int
+
+  """Containment test."""
+  contains: Int
+
+  """Starts-with."""
+  startswith: Int
+
+  """Ends-with."""
+  endswith: Int
+
+  """regular expression match."""
+  regex: String
+}
+
+input UserAccountOrderByInput {
+  """Title"""
+  Title: OrderStringEnum
+
+  """address"""
+  address: OrderStringEnum
+
+  """archived"""
+  archived: OrderEnum
+
+  """avatar"""
+  avatar: OrderEnum
+
+  """date joined"""
+  dateJoined: OrderEnum
+
+  """email"""
+  email: OrderStringEnum
+
+  """first name"""
+  firstName: OrderStringEnum
+
+  """ID"""
+  id: OrderEnum
+
+  """
+  Designates whether this user should be treated as active. Unselect this instead of deleting accounts.
+  """
+  isActive: OrderEnum
+
+  """Designates whether the user can log into this admin site."""
+  isStaff: OrderEnum
+
+  """last login"""
+  lastLogin: OrderEnum
+
+  """last name"""
+  lastName: OrderStringEnum
+
+  """middle name"""
+  middleName: OrderStringEnum
+
+  """no"""
+  no: OrderStringEnum
+
+  """Phone Number"""
+  phoneNumber: OrderStringEnum
+
+  """Search Name"""
+  searchName: OrderStringEnum
+
+  """secondary email"""
+  secondaryEmail: OrderStringEnum
+
+  """suffix"""
+  suffix: OrderStringEnum
+
+  """Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."""
+  username: OrderStringEnum
+
+  """verified"""
+  verified: OrderEnum
+}
+
+enum OrderStringEnum {
+  ASC
+  DESC
+  IASC
+  IDESC
+}
+
+enum OrderEnum {
+  ASC
+  DESC
+}
+
+type Mutation {
+  subscriptionsViewsApplyDiscount(payload: JSONString): _Mutation
+  subscriptionsViewsCancelStandingOrder(payload: JSONString): _Mutation
+  subscriptionsViewsChangeBillingCycle(payload: JSONString): _Mutation
+  subscriptionsViewsCheckPaymentStatus(payload: JSONString): _Mutation
+  subscriptionsViewsCheckPaymentStatusApi(payload: JSONString): _Mutation
+  subscriptionsViewsProcessCardPayment(payload: JSONString): _Mutation
+  subscriptionsViewsProcessMpesaPayment(payload: JSONString): _Mutation
+  subscriptionsViewsReactivateStandingOrder(payload: JSONString): _Mutation
+  subscriptionsViewsVerifyPaystackPayment(payload: JSONString): _Mutation
+  createCompanySubscription(billingCycle: String, companyId: UUID!, planId: Int!): CreateCompanySubscriptionMutation
+  upgradeCompanySubscription(billingCycle: String, newPlanId: Int!, subscriptionId: Int!): UpgradeCompanySubscriptionMutation
+  cancelCompanySubscription(subscriptionId: Int!): CancelCompanySubscriptionMutation
+  selectSubscriptionPlan(billingCycle: String, companyId: UUID!, planId: Int!): SelectSubscriptionPlanMutation
+  initiateMpesaPayment(amountOverride: Decimal, paymentFor: String, phoneNumber: String!, subscriptionId: Int!): InitiateMpesaPaymentMutation
+  initiateCardPayment(amountOverride: Decimal, customerEmail: String, paymentFor: String, setupStandingOrder: Boolean, subscriptionId: Int!): InitiateCardPaymentMutation
+  applySubscriptionDiscount(discountCode: String!, subscriptionId: Int!): ApplySubscriptionDiscountMutation
+  verifyPaystackPayment(reference: String!): VerifyPaystackPaymentMutation
+  cancelStandingOrder(reason: String, subscriptionId: Int!): CancelStandingOrderMutation
+  reactivateStandingOrder(subscriptionId: Int!): ReactivateStandingOrderMutation
+  changeBillingCycle(newCycle: String!, subscriptionId: Int!): ChangeBillingCycleMutation
+  requestSubscriptionRefund(description: String, paymentId: Int!, reason: String, refundAmount: Decimal, refundType: String): RequestSubscriptionRefundMutation
+
+  """
+  Mark onboarding as skipped for the current company (client tracks UI state).
+  """
+  skipGettingStarted(companyId: UUID!): SkipGettingStartedMutation
+
+  """Resume onboarding guidance after it was previously skipped."""
+  resumeGettingStarted(companyId: UUID!): ResumeGettingStartedMutation
+  markUserNotificationRead(isRead: Boolean!, notificationId: Int!): MarkUserNotificationReadMutation
+  createUpdateNotificationCampaignView(buildingId: Int, filterType: String, frequency: String, id: Int, message: String!, minBalanceAmount: Decimal, name: String!, scheduledDatetime: DateTime, sendEmail: Boolean, sendSms: Boolean, sendWhatsapp: Boolean, subject: String!): CreateUpdateNotificationCampaignViewMutation
+  deleteNotificationCampaignView(campaignId: Int!): DeleteNotificationCampaignViewMutation
+  sendNotificationCampaignView(campaignId: Int!): SendNotificationCampaignViewMutation
+  toggleNotificationCampaignView(campaignId: Int!): ToggleNotificationCampaignViewMutation
+  previewCampaignRecipientsView(campaignId: Int!): PreviewCampaignRecipientsViewMutation
+  resendSmsView(logId: Int!): ResendSMSViewMutation
+  tenantInboxAction(action: String!, notificationId: Int): TenantInboxActionMutation
+
+  """
+  Create or update a maintenance request. Pass `id` to update, omit to create.
+  """
+  createUpdateMaintenanceRequest(actualCost: Decimal, assignedToId: ID, buildingId: ID, category: String, description: String, estimatedCost: Decimal, id: ID, payableAmount: Decimal, payableStatus: String, priority: String, requestedDate: Date, resolvedDate: Date, scheduledDate: Date, slaHours: Int, status: String, tenantId: ID, tenantImpact: Boolean, title: String, unitId: ID, vendorName: String): CreateUpdateMaintenanceRequestMutation
+
+  """
+  Delete a maintenance request — blocked for IN_PROGRESS, COMPLETED, SCHEDULED, or if journal entries exist.
+  """
+  deleteMaintenanceRequest(id: ID!): DeleteMaintenanceRequestMutation
+
+  """
+  Update the status of a maintenance request with transition validation and tenant notification.
+  """
+  updateMaintenanceStatus(id: ID!, status: String!): UpdateMaintenanceStatusMutation
+  createCompany(city: String, companyType: String!, country: String, county: String, currencyId: Int!, email: String!, name: String!, phone: String!, physicalAddress: String!, registrationNumber: String, taxNumber: String): CreateCompanyMutation
+  updateCompany(city: String, companyId: UUID!, country: String, county: String, email: String, name: String, phone: String, physicalAddress: String, registrationNumber: String, status: String, taxNumber: String): UpdateCompanyMutation
+  createCompanyInvitation(companyId: UUID!, email: String!, message: String, role: String!): CreateCompanyInvitationMutation
+  addCompanyMember(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, companyId: UUID!, email: String!, firstName: String!, lastName: String!, phone: String, role: String!): AddCompanyMemberMutation
+  inviteCompanyMember(companyId: UUID!, email: String!, message: String, role: String!): InviteCompanyMemberMutation
+  bulkInviteCompanyMembers(companyId: UUID!, emails: [String]!, role: String!): BulkInviteCompanyMembersMutation
+  resendCompanyInvitation(invitationId: UUID!): ResendCompanyInvitationMutation
+  acceptCompanyInvitation(invitationToken: UUID!): AcceptCompanyInvitationMutation
+  declineCompanyInvitation(invitationToken: UUID!): DeclineCompanyInvitationMutation
+  switchCompany(companyId: UUID!): SwitchCompanyMutation
+  assignUserRole(buildingId: Int, companyId: UUID!, notes: String, role: String!, userId: Int!): AssignUserRoleMutation
+  removeUserRole(roleId: Int!): RemoveUserRoleMutation
+  updateMemberPermissions(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canManageTenants: Boolean, canModifyCompany: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, canViewReports: Boolean, membershipId: Int!): UpdateMemberPermissionsMutation
+  createAccount(accountType: String!, cashAccount: Boolean, code: String!, companyId: UUID!, description: String, isActive: Boolean, name: String!, parentId: UUID): CreateAccountMutation
+
+  """
+  Update user model fields, defined on settings.
+  
+  User must be verified.
+  """
+  updateAccount(input: UpdateAccountInput!): UpdateAccountPayload
+  createJournalEntry(companyId: UUID!, description: String!, entryDate: Date!, entryNumber: String!, entryType: String, paymentTransactionId: UUID, reference: String, refundId: UUID, status: String): CreateJournalEntryMutation
+  addJournalLine(accountId: UUID!, amount: Decimal!, creditAmount: Decimal, debitAmount: Decimal, debitCredit: String!, description: String, journalEntryId: UUID!, memo: String): AddJournalLineMutation
+  postJournalEntry(journalEntryId: UUID!): PostJournalEntryMutation
+  createTenantCredit(amount: Decimal!, buildingId: Int, companyId: UUID!, creditDate: Date!, creditNumber: String!, creditType: String!, description: String, tenantId: Int!, unitId: Int): CreateTenantCreditMutation
+  createTenantRefund(amount: Decimal!, buildingId: Int, companyId: UUID!, refundDate: Date!, refundMethod: String, refundNumber: String!, refundReference: String, refundType: String!, status: String, tenantId: Int!, unitId: Int): CreateTenantRefundMutation
+
+  """Mutation to create or update a building"""
+  createUpdateBuilding(address: String!, buildingType: String!, city: String!, code: String!, county: String, description: String, id: ID, managerEmail: String, managerName: String, managerPhone: String, name: String!, numberOfFloors: Int!, totalUnits: Int!, yearBuilt: Int): CreateUpdateBuildingMutation
+
+  """Mutation to create or update a unit"""
+  createUpdateUnit(accountNumber: String!, bathrooms: Int, bedrooms: Int, buildingId: ID!, depositAmount: Decimal!, description: String, floor: String, id: ID, isAvailableForPurchase: Boolean, isAvailableForRent: Boolean, monthlyRent: Decimal!, paymentPeriod: String, purchasePrice: Decimal, serviceCharge: Decimal, squareFeet: Float, unitNumber: String!, unitType: ID!): CreateUpdateUnitMutation
+
+  """Mutation to create or update a tenant"""
+  createUpdateTenant(alternativePhone: String, email: String, emergencyContactName: String, emergencyContactPhone: String, emergencyContactRelationship: String, employer: String, firstName: String!, id: ID, idNumber: String!, lastName: String!, middleName: String, occupation: String, permanentAddress: String, phone: String!): CreateUpdateTenantMutation
+
+  """Mutation to process tenant move-in"""
+  processMoveIn(depositAmount: Decimal!, firstRentAmount: Decimal, startDate: Date!, tenantId: Int!, unitId: Int!): ProcessMoveInMutation
+
+  """Mutation to process tenant move-out"""
+  processMoveOut(damageAmount: Decimal, damageNotes: String, endDate: Date!, moveOutReason: String, occupancyId: Int!): ProcessMoveOutMutation
+
+  """Mutation to send arrears reminder to a tenant"""
+  sendArrearsReminder(unitId: Int!): SendArrearsReminderMutation
+  uploadBuildingDocument(buildingId: Int!, file: Upload!, name: String): UploadBuildingDocumentMutation
+  deleteBuildingDocument(documentId: Int!): DeleteBuildingDocumentMutation
+  uploadBuildingImage(buildingId: Int!, caption: String, image: Upload!, isPrimary: Boolean): UploadBuildingImageMutation
+  deleteBuildingImage(imageId: Int!): DeleteBuildingImageMutation
+  makePrimaryBuildingImage(imageId: Int!): MakePrimaryBuildingImageMutation
+  createUpdatePenaltyRule(applyOnce: Boolean, buildingId: Int, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, id: ID, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String!, notificationMessage: String, percentage: Decimal, priority: Int, sendNotification: Boolean): CreateUpdatePenaltyRuleMutation
+  updatePenaltyRule(applyOnce: Boolean, buildingId: Int, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String, notificationMessage: String, percentage: Decimal, priority: Int, ruleId: Int!, sendNotification: Boolean): UpdatePenaltyRuleMutation
+  deletePenaltyRule(ruleId: Int!): DeletePenaltyRuleMutation
+  togglePenaltyRule(ruleId: Int!): TogglePenaltyRuleMutation
+  testPenaltyCalculation(daysOverdue: Int!, rentAmount: Decimal!, ruleId: Int!): TestPenaltyCalculationMutation
+  createRentScheduleConfig(buildingId: Int!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String!, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): CreateRentScheduleConfigMutation
+  updateRentScheduleConfig(configId: Int!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): UpdateRentScheduleConfigMutation
+  toggleRentScheduleConfig(configId: Int!): ToggleRentScheduleConfigMutation
+  deleteRentScheduleConfig(configId: Int!): DeleteRentScheduleConfigMutation
+  runRentScheduleConfigNow(configId: Int!): RunRentScheduleConfigNowMutation
+
+  """
+  Create or update a lease agreement. Pass `id` to update an existing lease, omit to create a new DRAFT.
+  """
+  createUpdateLease(breakClause: Boolean, breakClauseDetails: String, depositAmount: Decimal!, endDate: Date, id: ID, internalNotes: String, latePaymentPenalty: Boolean, leaseType: String, nextEscalationDate: Date, occupancyId: ID, paymentDueDay: Int, paymentFrequency: String, penaltyFlatAmount: Decimal, penaltyGraceDays: Int, penaltyRatePct: Decimal, renewalNoticeDays: Int, renewalOption: Boolean, renewalTerms: String, rentAmount: Decimal!, rentEscalationRate: Decimal, serviceCharge: Decimal, signedDate: Date, specialConditions: String, startDate: Date!): CreateUpdateLeaseMutation
+
+  """Activate a DRAFT lease (DRAFT → ACTIVE)."""
+  activateLease(leaseId: ID!): ActivateLeaseMutation
+
+  """Terminate an ACTIVE or DRAFT lease."""
+  terminateLease(leaseId: ID!, terminatedBy: String, terminationDate: Date, terminationReason: String): TerminateLeaseMutation
+
+  """
+  Renew an ACTIVE or EXPIRED lease. Marks old as RENEWED and creates a new DRAFT.
+  """
+  renewLease(breakClause: Boolean, breakClauseDetails: String, depositAmount: Decimal, endDate: Date, id: ID!, internalNotes: String, latePaymentPenalty: Boolean, leaseType: String, nextEscalationDate: Date, paymentFrequency: String, renewalOption: Boolean, renewalTerms: String, rentAmount: Decimal, rentEscalationRate: Decimal, serviceCharge: Decimal, specialConditions: String, startDate: Date!): RenewLeaseMutation
+
+  """Manually mark a past-end-date ACTIVE lease as Expired."""
+  markLeaseExpired(id: ID!): MarkLeaseExpiredMutation
+
+  """Delete a DRAFT lease that has no renewal chain."""
+  deleteLease(id: ID!): DeleteLeaseMutation
+
+  """Remove the signed copy document attached to a lease."""
+  removeLeaseDocument(id: ID!): RemoveLeaseDocumentMutation
+
+  """Upload a signed copy document attached to a lease."""
+  uploadLeaseDocument(file: Upload!, leaseId: ID!): UploadLeaseDocumentMutation
+
+  """Delete a building only when it has no units."""
+  deleteBuilding(buildingId: Int!): DeleteBuildingMutation
+
+  """Delete a unit only when it has no related records."""
+  deleteUnit(unitId: Int!): DeleteUnitMutation
+
+  """
+  Delete a tenant only when they have no occupancies or financial records.
+  """
+  deleteTenant(tenantId: Int!): DeleteTenantMutation
+
+  """Void (cancel) an open tenant charge."""
+  voidTenantCharge(chargeId: Int!): VoidTenantChargeMutation
+
+  """Void a PENDING or OVERDUE rent schedule and cancel its linked charges."""
+  voidRentSchedule(scheduleId: Int!): VoidRentScheduleMutation
+
+  """Manually allocate a successful payment to tenant charges."""
+  allocatePayment(paymentId: Int!): AllocatePaymentMutation
+
+  """Assign a tenant to a unit (create occupancy)."""
+  createOccupancy(depositPaid: Decimal, depositRefunded: Decimal, scheduleGenerationMode: String, skipDepositCharge: Boolean, startDate: Date!, tenantId: ID!, unitId: ID!): CreateOccupancyMutation
+
+  """Issue a vacation notice for a currently occupied unit."""
+  createVacationNotice(balanceToPay: Decimal, message: String, occupancyId: ID!, vacationDate: Date!): CreateVacationNoticeMutation
+
+  """Generate rent schedules for all occupied units for a given month."""
+  bulkGenerateRentSchedules(buildingId: Int, dueDay: Int, month: Int!, skipExisting: Boolean, year: Int!): BulkGenerateRentSchedulesMutation
+
+  """Create a new extra charge definition for a building."""
+  createExtraChargeDefinition(buildingId: Int!, chargeType: String!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String!, ratePerUnit: Decimal, serviceTypeId: Int!, unitLabel: String): CreateBuildingExtraChargeDefinitionMutation
+
+  """Update an existing extra charge definition."""
+  updateExtraChargeDefinition(chargeType: String, definitionId: Int!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String, ratePerUnit: Decimal, serviceTypeId: Int, unitLabel: String): UpdateBuildingExtraChargeDefinitionMutation
+
+  """Delete an extra charge definition (only if it has no posted entries)."""
+  deleteExtraChargeDefinition(definitionId: Int!): DeleteBuildingExtraChargeDefinitionMutation
+
+  """Post extra charges for a billing period to all selected tenants."""
+  applyBuildingExtraCharges(billingMonth: String!, chargeDate: Date!, definitionId: Int!, dueDate: Date!, notes: String, rows: [ExtraChargeRowInput]!): ApplyBuildingExtraChargesMutation
+
+  """Update an existing extra charge entry and re-post to tenant account."""
+  updateExtraChargeEntry(amount: Decimal, chargeDate: Date, dueDate: Date, entryId: Int!, notes: String, unitsUsed: Decimal): UpdateBuildingExtraChargeEntryMutation
+
+  """Post a single extra charge to a specific tenant/occupancy."""
+  postTenantExtraCharge(amount: Decimal, billingMonth: String!, chargeDate: Date!, definitionId: Int!, dueDate: Date!, notes: String, occupancyId: ID!, unitsUsed: Decimal): PostTenantExtraChargeMutation
+
+  """Copy a unit N times with a given numbering pattern."""
+  copyUnit(copyCount: Int!, incrementFloor: Boolean, numberingPattern: String, startingUnitNumber: String!, unitId: Int!): CopyUnitMutation
+
+  """Generate multiple units across floors for a building."""
+  bulkGenerateUnits(bathrooms: Int, bedrooms: Int, buildingId: Int!, depositAmount: Decimal!, floorSequence: [String]!, monthlyRent: Decimal!, numberingPattern: String, serviceCharge: Decimal, startingNumber: String!, unitTypeId: Int!, unitsPerFloor: Int!): BulkGenerateUnitsMutation
+
+  """Copy a building and optionally its units."""
+  copyBuilding(buildingId: Int!, copyUnits: Boolean, newCode: String!, newName: String!): CopyBuildingMutation
+
+  """Manually link an unmatched C2B payment to a unit and reconcile."""
+  validateC2bPayment(paymentId: Int!, unitId: Int!): ValidateC2BPaymentMutation
+  sendSms(input: SendSMSInput!): SendSMSPayload
+
+  """
+  Initiate M-Pesa STK Push payment for a unit with automatic allocation
+  
+  This mutation automatically creates InitiateLines based on the tenant's
+  outstanding charges, ensuring proper auditing from the start.
+  
+  Sample input:
+  {
+      phone: "0712345678",
+      accountNumber: "BLD001A101",  # Unit account number
+      amount: "15000",
+      email: "tenant@example.com",
+      name: "John Doe"
+  }
+  """
+  initiateUnitPayment(input: InitiateUnitPaymentInput!): InitiateUnitPaymentPayload
+  confirmPayment(input: ConfirmPaymentInput!): ConfirmPaymentPayload
+  createPageVisit(input: CreatePageVisitInput!): CreatePageVisitPayload
+  createCookieConsent(input: CreateCookieConsentInput!): CreateCookieConsentPayload
+
+  """
+  Register user with fields defined in the settings.
+  
+  If the email field of the user model is part of the
+  registration fields (default), check if there is
+  no user with that email or as a secondary email.
+  
+  If it exists, it does not register the user,
+  even if the email field is not defined as unique
+  (default of the default django user model).
+  
+  When creating the user, it also creates a `UserModel`
+  related to that user, making it possible to track
+  if the user is archived, verified and has a secondary
+  email.
+  
+  Send account verification email.
+  
+  If allowed to not verified users login, return token.
+  """
+  register(input: RegisterInput!): RegisterPayload
+
+  """
+  Verify user account.
+  
+  Receive the token that was sent by email.
+  If the token is valid, make the user verified
+  by making the `user.verified` field true.
+  """
+  verifyAccount(input: VerifyAccountInput!): VerifyAccountPayload
+
+  """
+  Sends activation email.
+  
+  It is called resend because theoretically
+  the first activation email was sent when
+  the user registered.
+  
+  If there is no user with the requested email,
+  a successful response is returned.
+  """
+  resendActivationEmail(input: ResendActivationEmailInput!): ResendActivationEmailPayload
+
+  """
+  Send password reset email.
+  
+  For non verified users, send an activation
+  email instead.
+  
+  Accepts both primary and secondary email.
+  
+  If there is no user with the requested email,
+  a successful response is returned.
+  """
+  sendPasswordResetEmail(input: SendPasswordResetEmailInput!): SendPasswordResetEmailPayload
+
+  """
+  Change user password without old password.
+  
+  Receive the token that was sent by email.
+  
+  If token and new passwords are valid, update
+  user password and in case of using refresh
+  tokens, revoke all of them.
+  
+  Also, if user has not been verified yet, verify it.
+  """
+  passwordReset(input: PasswordResetInput!): PasswordResetPayload
+
+  """
+  Set user password - for passwordless registration
+  
+  Receive the token that was sent by email.
+  
+  If token and new passwords are valid, set
+  user password and in case of using refresh
+  tokens, revoke all of them.
+  
+  Also, if user has not been verified yet, verify it.
+  """
+  passwordSet(input: PasswordSetInput!): PasswordSetPayload
+
+  """
+  Change account password when user knows the old password.
+  
+  A new token and refresh token are sent. User must be verified.
+  """
+  passwordChange(input: PasswordChangeInput!): PasswordChangePayload
+
+  """
+  Archive account and revoke refresh tokens.
+  
+  User must be verified and confirm password.
+  """
+  archiveAccount(input: ArchiveAccountInput!): ArchiveAccountPayload
+
+  """
+  Delete account permanently or make `user.is_active=False`.
+  
+  The behavior is defined on settings.
+  Anyway user refresh tokens are revoked.
+  
+  User must be verified and confirm password.
+  """
+  deleteAccount(input: DeleteAccountInput!): DeleteAccountPayload
+
+  """
+  Send activation to secondary email.
+  
+  User must be verified and confirm password.
+  """
+  sendSecondaryEmailActivation(input: SendSecondaryEmailActivationInput!): SendSecondaryEmailActivationPayload
+
+  """
+  Verify user secondary email.
+  
+  Receive the token that was sent by email.
+  User is already verified when using this mutation.
+  
+  If the token is valid, add the secondary email
+  to `user.secondary_email` field.
+  
+  Note that until the secondary email is verified,
+  it has not been saved anywhere beyond the token,
+  so it can still be used to create a new account.
+  After being verified, it will no longer be available.
+  """
+  verifySecondaryEmail(input: VerifySecondaryEmailInput!): VerifySecondaryEmailPayload
+
+  """
+  Swap between primary and secondary emails.
+  
+  Require password confirmation.
+  """
+  swapEmails(input: SwapEmailsInput!): SwapEmailsPayload
+
+  """
+  Remove user secondary email.
+  
+  Require password confirmation.
+  """
+  removeSecondaryEmail(input: RemoveSecondaryEmailInput!): RemoveSecondaryEmailPayload
+
+  """
+  Obtain JSON web token for given user.
+  
+  Allow to perform login with different fields,
+  and secondary email if set. The fields are
+  defined on settings.
+  
+  Not verified users can login by default. This
+  can be changes on settings.
+  
+  If user is archived, make it unarchive and
+  return `unarchiving=True` on output.
+  """
+  tokenAuth(input: ObtainJSONWebTokenInput!): ObtainJSONWebTokenPayload
+
+  """Same as `grapgql_jwt` implementation, with standard output."""
+  verifyToken(input: VerifyTokenInput!): VerifyTokenPayload
+
+  """Same as `grapgql_jwt` implementation, with standard output."""
+  refreshToken(input: RefreshTokenInput!): RefreshTokenPayload
+
+  """Same as `grapgql_jwt` implementation, with standard output."""
+  revokeToken(input: RevokeTokenInput!): RevokeTokenPayload
+}
+
+type _Mutation {
+  result: ViewOpResult
+}
+
+type CreateCompanySubscriptionMutation {
+  subscription: CompanySubscriptionType
+  success: Boolean
+  message: String
+}
+
+type UpgradeCompanySubscriptionMutation {
+  subscription: CompanySubscriptionType
+  success: Boolean
+  message: String
+}
+
+type CancelCompanySubscriptionMutation {
+  subscription: CompanySubscriptionType
+  success: Boolean
+  message: String
+}
+
+type SelectSubscriptionPlanMutation {
+  subscription: CompanySubscriptionType
+  success: Boolean
+  message: String
+}
+
+type InitiateMpesaPaymentMutation {
+  payment: SubscriptionPaymentType
+  success: Boolean
+  message: String
+}
+
+type InitiateCardPaymentMutation {
+  payment: SubscriptionPaymentType
+  success: Boolean
+  message: String
+  authorizationUrl: String
+}
+
+type ApplySubscriptionDiscountMutation {
+  success: Boolean
+  message: String
+}
+
+type VerifyPaystackPaymentMutation {
+  success: Boolean
+  message: String
+  payment: SubscriptionPaymentType
+}
+
+type CancelStandingOrderMutation {
+  success: Boolean
+  message: String
+}
+
+type ReactivateStandingOrderMutation {
+  success: Boolean
+  message: String
+}
+
+type ChangeBillingCycleMutation {
+  subscription: CompanySubscriptionType
+  success: Boolean
+  message: String
+}
+
+type RequestSubscriptionRefundMutation {
+  success: Boolean
+  message: String
+}
+
+"""
+Mark onboarding as skipped for the current company (client tracks UI state).
+"""
+type SkipGettingStartedMutation {
+  success: Boolean
+  message: String
+}
+
+"""Resume onboarding guidance after it was previously skipped."""
+type ResumeGettingStartedMutation {
+  success: Boolean
+  message: String
+}
+
+type MarkUserNotificationReadMutation {
+  notification: UserNotificationType
+  success: Boolean
+  message: String
+}
+
+type CreateUpdateNotificationCampaignViewMutation {
+  result: MutationResult
+}
+
+type MutationResult {
+  success: Boolean
+  message: String
+  payload: GenericScalar
+}
+
+type DeleteNotificationCampaignViewMutation {
+  result: MutationResult
+}
+
+type SendNotificationCampaignViewMutation {
+  result: MutationResult
+}
+
+type ToggleNotificationCampaignViewMutation {
+  result: MutationResult
+}
+
+type PreviewCampaignRecipientsViewMutation {
+  result: MutationResult
+}
+
+type ResendSMSViewMutation {
+  result: MutationResult
+}
+
+type TenantInboxActionMutation {
+  result: MutationResult
+}
+
+"""
+Create or update a maintenance request. Pass `id` to update, omit to create.
+"""
+type CreateUpdateMaintenanceRequestMutation {
+  request: MaintenanceRequestType
+  success: Boolean
+  message: String
+}
+
+"""
+Delete a maintenance request — blocked for IN_PROGRESS, COMPLETED, SCHEDULED, or if journal entries exist.
+"""
+type DeleteMaintenanceRequestMutation {
+  success: Boolean
+  message: String
+}
+
+"""
+Update the status of a maintenance request with transition validation and tenant notification.
+"""
+type UpdateMaintenanceStatusMutation {
+  request: MaintenanceRequestType
+  success: Boolean
+  message: String
+}
+
+type CreateCompanyMutation {
+  company: CompanyType
+  success: Boolean
+  message: String
+}
+
+type UpdateCompanyMutation {
+  company: CompanyType
+  success: Boolean
+  message: String
+}
+
+type CreateCompanyInvitationMutation {
+  invitation: CompanyInvitationType
+  success: Boolean
+  message: String
+}
+
+type AddCompanyMemberMutation {
+  membership: CompanyMembershipType
+  success: Boolean
+  message: String
+}
+
+type InviteCompanyMemberMutation {
+  invitation: CompanyInvitationType
+  success: Boolean
+  message: String
+}
+
+type BulkInviteCompanyMembersMutation {
+  success: Boolean
+  message: String
+  invitedCount: Int
+}
+
+type ResendCompanyInvitationMutation {
+  invitation: CompanyInvitationType
+  success: Boolean
+  message: String
+}
+
+type AcceptCompanyInvitationMutation {
+  membership: CompanyMembershipType
+  success: Boolean
+  message: String
+}
+
+type DeclineCompanyInvitationMutation {
+  success: Boolean
+  message: String
+}
+
+type SwitchCompanyMutation {
+  company: CompanyType
+  success: Boolean
+  message: String
+}
+
+type AssignUserRoleMutation {
+  userRole: UserRoleType
+  success: Boolean
+  message: String
+}
+
+type RemoveUserRoleMutation {
+  success: Boolean
+  message: String
+}
+
+type UpdateMemberPermissionsMutation {
+  membership: CompanyMembershipType
+  success: Boolean
+  message: String
+}
+
+type CreateAccountMutation {
+  account: AccountType
+  success: Boolean
+  message: String
+}
+
+"""
+Update user model fields, defined on settings.
+
+User must be verified.
+"""
+type UpdateAccountPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+"\n    Errors messages and codes mapped to\n    fields or non fields errors.\n    Example:\n    {\n        field_name: [\n            {\n                \"message\": \"error message\",\n                \"code\": \"error_code\"\n            }\n        ],\n        other_field: [\n            {\n                \"message\": \"error message\",\n                \"code\": \"error_code\"\n            }\n        ],\n        nonFieldErrors: [\n            {\n                \"message\": \"error message\",\n                \"code\": \"error_code\"\n            }\n        ]\n    }\n    "
+scalar ExpectedErrorType
+
+input UpdateAccountInput {
+  clientMutationId: String
+  firstName: String
+  lastName: String
+  phoneNumber: String
+  address: String
+  avatar: Upload
+}
+
+"""
+Create scalar that ignores normal serialization/deserialization, since
+that will be handled by the multipart request spec
+"""
+scalar Upload
+
+type CreateJournalEntryMutation {
+  journalEntry: JournalEntryType
+  success: Boolean
+  message: String
+}
+
+type AddJournalLineMutation {
+  journalLine: JournalLineType
+  success: Boolean
+  message: String
+}
+
+type PostJournalEntryMutation {
+  journalEntry: JournalEntryType
+  success: Boolean
+  message: String
+}
+
+type CreateTenantCreditMutation {
+  credit: TenantCreditType
+  success: Boolean
+  message: String
+}
+
+type CreateTenantRefundMutation {
+  refund: TenantRefundType
+  success: Boolean
+  message: String
+}
+
+"""Mutation to create or update a building"""
+type CreateUpdateBuildingMutation {
+  building: BuildingType
+  success: Boolean
+  message: String
+}
+
+"""Mutation to create or update a unit"""
+type CreateUpdateUnitMutation {
+  unit: UnitNode
+  success: Boolean
+  message: String
+}
+
+"""Mutation to create or update a tenant"""
+type CreateUpdateTenantMutation {
+  tenant: TenantType
+  success: Boolean
+  message: String
+}
+
+"""Mutation to process tenant move-in"""
+type ProcessMoveInMutation {
+  occupancy: UnitOccupancyType
+  success: Boolean
+  message: String
+}
+
+"""Mutation to process tenant move-out"""
+type ProcessMoveOutMutation {
+  occupancy: UnitOccupancyType
+  success: Boolean
+  message: String
+  finalBalance: Decimal
+  depositRefund: Decimal
+}
+
+"""Mutation to send arrears reminder to a tenant"""
+type SendArrearsReminderMutation {
+  success: Boolean
+  message: String
+}
+
+type UploadBuildingDocumentMutation {
+  document: BuildingDocumentType
+  success: Boolean
+  message: String
+}
+
+type DeleteBuildingDocumentMutation {
+  success: Boolean
+  message: String
+}
+
+type UploadBuildingImageMutation {
+  image: BuildingImageType
+  success: Boolean
+  message: String
+}
+
+type DeleteBuildingImageMutation {
+  success: Boolean
+  message: String
+}
+
+type MakePrimaryBuildingImageMutation {
+  image: BuildingImageType
+  success: Boolean
+  message: String
+}
+
+type CreateUpdatePenaltyRuleMutation {
+  rule: PenaltyRuleType
+  success: Boolean
+  message: String
+}
+
+type UpdatePenaltyRuleMutation {
+  rule: PenaltyRuleType
+  success: Boolean
+  message: String
+}
+
+type DeletePenaltyRuleMutation {
+  success: Boolean
+  message: String
+}
+
+type TogglePenaltyRuleMutation {
+  rule: PenaltyRuleType
+  success: Boolean
+  message: String
+}
+
+type TestPenaltyCalculationMutation {
+  success: Boolean
+  message: String
+  penaltyAmount: Decimal
+  totalAmount: Decimal
+}
+
+type CreateRentScheduleConfigMutation {
+  config: BuildingRentScheduleConfigType
+  success: Boolean
+  message: String
+}
+
+type UpdateRentScheduleConfigMutation {
+  config: BuildingRentScheduleConfigType
+  success: Boolean
+  message: String
+}
+
+type ToggleRentScheduleConfigMutation {
+  config: BuildingRentScheduleConfigType
+  success: Boolean
+  message: String
+}
+
+type DeleteRentScheduleConfigMutation {
+  success: Boolean
+  message: String
+}
+
+type RunRentScheduleConfigNowMutation {
+  success: Boolean
+  message: String
+}
+
+"""
+Create or update a lease agreement. Pass `id` to update an existing lease, omit to create a new DRAFT.
+"""
+type CreateUpdateLeaseMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Activate a DRAFT lease (DRAFT → ACTIVE)."""
+type ActivateLeaseMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Terminate an ACTIVE or DRAFT lease."""
+type TerminateLeaseMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""
+Renew an ACTIVE or EXPIRED lease. Marks old as RENEWED and creates a new DRAFT.
+"""
+type RenewLeaseMutation {
+  oldLease: LeaseAgreementType
+  newLease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Manually mark a past-end-date ACTIVE lease as Expired."""
+type MarkLeaseExpiredMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Delete a DRAFT lease that has no renewal chain."""
+type DeleteLeaseMutation {
+  success: Boolean
+  message: String
+}
+
+"""Remove the signed copy document attached to a lease."""
+type RemoveLeaseDocumentMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Upload a signed copy document attached to a lease."""
+type UploadLeaseDocumentMutation {
+  lease: LeaseAgreementType
+  success: Boolean
+  message: String
+}
+
+"""Delete a building only when it has no units."""
+type DeleteBuildingMutation {
+  success: Boolean
+  message: String
+}
+
+"""Delete a unit only when it has no related records."""
+type DeleteUnitMutation {
+  success: Boolean
+  message: String
+  blockers: [String]
+}
+
+"""
+Delete a tenant only when they have no occupancies or financial records.
+"""
+type DeleteTenantMutation {
+  success: Boolean
+  message: String
+  blockers: [String]
+}
+
+"""Void (cancel) an open tenant charge."""
+type VoidTenantChargeMutation {
+  success: Boolean
+  message: String
+}
+
+"""Void a PENDING or OVERDUE rent schedule and cancel its linked charges."""
+type VoidRentScheduleMutation {
+  success: Boolean
+  message: String
+}
+
+"""Manually allocate a successful payment to tenant charges."""
+type AllocatePaymentMutation {
+  success: Boolean
+  message: String
+  allocatedAmount: Decimal
+  remainingAmount: Decimal
+}
+
+"""Assign a tenant to a unit (create occupancy)."""
+type CreateOccupancyMutation {
+  occupancy: UnitOccupancyType
+  success: Boolean
+  message: String
+}
+
+"""Issue a vacation notice for a currently occupied unit."""
+type CreateVacationNoticeMutation {
+  success: Boolean
+  message: String
+  noticeId: Int
+  vacationDateOut: Date
+}
+
+"""Generate rent schedules for all occupied units for a given month."""
+type BulkGenerateRentSchedulesMutation {
+  success: Boolean
+  message: String
+  queued: Boolean
+}
+
+"""Create a new extra charge definition for a building."""
+type CreateBuildingExtraChargeDefinitionMutation {
+  success: Boolean
+  message: String
+  definitionId: Int
+}
+
+"""Update an existing extra charge definition."""
+type UpdateBuildingExtraChargeDefinitionMutation {
+  success: Boolean
+  message: String
+}
+
+"""Delete an extra charge definition (only if it has no posted entries)."""
+type DeleteBuildingExtraChargeDefinitionMutation {
+  success: Boolean
+  message: String
+}
+
+"""Post extra charges for a billing period to all selected tenants."""
+type ApplyBuildingExtraChargesMutation {
+  success: Boolean
+  message: String
+  entriesCreated: Int
+}
+
+input ExtraChargeRowInput {
+  occupancyId: ID!
+  include: Boolean
+  amount: Decimal
+  unitsUsed: Decimal
+}
+
+"""Update an existing extra charge entry and re-post to tenant account."""
+type UpdateBuildingExtraChargeEntryMutation {
+  success: Boolean
+  message: String
+}
+
+"""Post a single extra charge to a specific tenant/occupancy."""
+type PostTenantExtraChargeMutation {
+  success: Boolean
+  message: String
+  entryId: Int
+}
+
+"""Copy a unit N times with a given numbering pattern."""
+type CopyUnitMutation {
+  success: Boolean
+  message: String
+  createdCount: Int
+  duplicates: [String]
+}
+
+"""Generate multiple units across floors for a building."""
+type BulkGenerateUnitsMutation {
+  success: Boolean
+  message: String
+  createdCount: Int
+  duplicates: [String]
+}
+
+"""Copy a building and optionally its units."""
+type CopyBuildingMutation {
+  success: Boolean
+  message: String
+  newBuildingId: Int
+  unitsCreated: Int
+}
+
+"""Manually link an unmatched C2B payment to a unit and reconcile."""
+type ValidateC2BPaymentMutation {
+  success: Boolean
+  message: String
+}
+
+type SendSMSPayload {
+  smsResponse: String
+  clientMutationId: String
+}
+
+input SendSMSInput {
+  phone: String!
+  message: String!
+  schedule: Boolean
+  clientMutationId: String
+}
+
+"""
+Initiate M-Pesa STK Push payment for a unit with automatic allocation
+
+This mutation automatically creates InitiateLines based on the tenant's
+outstanding charges, ensuring proper auditing from the start.
+
+Sample input:
+{
+    phone: "0712345678",
+    accountNumber: "BLD001A101",  # Unit account number
+    amount: "15000",
+    email: "tenant@example.com",
+    name: "John Doe"
+}
+"""
+type InitiateUnitPaymentPayload {
+  initiate: InitiateNode
+  clientMutationId: String
+}
+
+input InitiateUnitPaymentInput {
+  phone: String!
+  accountNumber: String!
+  amount: String!
+  email: String
+  name: String
+  companyId: String
+  clientMutationId: String
+}
+
+type ConfirmPaymentPayload {
+  response: ConfirmPaymentType
+  clientMutationId: String
+}
+
+type ConfirmPaymentType {
+  receiptNo: String
+  response: String
+}
+
+input ConfirmPaymentInput {
+  transId: String!
+  clientMutationId: String
+}
+
+type CreatePageVisitPayload {
+  pageVisit: PageVisitsNode
+  clientMutationId: String
+}
+
+input CreatePageVisitInput {
+  siteName: String
+  siteUrl: String
+  clientIp: String
+  latitude: Float
+  longitude: Float
+  clientBrowser: String
+  device: String
+  identity: String
+  clientMutationId: String
+}
+
+type CreateCookieConsentPayload {
+  cookieConsent: CookieConsentNode
+  clientMutationId: String
+}
+
+input CreateCookieConsentInput {
+  cookie: String!
+  consented: Boolean!
+  clientMutationId: String
+}
+
+"""
+Register user with fields defined in the settings.
+
+If the email field of the user model is part of the
+registration fields (default), check if there is
+no user with that email or as a secondary email.
+
+If it exists, it does not register the user,
+even if the email field is not defined as unique
+(default of the default django user model).
+
+When creating the user, it also creates a `UserModel`
+related to that user, making it possible to track
+if the user is archived, verified and has a secondary
+email.
+
+Send account verification email.
+
+If allowed to not verified users login, return token.
+"""
+type RegisterPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input RegisterInput {
+  clientMutationId: String
+  phoneNumber: String
+  firstName: String!
+  lastName: String!
+  email: String!
+  role: String!
+  password1: String!
+  password2: String!
+}
+
+"""
+Verify user account.
+
+Receive the token that was sent by email.
+If the token is valid, make the user verified
+by making the `user.verified` field true.
+"""
+type VerifyAccountPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input VerifyAccountInput {
+  clientMutationId: String
+  token: String!
+}
+
+"""
+Sends activation email.
+
+It is called resend because theoretically
+the first activation email was sent when
+the user registered.
+
+If there is no user with the requested email,
+a successful response is returned.
+"""
+type ResendActivationEmailPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input ResendActivationEmailInput {
+  clientMutationId: String
+  email: String!
+}
+
+"""
+Send password reset email.
+
+For non verified users, send an activation
+email instead.
+
+Accepts both primary and secondary email.
+
+If there is no user with the requested email,
+a successful response is returned.
+"""
+type SendPasswordResetEmailPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input SendPasswordResetEmailInput {
+  clientMutationId: String
+  email: String!
+}
+
+"""
+Change user password without old password.
+
+Receive the token that was sent by email.
+
+If token and new passwords are valid, update
+user password and in case of using refresh
+tokens, revoke all of them.
+
+Also, if user has not been verified yet, verify it.
+"""
+type PasswordResetPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input PasswordResetInput {
+  clientMutationId: String
+  token: String!
+  newPassword1: String!
+  newPassword2: String!
+}
+
+"""
+Set user password - for passwordless registration
+
+Receive the token that was sent by email.
+
+If token and new passwords are valid, set
+user password and in case of using refresh
+tokens, revoke all of them.
+
+Also, if user has not been verified yet, verify it.
+"""
+type PasswordSetPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input PasswordSetInput {
+  clientMutationId: String
+  token: String!
+  newPassword1: String!
+  newPassword2: String!
+}
+
+"""
+Change account password when user knows the old password.
+
+A new token and refresh token are sent. User must be verified.
+"""
+type PasswordChangePayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+  refreshToken: String
+}
+
+input PasswordChangeInput {
+  clientMutationId: String
+  oldPassword: String!
+  newPassword1: String!
+  newPassword2: String!
+}
+
+"""
+Archive account and revoke refresh tokens.
+
+User must be verified and confirm password.
+"""
+type ArchiveAccountPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input ArchiveAccountInput {
+  clientMutationId: String
+  password: String!
+}
+
+"""
+Delete account permanently or make `user.is_active=False`.
+
+The behavior is defined on settings.
+Anyway user refresh tokens are revoked.
+
+User must be verified and confirm password.
+"""
+type DeleteAccountPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input DeleteAccountInput {
+  clientMutationId: String
+  password: String!
+}
+
+"""
+Send activation to secondary email.
+
+User must be verified and confirm password.
+"""
+type SendSecondaryEmailActivationPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input SendSecondaryEmailActivationInput {
+  clientMutationId: String
+  email: String!
+  password: String!
+}
+
+"""
+Verify user secondary email.
+
+Receive the token that was sent by email.
+User is already verified when using this mutation.
+
+If the token is valid, add the secondary email
+to `user.secondary_email` field.
+
+Note that until the secondary email is verified,
+it has not been saved anywhere beyond the token,
+so it can still be used to create a new account.
+After being verified, it will no longer be available.
+"""
+type VerifySecondaryEmailPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input VerifySecondaryEmailInput {
+  clientMutationId: String
+  token: String!
+}
+
+"""
+Swap between primary and secondary emails.
+
+Require password confirmation.
+"""
+type SwapEmailsPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input SwapEmailsInput {
+  clientMutationId: String
+  password: String!
+}
+
+"""
+Remove user secondary email.
+
+Require password confirmation.
+"""
+type RemoveSecondaryEmailPayload {
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input RemoveSecondaryEmailInput {
+  clientMutationId: String
+  password: String!
+}
+
+"""
+Obtain JSON web token for given user.
+
+Allow to perform login with different fields,
+and secondary email if set. The fields are
+defined on settings.
+
+Not verified users can login by default. This
+can be changes on settings.
+
+If user is archived, make it unarchive and
+return `unarchiving=True` on output.
+"""
+type ObtainJSONWebTokenPayload {
+  payload: GenericScalar
+  refreshExpiresIn: Int
+  success: Boolean
+  errors: ExpectedErrorType
+  user: UserNode
+  unarchiving: Boolean
+  clientMutationId: String
+  token: String
+  refreshToken: String
+}
+
+input ObtainJSONWebTokenInput {
+  clientMutationId: String
+  password: String!
+  email: String
+  username: String
+}
+
+"""Same as `grapgql_jwt` implementation, with standard output."""
+type VerifyTokenPayload {
+  payload: GenericScalar
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input VerifyTokenInput {
+  token: String!
+  clientMutationId: String
+}
+
+"""Same as `grapgql_jwt` implementation, with standard output."""
+type RefreshTokenPayload {
+  payload: GenericScalar
+  refreshExpiresIn: Int
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+  token: String
+  refreshToken: String
+}
+
+input RefreshTokenInput {
+  refreshToken: String
+  clientMutationId: String
+}
+
+"""Same as `grapgql_jwt` implementation, with standard output."""
+type RevokeTokenPayload {
+  revoked: Int!
+  success: Boolean
+  errors: ExpectedErrorType
+  clientMutationId: String
+}
+
+input RevokeTokenInput {
+  refreshToken: String!
+  clientMutationId: String
+}
+
+type Subscription {
+  userUpdates(userId: Int): UserSubscription
+  subscriptionsViewsApplyDiscountUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsCancelStandingOrderUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsChangeBillingCycleUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsCheckPaymentStatusUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsCheckPaymentStatusApiUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsProcessCardPaymentUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsProcessMpesaPaymentUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsReactivateStandingOrderUpdates(payload: JSONString): _Subscription
+  subscriptionsViewsVerifyPaystackPaymentUpdates(payload: JSONString): _Subscription
+  subscriptionPlanUpdates(planId: Int): SubscriptionPlanSubscription
+  companySubscriptionUpdates(companyId: UUID!, subscriptionId: Int): CompanySubscriptionSubscription
+  subscriptionPaymentUpdates(companyId: UUID!, paymentId: Int, subscriptionId: Int): SubscriptionPaymentSubscription
+  paymentReminderUpdates(subscriptionId: Int): PaymentReminderSubscription
+  messagingQuotaAlertUpdates(subscriptionId: Int): MessagingQuotaAlertSubscription
+  transactionUpdates(transactionId: UUID): TransactionSubscription
+  transactionLineUpdates(transactionId: UUID): TransactionLineSubscription
+  paymentTypeUpdates(paymentTypeId: Int): PaymentTypeSubscription
+  configPaymentTypeUpdates(companyId: UUID!): ConfigurablePaymentTypeSubscription
+  configPaymentModeUpdates(companyId: UUID!): ConfigurablePaymentModeSubscription
+  campaignUpdates(campaignId: Int, companyId: UUID!): CampaignSubscription
+  notificationLogUpdates(campaignId: Int, tenantId: Int): NotificationLogSubscription
+  userNotificationUpdates(userId: Int): UserNotificationSubscription
+  maintenanceUpdates(buildingId: Int, companyId: UUID!): MaintenanceSubscription
+  c2bPaymentUpdates(paymentId: Int): C2BPaymentSubscription
+  initiateUpdates(initiateId: Int): InitiateSubscription
+  initiateLineUpdates(initiateId: Int): InitiateLineSubscription
+  mpesaExpressUpdates(expressId: Int): MpesaExpressSubscription
+  companyViewsAddMemberManuallyUpdates(payload: JSONString): _Subscription
+  companyViewsAssignUserRoleUpdates(payload: JSONString): _Subscription
+  companyViewsBulkInviteMembersUpdates(payload: JSONString): _Subscription
+  companyViewsDeclineInvitationUpdates(payload: JSONString): _Subscription
+  companyViewsGetMemberPermissionsUpdates(payload: JSONString): _Subscription
+  companyViewsInviteMemberUpdates(payload: JSONString): _Subscription
+  companyViewsNavMessagingBalanceApiUpdates(payload: JSONString): _Subscription
+  companyViewsRemoveUserRoleUpdates(payload: JSONString): _Subscription
+  companyViewsResendInvitationUpdates(payload: JSONString): _Subscription
+  companyViewsUpdateMemberPermissionsUpdates(payload: JSONString): _Subscription
+  companyUpdates(companyId: UUID!): CompanySubscription
+  membershipUpdates(companyId: UUID!, userId: Int): MembershipSubscription
+  buildingOwnershipUpdates(buildingId: Int): BuildingOwnershipSubscription
+  companyInvitationUpdates(companyId: UUID!): CompanyInvitationSubscription
+  userRoleUpdates(companyId: UUID!, userId: Int): UserRoleSubscription
+  viewsAccountTrendDataUpdates(payload: JSONString): _Subscription
+  viewsBalanceSheetDataUpdates(payload: JSONString): _Subscription
+  viewsCashFlowStatementDataUpdates(payload: JSONString): _Subscription
+  viewsComparativePerformanceDataUpdates(payload: JSONString): _Subscription
+  viewsGetTenantCreditsAjaxUpdates(payload: JSONString): _Subscription
+  viewsIncomeStatementDataUpdates(payload: JSONString): _Subscription
+  viewsJournalEntryTemplateUploadUpdates(payload: JSONString): _Subscription
+  viewsRetainedEarningsDataUpdates(payload: JSONString): _Subscription
+  viewsRevenueTrendDataUpdates(payload: JSONString): _Subscription
+  viewsTrialBalanceDataUpdates(payload: JSONString): _Subscription
+  viewsUnitsByBuildingUpdates(payload: JSONString): _Subscription
+  accountUpdates(accountId: UUID, companyId: UUID!): AccountSubscription
+  journalEntryUpdates(companyId: UUID!, entryId: UUID): JournalEntrySubscription
+  journalLineUpdates(entryId: UUID): JournalLineSubscription
+  tenantCreditUpdates(companyId: UUID!, tenantId: Int): TenantCreditSubscription
+  tenantRefundUpdates(companyId: UUID!, tenantId: Int): TenantRefundSubscription
+  buildingUpdates(buildingId: Int, companyId: Int): BuildingSubscription
+  unitUpdates(buildingId: Int, unitId: Int): UnitSubscription
+  tenantUpdates(tenantId: Int): TenantSubscription
+  rentScheduleUpdates(rentScheduleId: Int, unitId: Int): RentScheduleSubscription
+  buildingDocumentUpdates(buildingId: Int): BuildingDocumentSubscription
+  buildingImageUpdates(buildingId: Int): BuildingImageSubscription
+  rentScheduleConfigUpdates(buildingId: Int, configId: Int): RentScheduleConfigSubscription
+  penaltyRuleUpdates(companyId: Int, ruleId: Int): PenaltyRuleSubscription
+  appliedPenaltyUpdates(companyId: Int, rentScheduleId: Int): AppliedPenaltySubscription
+  leaseUpdates(companyId: Int, leaseId: Int): LeaseSubscription
+}
+
+type UserSubscription {
+  action: String
+  user: UserNode
+}
+
+type _Subscription {
+  action: String
+  result: ViewOpResult
+}
+
+type SubscriptionPlanSubscription {
+  action: String
+  plan: SubscriptionPlanType
+}
+
+type CompanySubscriptionSubscription {
+  action: String
+  subscription: CompanySubscriptionType
+}
+
+type SubscriptionPaymentSubscription {
+  action: String
+  payment: SubscriptionPaymentType
+}
+
+type PaymentReminderSubscription {
+  action: String
+  reminder: PaymentReminderType
+}
+
+type MessagingQuotaAlertSubscription {
+  action: String
+  alert: MessagingQuotaAlertType
+}
+
+type TransactionSubscription {
+  action: String
+  transaction: TransactionNode
+}
+
+type TransactionLineSubscription {
+  action: String
+  line: TransactionLineNode
+}
+
+type PaymentTypeSubscription {
+  action: String
+  paymentType: PaymentTypeNode
+}
+
+"""Real-time updates for configurable payment types (company-scoped)."""
+type ConfigurablePaymentTypeSubscription {
+  action: String
+  paymentType: ConfigurablePaymentTypeNode
+}
+
+"""Real-time updates for configurable payment modes (company-scoped)."""
+type ConfigurablePaymentModeSubscription {
+  action: String
+  paymentMode: ConfigurablePaymentModeNode
+}
+
+type CampaignSubscription {
+  action: String
+  campaign: TenantNotificationCampaignType
+}
+
+type NotificationLogSubscription {
+  action: String
+  log: TenantNotificationLogType
+}
+
+type UserNotificationSubscription {
+  action: String
+  notification: UserNotificationType
+}
+
+type MaintenanceSubscription {
+  action: String
+  request: MaintenanceRequestType
+}
+
+type C2BPaymentSubscription {
+  action: String
+  payment: C2BPaymentModelNode
+}
+
+type InitiateSubscription {
+  action: String
+  initiate: InitiateNode
+}
+
+type InitiateLineSubscription {
+  action: String
+  line: InitiateLineNode
+}
+
+type MpesaExpressSubscription {
+  action: String
+  express: MpesaExpressNode
+}
+
+type CompanySubscription {
+  action: String
+  company: CompanyType
+}
+
+type MembershipSubscription {
+  action: String
+  membership: CompanyMembershipType
+}
+
+type BuildingOwnershipSubscription {
+  action: String
+  ownership: BuildingOwnershipType
+}
+
+type CompanyInvitationSubscription {
+  action: String
+  invitation: CompanyInvitationType
+}
+
+type UserRoleSubscription {
+  action: String
+  userRole: UserRoleType
+}
+
+type AccountSubscription {
+  action: String
+  account: AccountType
+}
+
+type JournalEntrySubscription {
+  action: String
+  journalEntry: JournalEntryType
+}
+
+type JournalLineSubscription {
+  action: String
+  journalLine: JournalLineType
+}
+
+type TenantCreditSubscription {
+  action: String
+  credit: TenantCreditType
+}
+
+type TenantRefundSubscription {
+  action: String
+  refund: TenantRefundType
+}
+
+type BuildingSubscription {
+  action: String
+  building: BuildingType
+}
+
+type UnitSubscription {
+  action: String
+  unit: UnitNode
+}
+
+type TenantSubscription {
+  action: String
+  tenant: TenantType
+}
+
+type RentScheduleSubscription {
+  action: String
+  rentSchedule: RentScheduleType
+}
+
+type BuildingDocumentSubscription {
+  action: String
+  document: BuildingDocumentType
+}
+
+type BuildingImageSubscription {
+  action: String
+  image: BuildingImageType
+}
+
+type RentScheduleConfigSubscription {
+  action: String
+  config: BuildingRentScheduleConfigType
+}
+
+type PenaltyRuleSubscription {
+  action: String
+  rule: PenaltyRuleType
+}
+
+type AppliedPenaltySubscription {
+  action: String
+  penalty: AppliedPenaltyType
+}
+
+type LeaseSubscription {
+  action: String
+  lease: LeaseAgreementType
+}
