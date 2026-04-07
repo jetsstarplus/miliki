@@ -9,15 +9,15 @@ import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -206,32 +206,29 @@ export default function Leases() {
       </View>
 
       {/* Status filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersWrap}
-        contentContainerStyle={styles.filtersRow}
-      >
-        {STATUS_FILTERS.map(f => {
-          const active = statusFilter === f.value;
-          const tint = f.value !== 'all' ? STATUS_COLORS[f.value] : undefined;
-          return (
-            <TouchableOpacity
-              key={f.value}
-              style={[
-                styles.chip,
-                active && (tint ? { borderColor: tint, backgroundColor: tint + '18' } : styles.chipActive),
-              ]}
-              onPress={() => setStatusFilter(f.value)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, active && (tint ? { color: tint } : styles.chipTextActive)]}>
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.filtersWrap} >      
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filtersRow}
+        >
+            {STATUS_FILTERS.map(f => {
+            const active = statusFilter === f.value;
+            return (
+                <TouchableOpacity
+                key={f.value}
+                style={[styles.chip, active && styles.chipActive]}
+                onPress={() => setStatusFilter(f.value)}
+                activeOpacity={0.7}
+                >
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {f.label}
+                </Text>
+                </TouchableOpacity>
+            );
+            })}
+        </ScrollView>
+      </View>
 
       {loading && leases.length === 0 && <LoadingState />}
 

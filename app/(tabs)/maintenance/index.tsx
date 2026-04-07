@@ -9,15 +9,15 @@ import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -198,35 +198,36 @@ export default function Maintenance() {
       </View>
 
       {/* Priority filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersWrap}
-        contentContainerStyle={styles.filtersRow}
-      >
-        {PRIORITY_FILTERS.map(f => {
-          const active = priorityFilter === f.value;
-          const tint = f.value !== 'all' ? PRIORITY_COLORS[f.value] : undefined;
-          return (
-            <TouchableOpacity
-              key={f.value}
-              style={[
-                styles.chip,
-                active && (tint ? { borderColor: tint, backgroundColor: tint + '18' } : styles.chipActive),
-              ]}
-              onPress={() => setPriorityFilter(f.value)}
-              activeOpacity={0.7}
-            >
-              {f.value !== 'all' && (
-                <View style={[styles.chipDot, { backgroundColor: tint ?? colors.textMuted }]} />
-              )}
-              <Text style={[styles.chipText, active && (tint ? { color: tint } : styles.chipTextActive)]}>
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.filtersWrap} >
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filtersRow}
+        >
+            {PRIORITY_FILTERS.map(f => {
+            const active = priorityFilter === f.value;
+            const tint = f.value !== 'all' ? PRIORITY_COLORS[f.value] : undefined;
+            return (
+                <TouchableOpacity
+                key={f.value}
+                style={[
+                    styles.chip,
+                    active && (tint ? { borderColor: tint, backgroundColor: tint + '18' } : styles.chipActive),
+                ]}
+                onPress={() => setPriorityFilter(f.value)}
+                activeOpacity={0.7}
+                >
+                {f.value !== 'all' && (
+                    <View style={[styles.chipDot, { backgroundColor: tint ?? colors.textMuted }]} />
+                )}
+                <Text style={[styles.chipText, active && (tint ? { color: tint } : styles.chipTextActive)]}>
+                    {f.label}
+                </Text>
+                </TouchableOpacity>
+            );
+            })}
+        </ScrollView>
+      </View>
 
       {loading && items.length === 0 && <LoadingState />}
 

@@ -4632,18 +4632,18 @@ type Mutation {
   """
   updateMaintenanceStatus(id: ID!, status: String!): UpdateMaintenanceStatusMutation
   createCompany(city: String, companyType: String!, country: String, county: String, currencyId: Int!, email: String!, name: String!, phone: String!, physicalAddress: String!, registrationNumber: String, taxNumber: String): CreateCompanyMutation
-  updateCompany(city: String, companyId: UUID!, country: String, county: String, email: String, name: String, phone: String, physicalAddress: String, registrationNumber: String, status: String, taxNumber: String): UpdateCompanyMutation
-  createCompanyInvitation(companyId: UUID!, email: String!, message: String, role: String!): CreateCompanyInvitationMutation
-  addCompanyMember(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, companyId: UUID!, email: String!, firstName: String!, lastName: String!, phone: String, role: String!): AddCompanyMemberMutation
-  inviteCompanyMember(companyId: UUID!, email: String!, message: String, role: String!): InviteCompanyMemberMutation
-  bulkInviteCompanyMembers(companyId: UUID!, emails: [String]!, role: String!): BulkInviteCompanyMembersMutation
+  updateCompany(city: String, companyId: ID!, country: String, county: String, email: String, name: String, phone: String, physicalAddress: String, registrationNumber: String, status: String, taxNumber: String): UpdateCompanyMutation
+  createCompanyInvitation(companyId: ID!, email: String!, message: String, role: String!): CreateCompanyInvitationMutation
+  addCompanyMember(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, companyId: ID!, email: String!, firstName: String!, lastName: String!, phone: String, role: String!): AddCompanyMemberMutation
+  inviteCompanyMember(companyId: ID!, email: String!, message: String, role: String!): InviteCompanyMemberMutation
+  bulkInviteCompanyMembers(companyId: ID!, emails: [String]!, role: String!): BulkInviteCompanyMembersMutation
   resendCompanyInvitation(invitationId: UUID!): ResendCompanyInvitationMutation
   acceptCompanyInvitation(invitationToken: UUID!): AcceptCompanyInvitationMutation
   declineCompanyInvitation(invitationToken: UUID!): DeclineCompanyInvitationMutation
-  switchCompany(companyId: UUID!): SwitchCompanyMutation
-  assignUserRole(buildingId: Int, companyId: UUID!, notes: String, role: String!, userId: Int!): AssignUserRoleMutation
-  removeUserRole(roleId: Int!): RemoveUserRoleMutation
-  updateMemberPermissions(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canManageTenants: Boolean, canModifyCompany: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, canViewReports: Boolean, membershipId: Int!): UpdateMemberPermissionsMutation
+  switchCompany(companyId: ID!): SwitchCompanyMutation
+  assignUserRole(buildingId: ID, companyId: ID!, notes: String, role: String!, userId: ID!): AssignUserRoleMutation
+  removeUserRole(roleId: ID!): RemoveUserRoleMutation
+  updateMemberPermissions(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canManageTenants: Boolean, canModifyCompany: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, canViewReports: Boolean, membershipId: ID!): UpdateMemberPermissionsMutation
   createAccount(accountType: String!, cashAccount: Boolean, code: String!, companyId: UUID!, description: String, isActive: Boolean, name: String!, parentId: UUID): CreateAccountMutation
 
   """

@@ -111,3 +111,13 @@ export const PASSWORD_RESET_MUTATION = gql`
   }
 `;
 
+export const PASSWORD_CHANGE_MUTATION = gql`
+  mutation PasswordChange($oldPassword: String!, $newPassword1: String!, $newPassword2: String!) {
+    passwordChange(input: { oldPassword: $oldPassword, newPassword1: $newPassword1, newPassword2: $newPassword2 }) {
+      success
+      errors
+      refreshToken
+    }
+  }
+`;
+
