@@ -59,6 +59,16 @@ const wsLink = new GraphQLWsLink(
       return { Authorization: token ? `JWT ${token}` : '' };
     },
     retryAttempts: 5,
+    on: {
+      error: (err) => {
+        console.warn('[Apollo WS] Connection error:', err);
+      },
+      closed: (event) => {
+        if ((event as CloseEvent).code !== 1000) {
+          console.warn('[Apollo WS] Connection closed unexpectedly:', (event as CloseEvent).code);
+        }
+      },
+    },
   }),
 );
 
