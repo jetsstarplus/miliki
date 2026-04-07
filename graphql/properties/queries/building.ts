@@ -129,6 +129,7 @@ query BuildingDetail($id: ID!) {
     occupancyRate
     occupiedUnitsCount
     vacantUnitsCount
+    totalMonthlyRent
     
   }
 }`;
