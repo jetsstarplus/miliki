@@ -117,5 +117,6 @@ mutation MarkLeaseExpired($id: ID!){
     success
     message
   }
-`
+}
+`;
 
