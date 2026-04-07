@@ -42,3 +42,20 @@ export const COMPANIES_QUERY = gql`
     }
   }
 `;
+
+/**
+ * Auth Context & Session Hydration (Section 1)
+ * Call immediately after login to populate role, company, and permission state.
+ */
+export const AUTH_CONTEXT_QUERY = gql`
+  query AuthContext {
+    authContext
+    companiesContext
+    me {
+      id
+      email
+      firstName
+      lastName
+    }
+  }
+`;

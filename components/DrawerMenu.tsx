@@ -72,6 +72,7 @@ const NAV: NavSection[] = [
       { label: 'Communication', icon: 'chatbubbles', route: '/(tabs)/communication' },
       { label: 'Rent Schedules', icon: 'calendar', route: '/(tabs)/rent-schedules' },
       { label: 'Arrears', icon: 'alert-circle', route: '/(tabs)/arrears' },
+      { label: 'Notifications', icon: 'notifications', route: '/(tabs)/notifications' },
     ],
   },
   {

@@ -20,6 +20,43 @@ export interface Company {
   email?: string;
 }
 
+/** Parsed from the `authContext` scalar returned by the API */
+export interface AuthContextData {
+  currentRole: string;
+  currentRoleDisplay: string;
+  hasMultipleRoles: boolean;
+  flags: {
+    isAdministrator: boolean;
+    isLandlord: boolean;
+    isAgent: boolean;
+    isTenant: boolean;
+    isAccountant: boolean;
+    isMaintenance: boolean;
+  };
+  availableRoles: Array<{ id: number; role: string; isPrimary: boolean; tenantId: string | null; buildingId: string | null }>;
+}
+
+/** Parsed from the `companiesContext` scalar returned by the API */
+export interface CompaniesContextData {
+  hasCompanies: boolean;
+  currentCompany: { id: string; name: string } | null;
+  userCompanies: Array<{ companyId: string; companyName: string; role: string }>;
+  permissions: {
+    isCompanyOwner: boolean;
+    canManageProperties: boolean;
+    canManagePayments: boolean;
+    canValidatePayments: boolean;
+    canViewAccounting: boolean;
+    canManageMembers: boolean;
+  };
+  subscription: {
+    lockedBuildingIds: string[];
+    lockedUnitIds: string[];
+    overPropertiesLimit: boolean;
+    overUnitsLimit: boolean;
+  };
+}
+
 interface AuthState {
   token: string | null;
   refreshToken: string | null;
@@ -28,6 +65,10 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasCompany: boolean;
+  /** Populated after calling AUTH_CONTEXT_QUERY post-login */
+  roleContext: AuthContextData | null;
+  /** Populated after calling AUTH_CONTEXT_QUERY post-login */
+  companiesContext: CompaniesContextData | null;
 }
 
 interface AuthContextValue extends AuthState {
@@ -35,6 +76,7 @@ interface AuthContextValue extends AuthState {
   signOut: () => Promise<void>;
   setActiveCompany: (company: Company) => Promise<void>;
   updateUser: (user: UserNode) => void;
+  setRoleContext: (roleCtx: AuthContextData, companiesCtx: CompaniesContextData) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     isAuthenticated: false,
     hasCompany: false,
+    roleContext: null,
+    companiesContext: null,
   });
 
   useEffect(() => {
@@ -103,6 +147,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading: false,
       isAuthenticated: false,
       hasCompany: false,
+      roleContext: null,
+      companiesContext: null,
     });
   }, []);
 
@@ -115,8 +161,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState(s => ({ ...s, user }));
   }, []);
 
+  const setRoleContext = useCallback(
+    (roleCtx: AuthContextData, companiesCtx: CompaniesContextData) => {
+      setState(s => ({ ...s, roleContext: roleCtx, companiesContext: companiesCtx }));
+    },
+    [],
+  );
+
   return (
-    <AuthContext.Provider value={{ ...state, signIn, signOut, setActiveCompany, updateUser }}>
+    <AuthContext.Provider value={{ ...state, signIn, signOut, setActiveCompany, updateUser, setRoleContext }}>
       {children}
     </AuthContext.Provider>
   );

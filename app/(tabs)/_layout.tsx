@@ -23,7 +23,7 @@ function TabIcon({ name, outlineName, focused }: { name: IoniconName; outlineNam
 const HIDDEN_SCREENS = [
   'portfolio', 'properties', 'units', 'leases', 'maintenance',
   'payments', 'communication', 'rent-schedules', 'arrears',
-  'accounting', 'agent-statements', 'manual-transfer',
+  'accounting', 'agent-statements', 'manual-transfer', 'notifications',
 ];
 
 export default function TabsLayout() {

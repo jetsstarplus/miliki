@@ -3,6 +3,7 @@
 
 export const API_URL = 'https://miliki.ke/graphql';
 export const PORTAL_URL = 'https://miliki.ke/properties';
+export const WS_URL = 'wss://miliki.ke/graphql';
 
 
 export const TOKEN_KEY = 'monerom_auth_token';

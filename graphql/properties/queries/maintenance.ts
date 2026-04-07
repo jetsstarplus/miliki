@@ -105,4 +105,5 @@ query Maintenance($id: ID!) {
         id
         entryNumber
     }
-`
+  }
+}`;
