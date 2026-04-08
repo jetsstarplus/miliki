@@ -7,17 +7,18 @@ import { useTheme } from '@/context/theme';
 import { MAINTENANCES } from '@/graphql/properties/queries/maintenance';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -141,6 +142,7 @@ function MaintenanceCard({ item }: { item: MaintenanceRequest }) {
 }
 
 export default function Maintenance() {
+  const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [search, setSearch] = useState('');
@@ -243,7 +245,14 @@ export default function Maintenance() {
         <FlatList
           data={items}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <MaintenanceCard item={item} />}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push({ pathname: '/maintenance/[id]', params: { id: item.id } } as any)}
+            >
+              <MaintenanceCard item={item} />
+            </TouchableOpacity>
+          )}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onEndReached={onEndReached}
@@ -267,6 +276,15 @@ export default function Maintenance() {
           }
         />
       )}
+
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/maintenance/add' as any)}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -274,7 +292,7 @@ export default function Maintenance() {
 function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
-    list: { padding: Spacing.md, paddingBottom: 80 },
+    list: { padding: Spacing.md, paddingBottom: 100 },
     footer: { paddingVertical: Spacing.md },
 
     searchWrap: {
@@ -349,5 +367,17 @@ function makeStyles(c: AppColors) {
     costRow: { flexDirection: 'row', alignItems: 'center', marginTop: Spacing.xs, gap: 3 },
     costLabel: { fontSize: Typography.fontSizeXs, color: c.textMuted },
     costValue: { fontSize: Typography.fontSizeXs, fontWeight: Typography.fontWeightMedium, color: c.text },
+    fab: {
+      position: 'absolute',
+      right: Spacing.lg,
+      bottom: Spacing.xl,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: c.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...Shadow.md,
+    },
   });
 }

@@ -1,5 +1,36 @@
 import { gql } from "@apollo/client";
 
+export const TENANTS_DROPDOWN = gql`
+  query TenantsDropdown($first: Int, $search: String) {
+    tenants(first: $first, search: $search) {
+      edges {
+        node {
+          id
+          fullName
+          phone
+          occupancies(first: 1) {
+            edges {
+              node {
+                id
+                isCurrent
+                unit {
+                  id
+                  unitNumber
+                  accountNumber
+                  building {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 
 export const TENANTS_QUERY = gql`
 query TENANTS($first: Int, $after: String, $search: String) {

@@ -39,16 +39,19 @@ type Query {
   Context data for the payment initiation page (amounts, balances, waiver info).
   """
   subscriptionInitiatePaymentData(companyId: UUID!, paymentFor: String): GenericScalar
-  notificationCampaigns(companyId: UUID!, status: String, buildingId: Int, offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationCampaignTypeConnection
-  notificationCampaign(id: Int!): TenantNotificationCampaignType
-  notificationLogs(campaignId: Int, tenantId: Int, offset: Int, before: String, after: String, first: Int, last: Int): TenantNotificationLogTypeConnection
-  userNotifications(userId: Int, isRead: Boolean, offset: Int, before: String, after: String, first: Int, last: Int): UserNotificationTypeConnection
+  notificationCampaigns(offset: Int, before: String, after: String, first: Int, last: Int, buildingId: ID, status: NotificationsTenantNotificationCampaignStatusChoices, isActive: Boolean, search: String): TenantNotificationCampaignTypeConnection
+  notificationCampaign(
+    """The ID of the object"""
+    id: ID!
+  ): TenantNotificationCampaignType
+  notificationLogs(offset: Int, before: String, after: String, first: Int, last: Int, campaignId: ID, emailSent: Boolean, smsSent: Boolean, search: String): TenantNotificationLogTypeConnection
+  userNotifications(offset: Int, before: String, after: String, first: Int, last: Int, userId: ID, isRead: Boolean, isArchived: Boolean, search: String): UserNotificationTypeConnection
   notificationsContext: GenericScalar
-  notificationCampaignListData(search: String, status: String, frequency: String, buildingId: Int, first: Int, after: String): GenericScalar
-  notificationCampaignDetailData(campaignId: Int!): GenericScalar
+  notificationCampaignListData(search: String, status: String, frequency: String, buildingId: ID, first: Int, after: String): GenericScalar
+  notificationCampaignDetailData(campaignId: ID!): GenericScalar
   notificationLogsListData(scenario: String, search: String, first: Int, after: String): GenericScalar
   tenantInboxListData(status: String, notificationType: String, priority: String, first: Int, after: String): GenericScalar
-  tenantInboxDetailData(notificationId: Int!): GenericScalar
+  tenantInboxDetailData(notificationId: ID!): GenericScalar
   maintenanceRequests(offset: Int, before: String, after: String, first: Int, last: Int, buildingId: ID, status: MaintenanceMaintenanceRequestStatusChoices, priority: MaintenanceMaintenanceRequestPriorityChoices, search: String): MaintenanceRequestTypeConnection
   maintenanceRequest(
     """The ID of the object"""
@@ -4588,34 +4591,34 @@ type Mutation {
   subscriptionsViewsProcessMpesaPayment(payload: JSONString): _Mutation
   subscriptionsViewsReactivateStandingOrder(payload: JSONString): _Mutation
   subscriptionsViewsVerifyPaystackPayment(payload: JSONString): _Mutation
-  createCompanySubscription(billingCycle: String, companyId: UUID!, planId: Int!): CreateCompanySubscriptionMutation
-  upgradeCompanySubscription(billingCycle: String, newPlanId: Int!, subscriptionId: Int!): UpgradeCompanySubscriptionMutation
-  cancelCompanySubscription(subscriptionId: Int!): CancelCompanySubscriptionMutation
-  selectSubscriptionPlan(billingCycle: String, companyId: UUID!, planId: Int!): SelectSubscriptionPlanMutation
-  initiateMpesaPayment(amountOverride: Decimal, paymentFor: String, phoneNumber: String!, subscriptionId: Int!): InitiateMpesaPaymentMutation
-  initiateCardPayment(amountOverride: Decimal, customerEmail: String, paymentFor: String, setupStandingOrder: Boolean, subscriptionId: Int!): InitiateCardPaymentMutation
-  applySubscriptionDiscount(discountCode: String!, subscriptionId: Int!): ApplySubscriptionDiscountMutation
+  createCompanySubscription(billingCycle: String, companyId: ID!, planId: ID!): CreateCompanySubscriptionMutation
+  upgradeCompanySubscription(billingCycle: String, newPlanId: ID!, subscriptionId: ID!): UpgradeCompanySubscriptionMutation
+  cancelCompanySubscription(subscriptionId: ID!): CancelCompanySubscriptionMutation
+  selectSubscriptionPlan(billingCycle: String, companyId: ID!, planId: ID!): SelectSubscriptionPlanMutation
+  initiateMpesaPayment(amountOverride: Decimal, paymentFor: String, phoneNumber: String!, subscriptionId: ID!): InitiateMpesaPaymentMutation
+  initiateCardPayment(amountOverride: Decimal, customerEmail: String, paymentFor: String, setupStandingOrder: Boolean, subscriptionId: ID!): InitiateCardPaymentMutation
+  applySubscriptionDiscount(discountCode: String!, subscriptionId: ID!): ApplySubscriptionDiscountMutation
   verifyPaystackPayment(reference: String!): VerifyPaystackPaymentMutation
-  cancelStandingOrder(reason: String, subscriptionId: Int!): CancelStandingOrderMutation
-  reactivateStandingOrder(subscriptionId: Int!): ReactivateStandingOrderMutation
-  changeBillingCycle(newCycle: String!, subscriptionId: Int!): ChangeBillingCycleMutation
-  requestSubscriptionRefund(description: String, paymentId: Int!, reason: String, refundAmount: Decimal, refundType: String): RequestSubscriptionRefundMutation
+  cancelStandingOrder(reason: String, subscriptionId: ID!): CancelStandingOrderMutation
+  reactivateStandingOrder(subscriptionId: ID!): ReactivateStandingOrderMutation
+  changeBillingCycle(newCycle: String!, subscriptionId: ID!): ChangeBillingCycleMutation
+  requestSubscriptionRefund(description: String, paymentId: ID!, reason: String, refundAmount: Decimal, refundType: String): RequestSubscriptionRefundMutation
 
   """
   Mark onboarding as skipped for the current company (client tracks UI state).
   """
-  skipGettingStarted(companyId: UUID!): SkipGettingStartedMutation
+  skipGettingStarted(companyId: ID!): SkipGettingStartedMutation
 
   """Resume onboarding guidance after it was previously skipped."""
-  resumeGettingStarted(companyId: UUID!): ResumeGettingStartedMutation
+  resumeGettingStarted(companyId: ID!): ResumeGettingStartedMutation
   markUserNotificationRead(isRead: Boolean!, notificationId: Int!): MarkUserNotificationReadMutation
-  createUpdateNotificationCampaignView(buildingId: Int, filterType: String, frequency: String, id: Int, message: String!, minBalanceAmount: Decimal, name: String!, scheduledDatetime: DateTime, sendEmail: Boolean, sendSms: Boolean, sendWhatsapp: Boolean, subject: String!): CreateUpdateNotificationCampaignViewMutation
-  deleteNotificationCampaignView(campaignId: Int!): DeleteNotificationCampaignViewMutation
-  sendNotificationCampaignView(campaignId: Int!): SendNotificationCampaignViewMutation
-  toggleNotificationCampaignView(campaignId: Int!): ToggleNotificationCampaignViewMutation
-  previewCampaignRecipientsView(campaignId: Int!): PreviewCampaignRecipientsViewMutation
-  resendSmsView(logId: Int!): ResendSMSViewMutation
-  tenantInboxAction(action: String!, notificationId: Int): TenantInboxActionMutation
+  createUpdateNotificationCampaignView(buildingId: Int, filterType: String, frequency: String, id: ID, message: String!, minBalanceAmount: Decimal, name: String!, scheduledDatetime: DateTime, selectedTenants: [ID], sendEmail: Boolean, sendSms: Boolean, sendWhatsapp: Boolean, subject: String!): CreateUpdateNotificationCampaignViewMutation
+  deleteNotificationCampaignView(campaignId: ID!): DeleteNotificationCampaignViewMutation
+  sendNotificationCampaignView(campaignId: ID!): SendNotificationCampaignViewMutation
+  toggleNotificationCampaignView(campaignId: ID!): ToggleNotificationCampaignViewMutation
+  previewCampaignRecipientsView(campaignId: ID!): PreviewCampaignRecipientsViewMutation
+  resendSmsView(logId: ID!): ResendSMSViewMutation
+  tenantInboxAction(action: String!, notificationId: ID): TenantInboxActionMutation
 
   """
   Create or update a maintenance request. Pass `id` to update, omit to create.

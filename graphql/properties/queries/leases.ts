@@ -1,5 +1,28 @@
 import { gql } from "@apollo/client";
 
+export const ALL_OCCUPANCIES = gql`
+  query AllOccupancies($unitId: Int, $tenantId: Int, $isCurrent: Boolean) {
+    allOccupancies(unitId: $unitId, tenantId: $tenantId, isCurrent: $isCurrent) {
+      id
+      isCurrent
+      unit {
+        id
+        unitNumber
+        accountNumber
+        building {
+          id
+          name
+        }
+      }
+      tenant {
+        id
+        fullName
+        phone
+      }
+    }
+  }
+`;
+
 export const LEASE_LIST = gql`
 query LeaseList($first: Int, $after: String, $search:String) {
   leases(first: $first, after: $after, search: $search) {
@@ -120,6 +143,10 @@ query LeaseDetail($id: ID!) {
         unitType{
             name
             id
+        }
+        building{
+            id
+            name
         }
         }
     }

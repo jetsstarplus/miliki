@@ -1,5 +1,19 @@
 import { gql } from '@apollo/client';
 
+export const BUILDINGS_DROPDOWN = gql`
+  query BuildingsDropdown($first: Int, $search: String) {
+    buildings(first: $first, search: $search) {
+      edges {
+        node {
+          id
+          name
+          code
+        }
+      }
+    }
+  }
+`;
+
 export const DASHBOARD = gql`
 query DASHBOARD{
   dashboard{

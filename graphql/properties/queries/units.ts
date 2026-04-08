@@ -1,5 +1,35 @@
 import { gql } from "@apollo/client";
 
+export const UNITS_DROPDOWN = gql`
+  query UnitsDropdown($first: Int, $search: String, $buildingId: ID) {
+    units(first: $first, search: $search, buildingId: $buildingId) {
+      edges {
+        node {
+          id
+          unitNumber
+          accountNumber
+          building {
+            id
+            name
+          }
+          occupancies(first: 1) {
+            edges {
+              node {
+                id
+                isCurrent
+                tenant {
+                  id
+                  fullName
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 
 export const UNITS_QUERY = gql`
 query UNITS($first: Int, $offset: Int, $before: String, $after: String, $last: Int, $buildingId: ID, $status: PropertiesUnitStatusChoices, $isAvailableForRent: Boolean, $isAvailableForPurchase: Boolean, $unitType: ID, $search: String) {

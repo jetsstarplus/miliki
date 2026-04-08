@@ -7,6 +7,7 @@ import { useTheme } from '@/context/theme';
 import { LEASE_LIST } from '@/graphql/properties/queries/leases';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -149,6 +150,7 @@ function LeaseCard({ item }: { item: Lease }) {
 }
 
 export default function Leases() {
+  const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [search, setSearch] = useState('');
@@ -244,7 +246,14 @@ export default function Leases() {
         <FlatList
           data={leases}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <LeaseCard item={item} />}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push({ pathname: '/leases/[id]', params: { id: item.id } } as any)}
+            >
+              <LeaseCard item={item} />
+            </TouchableOpacity>
+          )}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onEndReached={onEndReached}
@@ -268,6 +277,15 @@ export default function Leases() {
           }
         />
       )}
+
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/leases/add' as any)}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -275,7 +293,19 @@ export default function Leases() {
 function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
-    list: { padding: Spacing.md, paddingBottom: 80 },
+    list: { padding: Spacing.md, paddingBottom: 100 },
+    fab: {
+      position: 'absolute',
+      right: Spacing.lg,
+      bottom: Spacing.xl,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: c.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...Shadow.md,
+    },
     footer: { paddingVertical: Spacing.md },
 
     searchWrap: {

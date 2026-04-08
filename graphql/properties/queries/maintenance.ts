@@ -66,6 +66,11 @@ query Maintenance($id: ID!) {
     unit{
         description
         id
+        unitNumber
+        building{
+            id
+            name
+        }
     }
     tenant{
         id
