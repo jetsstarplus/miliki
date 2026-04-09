@@ -8,3 +8,4 @@ export const PORTAL_URL = 'https://miliki.ke/properties';
 export const TOKEN_KEY = 'monerom_auth_token';
 export const REFRESH_TOKEN_KEY = 'monerom_refresh_token';
 export const ACTIVE_COMPANY_KEY = 'monerom_active_company';
+export const LAST_REFRESH_KEY = 'monerom_last_refresh';

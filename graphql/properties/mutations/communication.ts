@@ -72,22 +72,3 @@ export const TOGGLE_CAMPAIGN = gql`
     }
   }
 `;
-
-export const INITIATE_MPESA_TOPUP = gql`
-  mutation InitiateMpesaTopup($subscriptionId: Int!, $phoneNumber: String!, $paymentFor: String!, $amountOverride: Decimal) {
-    initiateMpesaPayment(
-      subscriptionId: $subscriptionId
-      phoneNumber: $phoneNumber
-      paymentFor: $paymentFor
-      amountOverride: $amountOverride
-    ) {
-      success
-      message
-      payment {
-        id
-        status
-        amount
-      }
-    }
-  }
-`;

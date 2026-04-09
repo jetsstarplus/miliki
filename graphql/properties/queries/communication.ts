@@ -23,8 +23,3 @@ export const NOTIFICATION_LOGS = gql`
   }
 `;
 
-export const SUBSCRIPTION_PAYMENT_CONTEXT = gql`
-  query SubscriptionPaymentContext($companyId: ID!, $paymentFor: String) {
-    subscriptionInitiatePaymentData(companyId: $companyId, paymentFor: $paymentFor)
-  }
-`;
