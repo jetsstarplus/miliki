@@ -3,13 +3,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
@@ -27,6 +27,7 @@ function MetricCard({
   iconColor,
   iconBg,
   sub,
+  onPress,
 }: {
   label: string;
   value: string | number;
@@ -34,19 +35,28 @@ function MetricCard({
   iconColor: string;
   iconBg: string;
   sub?: string;
+  onPress?: () => void;
 }) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  return (
-    <View style={styles.metricCard}>
+  const inner = (
+    <>
       <View style={[styles.metricIconWrap, { backgroundColor: iconBg }]}>
         <Ionicons name={icon} size={18} color={iconColor} />
       </View>
       <Text style={styles.metricValue}>{value ?? '—'}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
       {sub ? <Text style={styles.metricSub}>{sub}</Text> : null}
-    </View>
+    </>
   );
+  if (onPress) {
+    return (
+      <TouchableOpacity style={styles.metricCard} onPress={onPress} activeOpacity={0.7}>
+        {inner}
+      </TouchableOpacity>
+    );
+  }
+  return <View style={styles.metricCard}>{inner}</View>;
 }
 
 function AlertBadge({ count, label, icon, color }: { count: number; label: string; icon: IoniconName; color: string }) {
@@ -171,6 +181,7 @@ export default function Dashboard() {
             icon="business-outline"
             iconColor={colors.primary}
             iconBg={colors.overlay}
+            onPress={() => router.push('/(tabs)/building' as any)}
           />
           <View style={styles.metricSep} />
           <MetricCard
@@ -179,6 +190,7 @@ export default function Dashboard() {
             icon="grid-outline"
             iconColor={Colors.info}
             iconBg="rgba(59,130,246,0.1)"
+            onPress={() => router.push('/(tabs)/units' as any)}
           />
           <View style={styles.metricSep} />
           <MetricCard
@@ -187,6 +199,7 @@ export default function Dashboard() {
             icon="people-outline"
             iconColor={Colors.success}
             iconBg="rgba(16,185,129,0.1)"
+            onPress={() => router.push('/(tabs)/tenants' as any)}
           />
         </View>
 
@@ -350,18 +363,6 @@ export default function Dashboard() {
         <Text style={[styles.sectionLabel, { marginTop: Spacing.sm }]}>Quick actions</Text>
         <View style={styles.quickGrid}>
           <QuickAction
-            icon="business-outline"
-            label="Buildings"
-            tint={colors.primary}
-            onPress={() => router.push('/building' as any)}
-          />
-          <QuickAction
-            icon="people-outline"
-            label="Tenants"
-            tint={Colors.success}
-            onPress={() => router.push('/(tabs)/tenants' as any)}
-          />
-          <QuickAction
             icon="card-outline"
             label="Payments"
             tint={Colors.info}
@@ -372,6 +373,18 @@ export default function Dashboard() {
             label="Leases"
             tint={Colors.warning}
             onPress={() => router.push('/(tabs)/leases' as any)}
+          />
+          <QuickAction
+            icon="bar-chart-outline"
+            label="Arrears"
+            tint={Colors.error}
+            onPress={() => router.push('/(tabs)/arrears' as any)}
+          />
+          <QuickAction
+            icon="people-circle-outline"
+            label="Portfolio"
+            tint={colors.primary}
+            onPress={() => router.push('/(tabs)/portfolio' as any)}
           />
         </View>
 

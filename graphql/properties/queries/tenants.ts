@@ -7,7 +7,11 @@ export const TENANTS_DROPDOWN = gql`
         node {
           id
           fullName
+          firstName
+          middleName
+          lastName
           phone
+          email
           occupancies(first: 1) {
             edges {
               node {

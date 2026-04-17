@@ -4,19 +4,22 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
+import { ALLOCATE_PAYMENT } from '@/graphql/properties/mutations/payments';
 import { PAYMENT_RECEIPTS_QUERY } from '@/graphql/properties/queries/payments';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
+import { useMutation } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,17 +28,26 @@ interface TransactionLine {
   paymentType: { name: string };
 }
 
+interface TransactionLineEdge {
+  node: TransactionLine;
+}
+
 interface PaymentReceipt {
   id: string;
+  paymentId: number | null;
   amount: number;
   status: string;
   reference: string;
   confirmationCode: string;
   transactionDate: string;
   paymentMode: string;
-  tenant: { fullName: string };
-  unit: { unitNumber: string; building: { name: string } };
-  transactionLines: TransactionLine[];
+  allocationStatus: string | null;
+  canAllocate: boolean | null;
+  transactionLinesCount: number | null;
+  allocationAction: { label: string } | null;
+  tenant: { id: string; fullName: string };
+  unit: { id: string; unitNumber: string; building: { name: string } };
+  transactionLines: { edges: TransactionLineEdge[] };
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -55,10 +67,34 @@ function formatDate(d: string | null | undefined) {
   }
 }
 
-function PaymentCard({ item }: { item: PaymentReceipt }) {
+function decodeRelayId(relayId: string): number {
+  try {
+    return parseInt(atob(relayId).split(':')[1], 10);
+  } catch {
+    return parseInt(relayId, 10);
+  }
+}
+
+function PaymentCard({
+  item,
+  onAllocate,
+}: {
+  item: PaymentReceipt;
+  onAllocate: (item: PaymentReceipt) => void;
+}) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const statusColor = STATUS_COLORS[item.status] ?? colors.textMuted;
+
+  const isAllocated = item.allocationStatus === 'ALLOCATED';
+  const isPartial = item.allocationStatus === 'PARTIAL';
+  const showLines = (item.transactionLinesCount ?? 0) > 0;
+  const allocationLabel = item.allocationAction?.label ?? 'Allocate';
+
+  const allocColor =
+    isAllocated ? Colors.success
+    : isPartial  ? Colors.warning
+    : Colors.error;
 
   return (
     <View style={styles.card}>
@@ -106,21 +142,52 @@ function PaymentCard({ item }: { item: PaymentReceipt }) {
         ) : null}
       </View>
 
-      {item.transactionLines && item.transactionLines.length > 0 && (
-        <View style={styles.linesRow}>
-          {item.transactionLines.slice(0, 3).map((line, idx) => (
-            <View key={idx} style={styles.lineItem}>
-              <Text style={styles.lineType} numberOfLines={1}>{line.paymentType?.name ?? '—'}</Text>
-              <Text style={styles.lineAmount}>KES {Number(line.amount ?? 0).toLocaleString()}</Text>
+      {isAllocated || isPartial ? (
+        <>
+          <View style={styles.allocationBadge}>
+            <Ionicons
+              name={isAllocated ? 'checkmark-circle' : 'ellipse-outline'}
+              size={13}
+              color={allocColor}
+            />
+            <Text style={[styles.allocationBadgeText, { color: allocColor }]}>
+              {isAllocated ? 'Allocated' : 'Partially allocated'}
+            </Text>
+          </View>
+          {showLines && (
+            <View style={styles.linesRow}>
+              {item.transactionLines.edges.slice(0, 3).map(({ node: line }, idx) => (
+                <View key={idx} style={styles.lineItem}>
+                  <Text style={styles.lineType} numberOfLines={1}>{line.paymentType?.name ?? '—'}</Text>
+                  <Text style={styles.lineAmount}>KES {Number(line.amount ?? 0).toLocaleString()}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          )}
+        </>
+      ) : (
+        <View style={styles.unallocatedRow}>
+          <View style={styles.unallocatedBadge}>
+            <Ionicons name="time-outline" size={13} color={allocColor} />
+            <Text style={[styles.allocationBadgeText, { color: allocColor }]}>Not allocated</Text>
+          </View>
+          {item.canAllocate && (
+            <TouchableOpacity
+              style={styles.allocateBtn}
+              onPress={() => onAllocate(item)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="git-merge-outline" size={13} color="#fff" />
+              <Text style={styles.allocateBtnText}>{allocationLabel}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
   );
 }
 
-export default function Payments() {
+export default function Transactions() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [search, setSearch] = useState('');
@@ -139,13 +206,55 @@ export default function Payments() {
   );
 
   const { nodes: payments, loading, error, refreshing, onRefresh, onEndReached, hasMore, refetch } =
-    usePaginatedQuery<PaymentReceipt>(PAYMENT_RECEIPTS_QUERY, 'paymentReceipts', 50, queryVars);
+    usePaginatedQuery<PaymentReceipt>(PAYMENT_RECEIPTS_QUERY, 'transactions', 50, queryVars);
+
+  const [allocatePayment] = useMutation(ALLOCATE_PAYMENT);
+  const [allocatingId, setAllocatingId] = useState<string | null>(null);
+
+  const handleAllocate = useCallback(async (item: PaymentReceipt) => {
+    Alert.alert(
+      'Allocate Payment',
+      `Allocate KES ${Number(item.amount).toLocaleString()} to the tenant's outstanding charges?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Allocate',
+          onPress: async () => {
+            setAllocatingId(item.id);
+            try {
+              const res = await allocatePayment({
+                variables: {
+                  transactionId: item.id,
+                  unitId: decodeRelayId(item.unit.id),
+                  ...(item.tenant?.id ? { tenantId: decodeRelayId(item.tenant.id) } : {}),
+                },
+              });
+              const result = res.data?.allocatePayment;
+              if (result?.success) {
+                Alert.alert(
+                  'Allocated',
+                  result.message ||
+                    `KES ${Number(result.allocatedAmount).toLocaleString()} allocated successfully.`,
+                );
+                refetch();
+              } else {
+                Alert.alert('Failed', result?.message ?? 'Allocation failed. Please try again.');
+              }
+            } catch (e: any) {
+              Alert.alert('Error', e?.message ?? 'Something went wrong.');
+            } finally {
+              setAllocatingId(null);
+            }
+          },
+        },
+      ],
+    );
+  }, [allocatePayment, refetch]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppHeader title="Payments" />
+      <AppHeader title="Transactions" showBack />
 
-      {/* Search */}
       <View style={styles.searchWrap}>
         <View style={styles.searchBar}>
           <Ionicons name="search-outline" size={16} color={colors.textMuted} />
@@ -171,7 +280,7 @@ export default function Payments() {
 
       {error && payments.length === 0 && (
         <ErrorState
-          title="Failed to load payments"
+          title="Failed to load transactions"
           message={error.message}
           onRetry={() => refetch()}
         />
@@ -181,7 +290,12 @@ export default function Payments() {
         <FlatList
           data={payments}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <PaymentCard item={item} />}
+          renderItem={({ item }) => (
+            <PaymentCard
+              item={item}
+              onAllocate={allocatingId ? () => {} : handleAllocate}
+            />
+          )}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onEndReached={onEndReached}
@@ -198,8 +312,8 @@ export default function Payments() {
             !loading ? (
               <EmptyState
                 icon="card-outline"
-                title={debouncedSearch ? 'No payments found' : 'No payments yet'}
-                description={debouncedSearch ? 'Try a different search term.' : 'Payment receipts will appear here once recorded.'}
+                title={debouncedSearch ? 'No transactions found' : 'No transactions yet'}
+                description={debouncedSearch ? 'Try a different search term.' : 'Payment transactions will appear here once recorded.'}
               />
             ) : null
           }
@@ -289,5 +403,44 @@ function makeStyles(c: AppColors) {
     },
     lineType: { fontSize: Typography.fontSizeXs, color: c.textSecondary, flex: 1 },
     lineAmount: { fontSize: Typography.fontSizeXs, fontWeight: Typography.fontWeightMedium, color: c.text },
+
+    allocationBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginBottom: Spacing.xs,
+    },
+    allocationBadgeText: {
+      fontSize: 11,
+      fontWeight: Typography.fontWeightSemibold,
+    },
+
+    unallocatedRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: Spacing.xs,
+      borderTopWidth: 1,
+      borderTopColor: c.borderLight,
+    },
+    unallocatedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    allocateBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: Colors.info,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 5,
+      borderRadius: Radius.sm,
+    },
+    allocateBtnText: {
+      fontSize: 12,
+      fontWeight: Typography.fontWeightSemibold,
+      color: '#fff',
+    },
   });
 }

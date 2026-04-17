@@ -26,19 +26,19 @@ type Query {
   messagingBalances(companyId: UUID!): MessagingBalancesType
   subscriptionAmounts(subscriptionId: Int!): SubscriptionAmountsType
   subscriptionStatus(companyId: UUID!): SubscriptionStatusType
-  paymentStatus(paymentId: Int!): PaymentStatusType
+  paymentStatus(paymentId: UUID!): GenericScalar
   paymentHistory(companyId: UUID!, limit: Int): [SubscriptionPaymentType]
 
   """Setup progress / onboarding checklist for the Getting Started guide."""
-  subscriptionGettingStartedData(companyId: UUID!): GenericScalar
+  subscriptionGettingStartedData(companyId: ID!): GenericScalar
 
   """Relay-paginated payment history with summary stats."""
-  subscriptionPaymentHistoryData(companyId: UUID!, first: Int, after: String): GenericScalar
+  subscriptionPaymentHistoryData(companyId: ID!, first: Int, after: String): GenericScalar
 
   """
   Context data for the payment initiation page (amounts, balances, waiver info).
   """
-  subscriptionInitiatePaymentData(companyId: UUID!, paymentFor: String): GenericScalar
+  subscriptionInitiatePaymentData(companyId: ID!, paymentFor: String): GenericScalar
   notificationCampaigns(offset: Int, before: String, after: String, first: Int, last: Int, buildingId: ID, status: NotificationsTenantNotificationCampaignStatusChoices, isActive: Boolean, search: String): TenantNotificationCampaignTypeConnection
   notificationCampaign(
     """The ID of the object"""
@@ -201,7 +201,6 @@ type Query {
   penaltyRules(buildingId: Int, isActive: Boolean, search: String): [PenaltyRuleType]
   penaltyRule(id: Int): PenaltyRuleType
   appliedPenalties(buildingId: Int, notificationSent: Boolean, search: String, limit: Int): [AppliedPenaltyType]
-  paymentReceipts(buildingId: Int, unitId: Int, tenantId: Int, dateFrom: Date, dateTo: Date, allocationStatus: String): [TransactionType]
   paymentReceiptPdf(paymentId: Int!): PaymentReceiptPdfPayload
   verifyPaymentReceipt(paymentId: Int!, issuedAt: String!, signature: String!): PaymentReceiptVerificationResult
   allLeases(status: String, buildingId: Int, occupancyId: Int, search: String): [LeaseAgreementType]
@@ -221,6 +220,8 @@ type Query {
   buildingChargesReport(buildingId: Int!, search: String, unitId: Int, tenantId: Int, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
   tenantPaymentLinkData(token: String!): GenericScalar
   smsBalance: BalanceType
+  manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, state: DarajaManualReceiptStateChoices, tenant: ID, unit: ID, building: Decimal, paymentMethodConfig: ID, paymentDate: DateTime, search: String): ManualReceiptNodeConnection
+  manualReceipt(id: ID!): ManualReceiptNode
   initiatedPaymentLine(
     """The ID of the object"""
     id: ID!
@@ -240,6 +241,46 @@ type Query {
     """The ID of the object"""
     id: ID!
   ): InitiateNode
+  equityJengaGatewaySetups(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, credential: ID, countryCode: PaymentGatewaysEquityJengaGatewaySetupCountryCodeChoices, sourceCountryCode: PaymentGatewaysEquityJengaGatewaySetupSourceCountryCodeChoices, destinationCountryCode: PaymentGatewaysEquityJengaGatewaySetupDestinationCountryCodeChoices, search: String): EquityJengaGatewaySetupNodeConnection
+  equityJengaGatewaySetup(
+    """The ID of the object"""
+    id: ID!
+  ): EquityJengaGatewaySetupNode
+  ncbaGatewaySetups(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, credential: ID, institutionCode: String, search: String): NcbaGatewaySetupNodeConnection
+  ncbaGatewaySetup(
+    """The ID of the object"""
+    id: ID!
+  ): NcbaGatewaySetupNode
+  cooperativeBankGatewaySetups(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, credential: ID, branchCode: String, search: String): CooperativeBankGatewaySetupNodeConnection
+  cooperativeBankGatewaySetup(
+    """The ID of the object"""
+    id: ID!
+  ): CooperativeBankGatewaySetupNode
+  smsReceiptMessageLogs(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, credential: ID, gatewayBuffer: ID, extractionStatus: PaymentGatewaysSMSReceiptMessageLogExtractionStatusChoices, isCandidate: Boolean, messageDate: DateTime, providerMessageId: String, search: String): SMSReceiptMessageLogNodeConnection
+  smsReceiptMessageLog(
+    """The ID of the object"""
+    id: ID!
+  ): SMSReceiptMessageLogNode
+  smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, company: ID, paymentMode: ID, isActive: Boolean, sourcePhoneNumber: String, sourceShortcode: String, search: String): SMSReceiptCredentialNodeConnection
+  smsReceiptCredential(
+    """The ID of the object"""
+    id: ID!
+  ): SMSReceiptCredentialNode
+  gatewayCallbacks(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, gatewayCredential: ID, reference: String, receivedAt: DateTime, statusCode: String, search: String): GatewayCallbackNodeConnection
+  gatewayCallback(
+    """The ID of the object"""
+    id: ID!
+  ): GatewayCallbackNode
+  gatewayAccessTokens(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, credential: ID, isActive: Boolean, tokenType: String, issuedAt: DateTime, expiresAt: DateTime): GatewayAccessTokenNodeConnection
+  gatewayAccessToken(
+    """The ID of the object"""
+    id: ID!
+  ): GatewayAccessTokenNode
+  gatewayCredentials(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, gatewayCode: PaymentGatewaysGatewayCredentialGatewayCodeChoices, environment: PaymentGatewaysGatewayCredentialEnvironmentChoices, isActive: Boolean, company: ID, paymentMode: ID, search: String): GatewayCredentialNodeConnection
+  gatewayCredential(
+    """The ID of the object"""
+    id: ID!
+  ): GatewayCredentialNode
 
   """List configurable payment types for current company."""
   configPaymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection
@@ -260,13 +301,45 @@ type Query {
 
   """Full dashboard data: payment types, modes, and category/mode choices."""
   paymentConfigDashboardData: GenericScalar
+  gatewayBuffers(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, reference: String, source: String, externalReference: String, invoiceNumber: String, company: ID, matchedTransaction: ID, paymentDate: DateTime, search: String, unreconciledOnly: Boolean, paymentDate_Gte: DateTime, paymentDate_Lte: DateTime): GatewayBufferNodeConnection
+  unreconciledGatewayBuffers(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, reference: String, source: String, externalReference: String, invoiceNumber: String, company: ID, matchedTransaction: ID, paymentDate: DateTime, search: String, unreconciledOnly: Boolean, paymentDate_Gte: DateTime, paymentDate_Lte: DateTime): GatewayBufferNodeConnection
+  gatewayBuffer(id: ID!): GatewayBufferNode
+  gatewayBufferLines(offset: Int, before: String, after: String, first: Int, last: Int): GatewayBufferLineNodeConnection
   transactionLines(offset: Int, before: String, after: String, first: Int, last: Int, paymentType: ID, documentNo: ID, createdAt: DateTime): TransactionLineNodeConnection
   transactionLine(
     """The ID of the object"""
     id: ID!
   ): TransactionLineNode
   paymentTypes(offset: Int, before: String, after: String, first: Int, last: Int, active: Boolean, id: ID, code: String): PaymentTypeNodeConnection
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int, no: String, id: ID, reference: String, confirmationCode: String, notificationId: UUID, amount: Float, createdAt: DateTime): TransactionNodeConnection
+  transactions(
+    offset: Int
+    before: String
+    after: String
+    first: Int
+    last: Int
+    no: String
+    id: ID
+    reference: String
+    confirmationCode: String
+    notificationId: UUID
+    amount: Float
+    createdAt: DateTime
+    transactionDate: DateTime
+    buildingId: ID
+    unitId: ID
+    tenantId: ID
+    status: PaymentsTransactionStatusChoices
+    paymentMode: String
+    companyId: ID
+    search: String
+    allocationStatus: String
+
+    """Transaction Date From"""
+    transactionDate_Gte: DateTime
+
+    """Transaction Date To"""
+    transactionDate_Lte: DateTime
+  ): TransactionNodeConnection
   transaction(
     """The ID of the object"""
     id: ID!
@@ -574,7 +647,7 @@ type CompanyType implements Node {
   """Company this role is associated with"""
   userRoles(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
   paymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): PaymentTypeNodeConnection!
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
 
   """Leave blank for system-wide default types"""
@@ -582,9 +655,13 @@ type CompanyType implements Node {
 
   """Leave blank for system-wide default modes"""
   configurablePaymentModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentModeNodeConnection!
+  gatewayBuffers(offset: Int, before: String, after: String, first: Int, last: Int): GatewayBufferNodeConnection!
   c2bPaymentCompany(offset: Int, before: String, after: String, first: Int, last: Int): C2BPaymentModelNodeConnection!
   initiateCompany(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
   initiatedWithCompany(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
+  gatewayCredentials(offset: Int, before: String, after: String, first: Int, last: Int): GatewayCredentialNodeConnection!
+  smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptCredentialNodeConnection!
 
   """Company that created this building"""
   createdBuildings(offset: Int, before: String, after: String, first: Int, last: Int): BuildingTypeConnection!
@@ -681,9 +758,11 @@ type UserNode implements Node {
   """Who assigned this role"""
   rolesAssigned(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
   preferences: UserPreferenceNode
-  transactionSet(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactionSet(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   c2bpaymentmodelSet(offset: Int, before: String, after: String, first: Int, last: Int): C2BPaymentModelNodeConnection!
   initiated(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+  validatedReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
+  createdReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
   tenantProfile: TenantType
   createdCompanies(offset: Int, before: String, after: String, first: Int, last: Int): CompanyTypeConnection!
   companyMemberships(offset: Int, before: String, after: String, first: Int, last: Int): CompanyMembershipTypeConnection!
@@ -856,8 +935,11 @@ type TenantType implements Node {
 
   """Link to tenant record if role is TENANT (for API/portal use)"""
   userRoleLinks(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   initiatedTenant(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+
+  """Tenant making the payment"""
+  manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
   occupancies(offset: Int, before: String, after: String, first: Int, last: Int): UnitOccupancyTypeConnection!
   rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
   purchaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): UnitPurchaseAgreementTypeConnection!
@@ -871,25 +953,24 @@ type TenantType implements Node {
   totalArrears: Decimal
 }
 
-type TransactionTypeConnection {
+type TransactionNodeConnection {
   """Pagination data for this connection."""
   pageInfo: PageInfo!
 
   """Contains the nodes in this connection."""
-  edges: [TransactionTypeEdge]!
+  edges: [TransactionNodeEdge]!
 }
 
-"""A Relay edge containing a `TransactionType` and its cursor."""
-type TransactionTypeEdge {
+"""A Relay edge containing a `TransactionNode` and its cursor."""
+type TransactionNodeEdge {
   """The item at the end of the edge"""
-  node: TransactionType
+  node: TransactionNode
 
   """A cursor for use in pagination"""
   cursor: String!
 }
 
-"""GraphQL type for Transaction (payment receipts)"""
-type TransactionType implements Node {
+type TransactionNode implements Node {
   """The ID of the object"""
   id: ID!
   createdAt: DateTime
@@ -911,9 +992,7 @@ type TransactionType implements Node {
   currency: String!
   description: String!
   synced: Boolean!
-
-  """DEPRECATED: Use payment_mode_config instead"""
-  paymentMode: PaymentsTransactionPaymentModeChoices!
+  paymentMode: String
 
   """Configurable payment mode for this transaction"""
   paymentModeConfig: ConfigurablePaymentModeNode
@@ -937,9 +1016,16 @@ type TransactionType implements Node {
   company: CompanyType
   propertyTransactionType: PaymentsTransactionPropertyTransactionTypeChoices
   transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
+  matchedGatewayBuffer: GatewayBufferNode
+  manualReceipt(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
   journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
   tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
   refunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+  paymentId: Int
+  allocationStatus: String
+  canAllocate: Boolean
+  allocationAction: AllocationActionType
+  transactionLinesCount: Int
 }
 
 """An enumeration."""
@@ -962,27 +1048,6 @@ Leverages the internal Python implementation of UUID (uuid.UUID) to provide nati
 in fields, resolvers and input.
 """
 scalar UUID
-
-"""An enumeration."""
-enum PaymentsTransactionPaymentModeChoices {
-  """_"""
-  _
-
-  """Mpesa Online"""
-  MPESA
-
-  """Mpesa Paybill"""
-  MPESA_PAYBILL
-
-  """Cash"""
-  CASH
-
-  """KCB Bank"""
-  BANK
-
-  """NCBA Bank"""
-  NCBA
-}
 
 type ConfigurablePaymentModeNode implements Node {
   """The ID of the object"""
@@ -1021,8 +1086,19 @@ type ConfigurablePaymentModeNode implements Node {
   sortOrder: Int!
 
   """Configurable payment mode for this transaction"""
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   allowedTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection!
+
+  """Configurable payment mode for this receipt"""
+  manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
+
+  """Optional payment mode mapping for this gateway setup."""
+  gatewayCredentials(offset: Int, before: String, after: String, first: Int, last: Int): GatewayCredentialNodeConnection!
+
+  """
+  Optional payment mode to assign to buffers created from these SMS receipts.
+  """
+  smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptCredentialNodeConnection!
 }
 
 """An enumeration."""
@@ -1195,6 +1271,9 @@ type ConfigurablePaymentTypeNode implements Node {
   transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
   allowedModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection!
 
+  """Configurable payment type for this reconciliation line"""
+  gatewayBufferLines(offset: Int, before: String, after: String, first: Int, last: Int): GatewayBufferLineNodeConnection!
+
   """Configurable payment type for this initiation line"""
   initiateLines(offset: Int, before: String, after: String, first: Int, last: Int): InitiateLineNodeConnection!
 
@@ -1247,7 +1326,7 @@ type TransactionLineNode implements Node {
   modifiedAt: DateTime
   createdBy: UserNode
   modifiedBy: UserNode
-  documentNo: TransactionType!
+  documentNo: TransactionNode!
 
   """Configurable payment type for this transaction line"""
   paymentType: ConfigurablePaymentTypeNode!
@@ -1293,6 +1372,490 @@ type ConfigurablePaymentTypeModeNode implements Node {
 
   """Override the default revenue account for this type+mode combination"""
   overrideRevenueAccount: AccountType
+}
+
+type GatewayBufferLineNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GatewayBufferLineNodeEdge]!
+}
+
+"""A Relay edge containing a `GatewayBufferLineNode` and its cursor."""
+type GatewayBufferLineNodeEdge {
+  """The item at the end of the edge"""
+  node: GatewayBufferLineNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type GatewayBufferLineNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  gatewayBuffer: GatewayBufferNode!
+
+  """Configurable payment type for this reconciliation line"""
+  paymentType: ConfigurablePaymentTypeNode!
+  amount: Decimal!
+  paymentTypeName: String
+}
+
+type GatewayBufferNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  company: CompanyType!
+
+  """Gateway callback record. Null for legacy Daraja C2B entries."""
+  gatewayCallback: GatewayCallbackNode
+  reference: String!
+  amount: Decimal!
+  currency: String!
+  payerName: String
+  payerPhone: String
+  paymentDate: DateTime!
+
+  """The receipted Transaction, if matched."""
+  matchedTransaction: TransactionNode
+
+  """e.g. DARAJA, EQUITY, NCBA"""
+  source: String
+
+  """Reference from the payment gateway, e.g. M-Pesa receipt number"""
+  externalReference: String
+
+  """Invoice number from the payment gateway, e.g. M-Pesa receipt number"""
+  invoiceNumber: String
+  sourceDocumentNumber: String
+  extraData: JSONString
+  processed: Boolean!
+  lines(offset: Int, before: String, after: String, first: Int, last: Int): GatewayBufferLineNodeConnection!
+  smsReceiptLogs(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptMessageLogNodeConnection!
+  matchedTransactionId: Int
+  canReconcile: Boolean
+  linesTotalAmount: Float
+  lineCount: Int
+}
+
+type GatewayCallbackNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  gatewayCredential: GatewayCredentialNode!
+  receivedAt: DateTime!
+  reference: String!
+  rawPayload: JSONString!
+  callbackUrl: String
+  sourceIp: String
+  statusCode: String
+  notes: String
+
+  """Gateway callback record. Null for legacy Daraja C2B entries."""
+  gatewayBuffers(offset: Int, before: String, after: String, first: Int, last: Int): GatewayBufferNodeConnection!
+}
+
+type GatewayCredentialNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+
+  """Gateway identifier for implemented gateway integrations."""
+  gatewayCode: PaymentGatewaysGatewayCredentialGatewayCodeChoices!
+  company: CompanyType!
+
+  """Optional payment mode mapping for this gateway setup."""
+  paymentMode: ConfigurablePaymentModeNode
+  name: String!
+  environment: PaymentGatewaysGatewayCredentialEnvironmentChoices!
+  merchantCode: String!
+  consumerSecret: String!
+  apiKey: String!
+
+  """Generated public key to upload to provider portal."""
+  publicKey: String
+
+  """Private key encrypted at rest using Django SECRET_KEY-derived cipher."""
+  encryptedPrivateKey: String
+  keyPairGeneratedAt: DateTime
+
+  """
+  Generated client key used as the Basic Auth username for gateway callbacks.
+  """
+  webhookClientKey: String
+
+  """
+  Webhook client secret encrypted at rest using Django SECRET_KEY-derived cipher.
+  """
+  encryptedWebhookClientSecret: String
+  webhookClientSecretGeneratedAt: DateTime
+
+  """Optional override for authentication host."""
+  authBaseUrl: String
+  isActive: Boolean!
+  tokens(offset: Int, before: String, after: String, first: Int, last: Int): GatewayAccessTokenNodeConnection!
+  callbacks(offset: Int, before: String, after: String, first: Int, last: Int): GatewayCallbackNodeConnection!
+  equityJengaSetup: EquityJengaGatewaySetupNode
+  ncbaSetup: NcbaGatewaySetupNode
+  cooperativeBankSetup: CooperativeBankGatewaySetupNode
+  urlToken: String
+}
+
+"""An enumeration."""
+enum PaymentGatewaysGatewayCredentialGatewayCodeChoices {
+  """Equity Jenga"""
+  EQUITY_JENGA
+
+  """NCBA"""
+  NCBA
+
+  """Cooperative Bank"""
+  COOPERATIVE_BANK
+}
+
+"""An enumeration."""
+enum PaymentGatewaysGatewayCredentialEnvironmentChoices {
+  """Test"""
+  TEST
+
+  """Live"""
+  LIVE
+}
+
+type GatewayAccessTokenNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GatewayAccessTokenNodeEdge]!
+}
+
+"""A Relay edge containing a `GatewayAccessTokenNode` and its cursor."""
+type GatewayAccessTokenNodeEdge {
+  """The item at the end of the edge"""
+  node: GatewayAccessTokenNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type GatewayAccessTokenNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  credential: GatewayCredentialNode!
+  accessToken: String!
+  refreshToken: String
+  tokenType: String!
+  issuedAt: DateTime!
+  expiresAt: DateTime!
+  rawResponse: JSONString!
+  isActive: Boolean!
+}
+
+type GatewayCallbackNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GatewayCallbackNodeEdge]!
+}
+
+"""A Relay edge containing a `GatewayCallbackNode` and its cursor."""
+type GatewayCallbackNodeEdge {
+  """The item at the end of the edge"""
+  node: GatewayCallbackNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type EquityJengaGatewaySetupNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  credential: GatewayCredentialNode!
+
+  """Country code using Jenga-supported entity values."""
+  countryCode: PaymentGatewaysEquityJengaGatewaySetupCountryCodeChoices!
+  sourceName: String
+  sourceAccountNumber: String
+
+  """Source account country code for internal bank transfer."""
+  sourceCountryCode: PaymentGatewaysEquityJengaGatewaySetupSourceCountryCodeChoices!
+  destinationName: String
+  destinationAccountNumber: String
+
+  """Destination account country code for internal bank transfer."""
+  destinationCountryCode: PaymentGatewaysEquityJengaGatewaySetupDestinationCountryCodeChoices!
+  destinationType: String!
+  transferType: String!
+  accountId: String
+
+  """ISO 4217 currency code, e.g. KES."""
+  currencyCode: String
+
+  """Bank BIC/SWIFT code used for bank entity mapping."""
+  bicCode: String
+
+  """IBAN value for account entity mapping where applicable."""
+  iban: String
+  extraConfig: JSONString!
+}
+
+"""An enumeration."""
+enum PaymentGatewaysEquityJengaGatewaySetupCountryCodeChoices {
+  """Kenya"""
+  KE
+
+  """Uganda"""
+  UG
+
+  """Tanzania"""
+  TZ
+
+  """Rwanda"""
+  RW
+
+  """Democratic Republic of Congo"""
+  DRC
+
+  """South Sudan"""
+  SS
+
+  """Ethiopia"""
+  ET
+}
+
+"""An enumeration."""
+enum PaymentGatewaysEquityJengaGatewaySetupSourceCountryCodeChoices {
+  """Kenya"""
+  KE
+
+  """Uganda"""
+  UG
+
+  """Tanzania"""
+  TZ
+
+  """Rwanda"""
+  RW
+
+  """Democratic Republic of Congo"""
+  DRC
+
+  """South Sudan"""
+  SS
+
+  """Ethiopia"""
+  ET
+}
+
+"""An enumeration."""
+enum PaymentGatewaysEquityJengaGatewaySetupDestinationCountryCodeChoices {
+  """Kenya"""
+  KE
+
+  """Uganda"""
+  UG
+
+  """Tanzania"""
+  TZ
+
+  """Rwanda"""
+  RW
+
+  """Democratic Republic of Congo"""
+  DRC
+
+  """South Sudan"""
+  SS
+
+  """Ethiopia"""
+  ET
+}
+
+type NcbaGatewaySetupNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  credential: GatewayCredentialNode!
+  institutionCode: String
+  extraConfig: JSONString!
+}
+
+type CooperativeBankGatewaySetupNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  credential: GatewayCredentialNode!
+  branchCode: String
+  extraConfig: JSONString!
+}
+
+type GatewayBufferNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GatewayBufferNodeEdge]!
+}
+
+"""A Relay edge containing a `GatewayBufferNode` and its cursor."""
+type GatewayBufferNodeEdge {
+  """The item at the end of the edge"""
+  node: GatewayBufferNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type SMSReceiptMessageLogNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [SMSReceiptMessageLogNodeEdge]!
+}
+
+"""A Relay edge containing a `SMSReceiptMessageLogNode` and its cursor."""
+type SMSReceiptMessageLogNodeEdge {
+  """The item at the end of the edge"""
+  node: SMSReceiptMessageLogNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type SMSReceiptMessageLogNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  credential: SMSReceiptCredentialNode!
+  gatewayBuffer: GatewayBufferNode
+  providerMessageId: String
+  messageThreadId: String
+  sender: String
+  senderPhone: String
+  recipientPhone: String
+  recipientShortcode: String
+  messageBody: String!
+  messageDate: DateTime!
+  syncedAt: DateTime!
+  isCandidate: Boolean!
+  extractionStatus: PaymentGatewaysSMSReceiptMessageLogExtractionStatusChoices!
+  matchedReference: String
+  matchedExternalReference: String
+  matchedAmount: Decimal
+  matchedCurrency: String
+  payerName: String
+  payerPhone: String
+  parsedData: JSONString!
+  rawPayload: JSONString!
+  extractionNotes: String
+  extractedAt: DateTime
+  canExtract: Boolean
+}
+
+type SMSReceiptCredentialNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  createdBy: UserNode
+  modifiedBy: UserNode
+  company: CompanyType!
+
+  """
+  Optional payment mode to assign to buffers created from these SMS receipts.
+  """
+  paymentMode: ConfigurablePaymentModeNode
+  name: String!
+
+  """Phone number expected to receive the payment receipt SMS."""
+  sourcePhoneNumber: String
+
+  """Shortcode or sender ID expected for the receipt SMS."""
+  sourceShortcode: String
+
+  """Optional mobile-app/API endpoint used to push or pull SMS messages."""
+  syncEndpoint: String
+
+  """Optional mobile device identifier used for SMS synchronization."""
+  deviceIdentifier: String
+
+  """Exact sender ID or phone number expected in incoming SMS receipts."""
+  expectedSender: String
+
+  """Keyword used to identify the payment reference in the SMS body."""
+  referenceKeyword: String
+
+  """Keyword used to identify the payment amount in the SMS body."""
+  amountKeyword: String
+
+  """
+  List of words or phrases that must exist for the SMS to be treated as a receipt.
+  """
+  requiredKeywords: JSONString!
+
+  """
+  Structured extraction rules such as regex patterns, JSON keys, or parser hints.
+  """
+  matchRules: JSONString!
+
+  """
+  Extra mobile app read/sync configuration such as mailbox, permissions, or polling interval.
+  """
+  readerConfig: JSONString!
+  lastSyncedAt: DateTime
+  lastMessageAt: DateTime
+  syncError: String
+  isActive: Boolean!
+  messages(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptMessageLogNodeConnection!
+}
+
+"""An enumeration."""
+enum PaymentGatewaysSMSReceiptMessageLogExtractionStatusChoices {
+  """Pending"""
+  PENDING
+
+  """Buffered"""
+  BUFFERED
+
+  """Ignored"""
+  IGNORED
+
+  """Failed"""
+  FAILED
 }
 
 type InitiateLineNodeConnection {
@@ -1398,8 +1961,11 @@ type UnitNode implements Node {
   isAvailableForRent: Boolean!
   isAvailableForPurchase: Boolean!
   company: CompanyType
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   initiatedUnit(offset: Int, before: String, after: String, first: Int, last: Int): InitiateNodeConnection!
+
+  """Unit this payment is for"""
+  manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
   occupancies(offset: Int, before: String, after: String, first: Int, last: Int): UnitOccupancyTypeConnection!
   rentSchedules(offset: Int, before: String, after: String, first: Int, last: Int): RentScheduleTypeConnection!
   purchaseAgreements(offset: Int, before: String, after: String, first: Int, last: Int): UnitPurchaseAgreementTypeConnection!
@@ -1471,7 +2037,7 @@ type BuildingType implements Node {
 
   """Building this user manages (for AGENT/LANDLORD)"""
   managerRoles(offset: Int, before: String, after: String, first: Int, last: Int): UserRoleTypeConnection!
-  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionTypeConnection!
+  transactions(offset: Int, before: String, after: String, first: Int, last: Int): TransactionNodeConnection!
   images(offset: Int, before: String, after: String, first: Int, last: Int): BuildingImageTypeConnection!
   documents(offset: Int, before: String, after: String, first: Int, last: Int): BuildingDocumentTypeConnection!
   units(offset: Int, before: String, after: String, first: Int, last: Int): UnitNodeConnection!
@@ -2108,7 +2674,7 @@ type JournalEntryType implements Node {
   status: AccountingJournalEntryStatusChoices!
   description: String!
   reference: String!
-  paymentTransaction: TransactionType
+  paymentTransaction: TransactionNode
   refund: TenantRefundType
   company: CompanyType
   createdAt: DateTime!
@@ -2173,7 +2739,7 @@ type TenantRefundType implements Node {
   unit: UnitNode
   building: BuildingType
   amount: Decimal!
-  sourcePayment: TransactionType
+  sourcePayment: TransactionNode
 
   """e.g., M-Pesa, Bank Transfer, Cash, Cheque"""
   refundMethod: String!
@@ -2430,7 +2996,7 @@ type TenantCreditType implements Node {
   unit: UnitNode
   amount: Decimal!
   allocatedAmount: Decimal!
-  paymentTransaction: TransactionType
+  paymentTransaction: TransactionNode
   description: String!
   isActive: Boolean!
   company: CompanyType
@@ -2807,6 +3373,99 @@ type InitiateNodeEdge {
   cursor: String!
 }
 
+type ManualReceiptNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [ManualReceiptNodeEdge]!
+}
+
+"""A Relay edge containing a `ManualReceiptNode` and its cursor."""
+type ManualReceiptNodeEdge {
+  """The item at the end of the edge"""
+  node: ManualReceiptNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type ManualReceiptNode implements Node {
+  """The ID of the object"""
+  id: ID!
+  createdAt: DateTime
+  modifiedAt: DateTime
+  modifiedBy: UserNode
+
+  """Auto-generated: MR-{COMPANY}-{DATE}-{SEQ}"""
+  receiptNumber: String!
+
+  """Tenant making the payment"""
+  tenant: TenantType!
+
+  """Unit this payment is for"""
+  unit: UnitNode!
+  firstName: String!
+  middleName: String
+  lastName: String!
+
+  """Accepts various formats: +254712345678, (123) 456-7890, etc."""
+  phoneNumber: String!
+  email: String
+
+  """Payment amount in KES"""
+  amount: Decimal!
+  paymentMethod: String
+
+  """Configurable payment mode for this receipt"""
+  paymentMethodConfig: ConfigurablePaymentModeNode
+
+  """Cheque number, transaction ID, bank reference, etc."""
+  referenceNumber: String
+
+  """Date payment was received"""
+  paymentDate: DateTime!
+  state: DarajaManualReceiptStateChoices!
+  validatedBy: UserNode
+  validatedAt: DateTime
+
+  """Reason for rejecting this receipt"""
+  rejectionReason: String
+
+  """Additional information about this payment"""
+  notes: String
+  company: CompanyType
+  createdBy: UserNode!
+  paymentTransaction: TransactionNode
+  payerName: String
+  stateLabel: String
+  canValidate: Boolean
+  canReject: Boolean
+  canDelete: Boolean
+  canCreatePayment: Boolean
+  paymentTransactionLines: [ManualReceiptTransactionLineType]
+}
+
+"""An enumeration."""
+enum DarajaManualReceiptStateChoices {
+  """Pending Validation"""
+  PENDING
+
+  """Validated"""
+  VALIDATED
+
+  """Payment Created"""
+  PAID
+
+  """Rejected"""
+  REJECTED
+}
+
+type ManualReceiptTransactionLineType {
+  description: String
+  amount: String
+}
+
 type UnitOccupancyTypeConnection {
   """Pagination data for this connection."""
   pageInfo: PageInfo!
@@ -2956,6 +3615,40 @@ type ConfigurablePaymentModeNodeEdge {
   cursor: String!
 }
 
+type GatewayCredentialNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [GatewayCredentialNodeEdge]!
+}
+
+"""A Relay edge containing a `GatewayCredentialNode` and its cursor."""
+type GatewayCredentialNodeEdge {
+  """The item at the end of the edge"""
+  node: GatewayCredentialNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type SMSReceiptCredentialNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [SMSReceiptCredentialNodeEdge]!
+}
+
+"""A Relay edge containing a `SMSReceiptCredentialNode` and its cursor."""
+type SMSReceiptCredentialNodeEdge {
+  """The item at the end of the edge"""
+  node: SMSReceiptCredentialNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
 """An enumeration."""
 enum PaymentsTransactionSyncedFromChoices {
   """_"""
@@ -2987,6 +3680,13 @@ enum PaymentsTransactionPropertyTransactionTypeChoices {
 
   """Refund"""
   REFUND
+}
+
+type AllocationActionType {
+  mutationName: String
+  argumentName: String
+  label: String
+  paymentId: Int
 }
 
 type UserPreferenceNode implements Node {
@@ -3856,13 +4556,6 @@ type SubscriptionStatusType {
   amounts: SubscriptionAmountsType
 }
 
-type PaymentStatusType {
-  status: String
-  message: String
-  payment: SubscriptionPaymentType
-  gatewayPayload: JSONString
-}
-
 """
 The `GenericScalar` scalar type represents a generic
 GraphQL scalar value that could be:
@@ -4059,74 +4752,59 @@ type MpesaExpressNode implements Node {
   state: String!
 }
 
-type TransactionNodeConnection {
+type EquityJengaGatewaySetupNodeConnection {
   """Pagination data for this connection."""
   pageInfo: PageInfo!
 
   """Contains the nodes in this connection."""
-  edges: [TransactionNodeEdge]!
+  edges: [EquityJengaGatewaySetupNodeEdge]!
 }
 
-"""A Relay edge containing a `TransactionNode` and its cursor."""
-type TransactionNodeEdge {
+"""
+A Relay edge containing a `EquityJengaGatewaySetupNode` and its cursor.
+"""
+type EquityJengaGatewaySetupNodeEdge {
   """The item at the end of the edge"""
-  node: TransactionNode
+  node: EquityJengaGatewaySetupNode
 
   """A cursor for use in pagination"""
   cursor: String!
 }
 
-type TransactionNode implements Node {
-  """The ID of the object"""
-  id: ID!
-  createdAt: DateTime
-  modifiedAt: DateTime
-  createdBy: UserNode
-  modifiedBy: UserNode
-  no: String
-  reference: String!
-  status: PaymentsTransactionStatusChoices!
-  user: UserNode
-  confirmationCode: String!
-  amount: Float!
-  paymentAccount: String!
-  responseStatusCode: Int!
-  paymentStatusCode: String!
-  notificationId: UUID!
-  notified: Boolean!
-  mailed: Boolean!
-  currency: String!
-  description: String!
-  synced: Boolean!
+type NcbaGatewaySetupNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
 
-  """DEPRECATED: Use payment_mode_config instead"""
-  paymentMode: PaymentsTransactionPaymentModeChoices!
+  """Contains the nodes in this connection."""
+  edges: [NcbaGatewaySetupNodeEdge]!
+}
 
-  """Configurable payment mode for this transaction"""
-  paymentModeConfig: ConfigurablePaymentModeNode
-  syncedFrom: PaymentsTransactionSyncedFromChoices!
-  name: String
-  email: String
-  phone: String
-  syncReference: String
-  transactionDate: DateTime!
-  thirdPartyPhone: String
-  invoiceReference: String
-  building: BuildingType
-  unit: UnitNode
-  tenant: TenantType
+"""A Relay edge containing a `NcbaGatewaySetupNode` and its cursor."""
+type NcbaGatewaySetupNodeEdge {
+  """The item at the end of the edge"""
+  node: NcbaGatewaySetupNode
 
-  """Which month/period is this payment for"""
-  paymentForPeriod: Date
+  """A cursor for use in pagination"""
+  cursor: String!
+}
 
-  """Amount carried forward to next period"""
-  excessAmount: Float!
-  company: CompanyType
-  propertyTransactionType: PaymentsTransactionPropertyTransactionTypeChoices
-  transactionLines(offset: Int, before: String, after: String, first: Int, last: Int): TransactionLineNodeConnection!
-  journalEntries(offset: Int, before: String, after: String, first: Int, last: Int): JournalEntryTypeConnection!
-  tenantCredits(offset: Int, before: String, after: String, first: Int, last: Int): TenantCreditTypeConnection!
-  refunds(offset: Int, before: String, after: String, first: Int, last: Int): TenantRefundTypeConnection!
+type CooperativeBankGatewaySetupNodeConnection {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+
+  """Contains the nodes in this connection."""
+  edges: [CooperativeBankGatewaySetupNodeEdge]!
+}
+
+"""
+A Relay edge containing a `CooperativeBankGatewaySetupNode` and its cursor.
+"""
+type CooperativeBankGatewaySetupNodeEdge {
+  """The item at the end of the edge"""
+  node: CooperativeBankGatewaySetupNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
 }
 
 type StaticPagesNodeConnection {
@@ -4582,6 +5260,31 @@ enum OrderEnum {
 }
 
 type Mutation {
+  """
+  Create or update a company-scoped configurable payment type. Pass `id` to update.
+  """
+  createUpdateConfigPaymentType(allocationAccountId: ID, autoAllocate: Boolean, category: String, code: String, description: String, id: ID, isActive: Boolean, isDefault: Boolean, name: String, prepayment: Boolean, requiresUnit: Boolean, revenueAccountId: ID, sortOrder: Int): CreateUpdateConfigPaymentTypeMutation
+
+  """Delete a company-scoped configurable payment type."""
+  deleteConfigPaymentType(id: ID!): DeleteConfigPaymentTypeMutation
+
+  """
+  Create or update a company-scoped configurable payment mode. Pass `id` to update.
+  """
+  createUpdateConfigPaymentMode(apiConfig: JSONString, category: String, code: String, description: String, id: ID, isActive: Boolean, isDefault: Boolean, name: String, paymentAccountId: ID, requiresReference: Boolean, sortOrder: Int, supportsAutoReconciliation: Boolean): CreateUpdateConfigPaymentModeMutation
+
+  """Delete a company-scoped configurable payment mode."""
+  deleteConfigPaymentMode(id: ID!): DeleteConfigPaymentModeMutation
+
+  """
+  Set allowed payment modes for a payment type.
+  Replaces the existing mode links for the given payment type.
+  """
+  setConfigPaymentTypeModes(modeIds: [ID!]!, paymentTypeId: ID!, preferredModeId: ID): SetConfigPaymentTypeModesMutation
+
+  """Manually allocate a successful payment to tenant charges."""
+  allocatePayment(paymentId: ID!): AllocatePaymentMutation
+  reconcileGatewayBuffer(input: ReconcileGatewayBufferMutationInput!): ReconcileGatewayBufferMutationPayload
   subscriptionsViewsApplyDiscount(payload: JSONString): _Mutation
   subscriptionsViewsCancelStandingOrder(payload: JSONString): _Mutation
   subscriptionsViewsChangeBillingCycle(payload: JSONString): _Mutation
@@ -4678,6 +5381,14 @@ type Mutation {
 
   """Mutation to send arrears reminder to a tenant"""
   sendArrearsReminder(unitId: Int!): SendArrearsReminderMutation
+
+  """
+  Mutation to send reminder for one overdue schedule, preferring campaign channels.
+  """
+  sendArrearsReminderForSchedule(scheduleId: ID!): SendArrearsReminderForScheduleMutation
+
+  """Mutation to resend notification for an applied penalty."""
+  resendAppliedPenaltyNotification(penaltyId: ID!): ResendAppliedPenaltyNotificationMutation
   uploadBuildingDocument(buildingId: Int!, file: Upload!, name: String): UploadBuildingDocumentMutation
   deleteBuildingDocument(documentId: Int!): DeleteBuildingDocumentMutation
   uploadBuildingImage(buildingId: Int!, caption: String, image: Upload!, isPrimary: Boolean): UploadBuildingImageMutation
@@ -4739,9 +5450,6 @@ type Mutation {
   """Void a PENDING or OVERDUE rent schedule and cancel its linked charges."""
   voidRentSchedule(scheduleId: Int!): VoidRentScheduleMutation
 
-  """Manually allocate a successful payment to tenant charges."""
-  allocatePayment(paymentId: Int!): AllocatePaymentMutation
-
   """Assign a tenant to a unit (create occupancy)."""
   createOccupancy(depositPaid: Decimal, depositRefunded: Decimal, scheduleGenerationMode: String, skipDepositCharge: Boolean, startDate: Date!, tenantId: ID!, unitId: ID!): CreateOccupancyMutation
 
@@ -4799,6 +5507,19 @@ type Mutation {
   """
   initiateUnitPayment(input: InitiateUnitPaymentInput!): InitiateUnitPaymentPayload
   confirmPayment(input: ConfirmPaymentInput!): ConfirmPaymentPayload
+  createManualReceipt(input: CreateManualReceiptInput!): CreateManualReceiptPayload
+  validateManualReceipt(input: ValidateManualReceiptInput!): ValidateManualReceiptPayload
+  rejectManualReceipt(input: RejectManualReceiptInput!): RejectManualReceiptPayload
+  deleteManualReceipt(input: DeleteManualReceiptInput!): DeleteManualReceiptPayload
+  createManualReceiptPayment(input: CreateManualReceiptPaymentInput!): CreateManualReceiptPaymentPayload
+  createUpdateGatewayCredential(apiKey: String, authBaseUrl: String, consumerSecret: String, environment: String, gatewayCode: String, id: ID, isActive: Boolean, merchantCode: String, name: String, paymentModeId: ID): CreateUpdateGatewayCredentialMutation
+  deleteGatewayCredential(id: ID!): DeleteGatewayCredentialMutation
+  createUpdateSmsReceiptCredential(amountKeyword: String, deviceIdentifier: String, expectedSender: String, id: ID, isActive: Boolean, lastMessageAt: DateTime, lastSyncedAt: DateTime, matchRules: GenericScalar, name: String, paymentModeId: ID, readerConfig: GenericScalar, referenceKeyword: String, requiredKeywords: GenericScalar, sourcePhoneNumber: String, sourceShortcode: String, syncEndpoint: String, syncError: String): CreateUpdateSMSReceiptCredentialMutation
+  deleteSmsReceiptCredential(id: ID!): DeleteSMSReceiptCredentialMutation
+  upsertEquityJengaGatewaySetup(accountId: String, bicCode: String, countryCode: String, credentialId: ID!, currencyCode: String, destinationAccountNumber: String, destinationCountryCode: String, destinationName: String, destinationType: String, extraConfig: GenericScalar, iban: String, sourceAccountNumber: String, sourceCountryCode: String, sourceName: String, transferType: String): UpsertEquityJengaGatewaySetupMutation
+  upsertNcbaGatewaySetup(credentialId: ID!, extraConfig: GenericScalar, institutionCode: String): UpsertNcbaGatewaySetupMutation
+  upsertCooperativeBankGatewaySetup(branchCode: String, credentialId: ID!, extraConfig: GenericScalar): UpsertCooperativeBankGatewaySetupMutation
+  extractSmsReceiptToGatewayBuffer(id: ID!): ExtractSMSReceiptToGatewayBufferMutation
   createPageVisit(input: CreatePageVisitInput!): CreatePageVisitPayload
   createCookieConsent(input: CreateCookieConsentInput!): CreateCookieConsentPayload
 
@@ -4968,6 +5689,68 @@ type Mutation {
 
   """Same as `grapgql_jwt` implementation, with standard output."""
   revokeToken(input: RevokeTokenInput!): RevokeTokenPayload
+}
+
+"""
+Create or update a company-scoped configurable payment type. Pass `id` to update.
+"""
+type CreateUpdateConfigPaymentTypeMutation {
+  paymentType: ConfigurablePaymentTypeNode
+  success: Boolean
+  message: String
+}
+
+"""Delete a company-scoped configurable payment type."""
+type DeleteConfigPaymentTypeMutation {
+  success: Boolean
+  message: String
+}
+
+"""
+Create or update a company-scoped configurable payment mode. Pass `id` to update.
+"""
+type CreateUpdateConfigPaymentModeMutation {
+  paymentMode: ConfigurablePaymentModeNode
+  success: Boolean
+  message: String
+}
+
+"""Delete a company-scoped configurable payment mode."""
+type DeleteConfigPaymentModeMutation {
+  success: Boolean
+  message: String
+}
+
+"""
+Set allowed payment modes for a payment type.
+Replaces the existing mode links for the given payment type.
+"""
+type SetConfigPaymentTypeModesMutation {
+  success: Boolean
+  message: String
+  links: [ConfigurablePaymentTypeModeNode]
+}
+
+"""Manually allocate a successful payment to tenant charges."""
+type AllocatePaymentMutation {
+  success: Boolean
+  message: String
+  allocatedAmount: Decimal
+  remainingAmount: Decimal
+}
+
+type ReconcileGatewayBufferMutationPayload {
+  gatewayBuffer: GatewayBufferNode
+  transaction: TransactionNode
+  message: String
+  clientMutationId: String
+}
+
+input ReconcileGatewayBufferMutationInput {
+  gatewayBufferId: ID!
+  unitId: ID
+  tenantId: ID
+  clientMutationId: String
 }
 
 type _Mutation {
@@ -5307,6 +6090,24 @@ type SendArrearsReminderMutation {
   message: String
 }
 
+"""
+Mutation to send reminder for one overdue schedule, preferring campaign channels.
+"""
+type SendArrearsReminderForScheduleMutation {
+  success: Boolean
+  message: String
+  sent: GenericScalar
+  details: [String]
+}
+
+"""Mutation to resend notification for an applied penalty."""
+type ResendAppliedPenaltyNotificationMutation {
+  success: Boolean
+  message: String
+  sent: GenericScalar
+  details: [String]
+}
+
 type UploadBuildingDocumentMutation {
   document: BuildingDocumentType
   success: Boolean
@@ -5487,14 +6288,6 @@ type VoidRentScheduleMutation {
   message: String
 }
 
-"""Manually allocate a successful payment to tenant charges."""
-type AllocatePaymentMutation {
-  success: Boolean
-  message: String
-  allocatedAmount: Decimal
-  remainingAmount: Decimal
-}
-
 """Assign a tenant to a unit (create occupancy)."""
 type CreateOccupancyMutation {
   occupancy: UnitOccupancyType
@@ -5648,6 +6441,121 @@ type ConfirmPaymentType {
 input ConfirmPaymentInput {
   transId: String!
   clientMutationId: String
+}
+
+type CreateManualReceiptPayload {
+  manualReceipt: ManualReceiptNode
+  clientMutationId: String
+}
+
+input CreateManualReceiptInput {
+  tenantId: ID!
+  unitId: ID!
+  firstName: String!
+  middleName: String
+  lastName: String!
+  phoneNumber: String!
+  email: String
+  amount: Decimal!
+  paymentMethodConfigId: ID!
+  referenceNumber: String
+  paymentDate: DateTime!
+  notes: String
+  clientMutationId: String
+}
+
+type ValidateManualReceiptPayload {
+  manualReceipt: ManualReceiptNode
+  paymentId: ID
+  message: String
+  clientMutationId: String
+}
+
+input ValidateManualReceiptInput {
+  receiptId: ID!
+  clientMutationId: String
+}
+
+type RejectManualReceiptPayload {
+  manualReceipt: ManualReceiptNode
+  message: String
+  clientMutationId: String
+}
+
+input RejectManualReceiptInput {
+  receiptId: ID!
+  reason: String!
+  clientMutationId: String
+}
+
+type DeleteManualReceiptPayload {
+  success: Boolean
+  message: String
+  clientMutationId: String
+}
+
+input DeleteManualReceiptInput {
+  receiptId: ID!
+  clientMutationId: String
+}
+
+type CreateManualReceiptPaymentPayload {
+  manualReceipt: ManualReceiptNode
+  paymentId: ID
+  message: String
+  clientMutationId: String
+}
+
+input CreateManualReceiptPaymentInput {
+  receiptId: ID!
+  clientMutationId: String
+}
+
+type CreateUpdateGatewayCredentialMutation {
+  gatewayCredential: GatewayCredentialNode
+  success: Boolean
+  message: String
+}
+
+type DeleteGatewayCredentialMutation {
+  success: Boolean
+  message: String
+}
+
+type CreateUpdateSMSReceiptCredentialMutation {
+  smsReceiptCredential: SMSReceiptCredentialNode
+  success: Boolean
+  message: String
+}
+
+type DeleteSMSReceiptCredentialMutation {
+  success: Boolean
+  message: String
+}
+
+type UpsertEquityJengaGatewaySetupMutation {
+  setup: EquityJengaGatewaySetupNode
+  success: Boolean
+  message: String
+}
+
+type UpsertNcbaGatewaySetupMutation {
+  setup: NcbaGatewaySetupNode
+  success: Boolean
+  message: String
+}
+
+type UpsertCooperativeBankGatewaySetupMutation {
+  setup: CooperativeBankGatewaySetupNode
+  success: Boolean
+  message: String
+}
+
+type ExtractSMSReceiptToGatewayBufferMutation {
+  success: Boolean
+  message: String
+  smsReceiptMessageLog: SMSReceiptMessageLogNode
+  gatewayBufferId: Int
 }
 
 type CreatePageVisitPayload {

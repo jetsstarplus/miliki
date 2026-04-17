@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Image,
-    PanResponder,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Animated,
+  Image,
+  PanResponder,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Typography } from '../constants/theme';
@@ -63,11 +63,13 @@ const NAV: NavSection[] = [
         label: 'Payments',
         icon: 'card',
         route: '/(tabs)/payments',
-        children: [
-          { label: 'Successful Payments', route: '/(tabs)/payments' },
-          { label: 'Unmatched Payments', route: '/(tabs)/payments' },
-          { label: 'Manual Receipts', route: '/(tabs)/payments' },
-        ],
+        // children: [
+        //   { label: 'Payments', route: '/(tabs)/payments' },
+        //   { label: 'Successful Payments', route: '/(tabs)/payments/transactions' },
+        //   { label: 'Unmatched Payments', route: '/(tabs)/payments/unmatched' },
+        //   { label: 'Manual Receipts', route: '/(tabs)/payments/manual-receipts' },
+        //   { label: 'SMS Read Policies', route: '/(tabs)/payments/sms-read-policies' },
+        // ],
       },
       { label: 'Communication', icon: 'chatbubbles', route: '/(tabs)/communication' },
       { label: 'Rent Schedules', icon: 'calendar', route: '/(tabs)/rent-schedules' },

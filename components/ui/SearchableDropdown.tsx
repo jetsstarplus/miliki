@@ -37,6 +37,8 @@ interface SearchableDropdownProps {
   onClear?: () => void;
   containerStyle?: ViewStyle;
   disabled?: boolean;
+  /** Hide the search bar inside the modal (default true) */
+  searchable?: boolean;
   /** Multi-select mode */
   multiSelect?: boolean;
   selectedIds?: string[];
@@ -57,6 +59,7 @@ export function SearchableDropdown({
   onClear,
   containerStyle,
   disabled,
+  searchable = true,
   multiSelect,
   selectedIds,
   onToggle,
@@ -70,7 +73,7 @@ export function SearchableDropdown({
     if (open) {
       setQuery('');
       onSearch?.('');
-      setTimeout(() => searchRef.current?.focus(), 150);
+      if (searchable) setTimeout(() => searchRef.current?.focus(), 150);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -173,24 +176,26 @@ export function SearchableDropdown({
           </View>
 
           {/* Search */}
-          <View style={[styles.searchRow, { borderBottomColor: colors.border }]}>
-            <Ionicons name="search" size={16} color={colors.textMuted} style={{ marginRight: 8 }} />
-            <TextInput
-              ref={searchRef}
-              style={[styles.searchInput, { color: colors.text }]}
-              placeholder="Search..."
-              placeholderTextColor={colors.textMuted}
-              value={query}
-              onChangeText={handleSearch}
-              returnKeyType="search"
-              autoCorrect={false}
-            />
-            {query ? (
-              <TouchableOpacity onPress={() => handleSearch('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={16} color={colors.textMuted} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
+          {searchable ? (
+            <View style={[styles.searchRow, { borderBottomColor: colors.border }]}>
+              <Ionicons name="search" size={16} color={colors.textMuted} style={{ marginRight: 8 }} />
+              <TextInput
+                ref={searchRef}
+                style={[styles.searchInput, { color: colors.text }]}
+                placeholder="Search..."
+                placeholderTextColor={colors.textMuted}
+                value={query}
+                onChangeText={handleSearch}
+                returnKeyType="search"
+                autoCorrect={false}
+              />
+              {query ? (
+                <TouchableOpacity onPress={() => handleSearch('')} hitSlop={8}>
+                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ) : null}
 
           {/* List */}
           {loading ? (
