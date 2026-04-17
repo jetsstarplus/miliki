@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -312,7 +313,9 @@ export default function ManualReceiptDetail() {
                   disabled={validating}
                   activeOpacity={0.75}
                 >
-                  <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                  {validating
+                    ? <ActivityIndicator size="small" color="#fff" />
+                    : <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />}
                   <Text style={styles.actionBtnText}>
                     {validating ? 'Validating…' : 'Validate Receipt'}
                   </Text>
@@ -326,7 +329,9 @@ export default function ManualReceiptDetail() {
                   disabled={creatingPayment}
                   activeOpacity={0.75}
                 >
-                  <Ionicons name="refresh-circle-outline" size={18} color={colors.primary} />
+                  {creatingPayment
+                    ? <ActivityIndicator size="small" color={colors.primary} />
+                    : <Ionicons name="refresh-circle-outline" size={18} color={colors.primary} />}
                   <Text style={[styles.actionBtnText, { color: colors.primary }]}>
                     {creatingPayment ? 'Creating…' : 'Recover Payment'}
                   </Text>
@@ -360,6 +365,7 @@ export default function ManualReceiptDetail() {
                         disabled={rejecting}
                         activeOpacity={0.75}
                       >
+                        {rejecting && <ActivityIndicator size="small" color={Colors.error} />}
                         <Text style={styles.actionBtnText}>
                           {rejecting ? 'Rejecting…' : 'Confirm Reject'}
                         </Text>
@@ -385,7 +391,9 @@ export default function ManualReceiptDetail() {
                   disabled={deleting}
                   activeOpacity={0.75}
                 >
-                  <Ionicons name="trash-outline" size={18} color={Colors.error} />
+                  {deleting
+                    ? <ActivityIndicator size="small" color={Colors.error} />
+                    : <Ionicons name="trash-outline" size={18} color={Colors.error} />}
                   <Text style={[styles.actionBtnText, { color: Colors.error }]}>
                     {deleting ? 'Deleting…' : 'Delete Receipt'}
                   </Text>
