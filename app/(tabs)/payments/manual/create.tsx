@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { DropdownOption, SearchableDropdown } from '@/components/ui/SearchableDropdown';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ServerErrorBanner } from '@/components/ui/ServerErrorBanner';
-import { AppColors, Spacing, Typography } from '@/constants/theme';
+import { AppColors, Colors, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
 import { CREATE_MANUAL_RECEIPT } from '@/graphql/properties/mutations/payments';
 import { CONFIG_PAYMENT_MODES_QUERY, MANUAL_RECEIPTS_QUERY } from '@/graphql/properties/queries/payments';
@@ -77,6 +77,7 @@ export default function CreateManualReceipt() {
   const [tenantMeta, setTenantMeta] = useState({
     unitId: '', unitNumber: '', buildingName: '',
     firstName: '', lastName: '', middleName: '', phone: '', email: '',
+    arrears: 0,
   });
 
   // Queries
@@ -117,6 +118,7 @@ export default function CreateManualReceipt() {
               middleName: e.node.middleName ?? '',
               phone: e.node.phone ?? '',
               email: e.node.email ?? '',
+              totalArrears: e.node.totalArrears ?? 0,
             },
           };
         }),
@@ -182,6 +184,7 @@ export default function CreateManualReceipt() {
       middleName: (meta.middleName as string) ?? '',
       phone: (meta.phone as string) ?? '',
       email: (meta.email as string) ?? '',
+      arrears: (meta.totalArrears as number) ?? 0,
     };
     setSelectedTenantId(opt.id);
     setTenantDisplay(opt.label);
@@ -204,7 +207,7 @@ export default function CreateManualReceipt() {
   function handleTenantClear() {
     setSelectedTenantId('');
     setTenantDisplay('');
-    setTenantMeta({ unitId: '', unitNumber: '', buildingName: '', firstName: '', lastName: '', middleName: '', phone: '', email: '' });
+    setTenantMeta({ unitId: '', unitNumber: '', buildingName: '', firstName: '', lastName: '', middleName: '', phone: '', email: '', arrears: 0 });
     setSelectedUnitId('');
     setUnitDisplay('');
     setForm(f => ({ ...f, firstName: '', middleName: '', lastName: '', phoneNumber: '', email: '' }));
@@ -270,6 +273,16 @@ export default function CreateManualReceipt() {
         error={errors.tenantId}
         placeholder="Search tenant by name"
       />
+
+      {selectedTenantId && tenantMeta.arrears > 0 ? (
+        <View style={styles.arrearsBadge}>
+          <Ionicons name="alert-circle-outline" size={14} color={Colors.warning} />
+          <Text style={styles.arrearsText}>
+            Outstanding arrears:{' '}
+            <Text style={styles.arrearsAmount}>KES {Number(tenantMeta.arrears).toLocaleString()}</Text>
+          </Text>
+        </View>
+      ) : null}
 
       <SearchableDropdown
         label="Unit *"
@@ -454,6 +467,27 @@ function makeStyles(c: AppColors) {
       flex: 1,
       fontSize: Typography.fontSizeXs,
       color: c.textSecondary,
+    },
+    arrearsBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      backgroundColor: Colors.warning + '18',
+      borderWidth: 1,
+      borderColor: Colors.warning + '55',
+      borderRadius: Radius.sm,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing.xs,
+      marginBottom: Spacing.xs,
+    },
+    arrearsText: {
+      flex: 1,
+      fontSize: Typography.fontSizeXs,
+      color: c.textSecondary,
+    },
+    arrearsAmount: {
+      fontWeight: Typography.fontWeightSemibold,
+      color: Colors.warning,
     },
   });
 }

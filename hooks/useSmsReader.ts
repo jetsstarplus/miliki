@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, NativeModules, PermissionsAndroid, Platform } from 'react-native';
+import { Alert, PermissionsAndroid, Platform } from 'react-native';
+
+// Direct require so the native module is resolved properly after a native build.
+// Wrapped in try/catch so it degrades gracefully in Expo Go or on iOS.
+let _SmsAndroid: any = null;
+if (Platform.OS === 'android') {
+  try {
+    _SmsAndroid = require('react-native-get-sms-android');
+    // The package may export via `.default` (ESM interop) or directly
+    if (_SmsAndroid?.default) _SmsAndroid = _SmsAndroid.default;
+  } catch {
+    _SmsAndroid = null;
+  }
+}
 
 export interface SmsMessage {
   id: string;
@@ -41,8 +54,8 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
   const [lastError, setLastError] = useState<string | null>(null);
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // SmsAndroid from react-native-get-sms-android (if installed)
-  const SmsAndroid = (NativeModules as any).SmsAndroid ?? null;
+  // SmsAndroid from react-native-get-sms-android
+  const SmsAndroid = _SmsAndroid;
   const isSupported = Platform.OS === 'android' && SmsAndroid != null;
   const isIOS = Platform.OS === 'ios';
 

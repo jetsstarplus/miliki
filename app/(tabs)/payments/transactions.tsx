@@ -224,7 +224,7 @@ export default function Transactions() {
             try {
               const res = await allocatePayment({
                 variables: {
-                  transactionId: item.id,
+                  paymentId: item.id,
                   unitId: decodeRelayId(item.unit.id),
                   ...(item.tenant?.id ? { tenantId: decodeRelayId(item.tenant.id) } : {}),
                 },

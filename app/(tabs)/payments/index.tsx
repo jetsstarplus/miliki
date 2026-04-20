@@ -4,7 +4,7 @@ import { useTheme } from '@/context/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface MenuItem {
@@ -49,7 +49,7 @@ export default function PaymentsMenu() {
       route: '/(tabs)/payments/sms-credentials',
       accentColor: '#8B5CF6',
     },
-  ];
+  ].filter(() => Platform.OS !== 'ios');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const ALLOCATE_PAYMENT = gql`
-  mutation AllocatePayment($transactionId: ID!, $unitId: Int!, $tenantId: Int) {
-    allocatePayment(transactionId: $transactionId, unitId: $unitId, tenantId: $tenantId) {
+  mutation AllocatePayment($paymentId: ID!) {
+    allocatePayment(paymentId: $paymentId) {
       success
       message
       allocatedAmount

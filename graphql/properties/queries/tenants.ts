@@ -12,6 +12,7 @@ export const TENANTS_DROPDOWN = gql`
           lastName
           phone
           email
+          totalArrears
           occupancies(first: 1) {
             edges {
               node {
