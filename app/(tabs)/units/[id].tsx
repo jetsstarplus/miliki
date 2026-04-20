@@ -6,12 +6,13 @@ import { StatRow } from '@/components/ui/StatRow';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
-import { UNIT_DETAIL_QUERY } from '@/graphql/properties/queries/units';
-import { useQuery } from '@apollo/client';
+import { DELETE_UNIT } from '@/graphql/properties/mutations/units';
+import { UNIT_DETAIL_QUERY, UNITS_QUERY } from '@/graphql/properties/queries/units';
+import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function UnitDetail() {
@@ -28,6 +29,28 @@ export default function UnitDetail() {
 
   const unit = data?.unit;
   const displayName = unit ? `Unit ${unit.unitNumber}` : 'Unit Detail';
+  const isOccupied = unit?.occupancies?.edges?.some((e: any) => e.node.isCurrent) ?? false;
+
+  const [deleteUnit, { loading: deleting }] = useMutation(DELETE_UNIT, {
+    refetchQueries: [{ query: UNITS_QUERY }],
+    onCompleted(d: any) {
+      const r = d?.deleteUnit;
+      if (r?.success) router.back();
+      else Alert.alert('Error', r?.message ?? 'Failed to delete unit.');
+    },
+    onError(err: any) { Alert.alert('Error', err.message); },
+  });
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete Unit',
+      `Delete Unit ${unit?.unitNumber}? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteUnit({ variables: { id } }) },
+      ]
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -214,6 +237,21 @@ export default function UnitDetail() {
             </SectionCard>
           )}
 
+          {/* Danger Zone — only when unoccupied */}
+          {!isOccupied && (
+            <SectionCard title="Danger Zone">
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={confirmDelete}
+                disabled={deleting}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="trash-outline" size={18} color={Colors.error} />
+                <Text style={styles.deleteBtnText}>{deleting ? 'Deleting…' : 'Delete Unit'}</Text>
+              </TouchableOpacity>
+            </SectionCard>
+          )}
+
           <View style={{ height: Spacing.xl }} />
         </ScrollView>
       )}
@@ -315,5 +353,21 @@ function makeStyles(c: AppColors) {
   },
   scheduleDate: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
   scheduleAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightBold, color: c.text },
+  deleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 48,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.error + '44',
+    backgroundColor: Colors.error + '0A',
+  },
+  deleteBtnText: {
+    fontSize: Typography.fontSizeMd,
+    fontWeight: Typography.fontWeightSemibold,
+    color: Colors.error,
+  },
   });
 }

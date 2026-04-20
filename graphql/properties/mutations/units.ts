@@ -1,10 +1,18 @@
 import { gql } from "@apollo/client";
 
+export const DELETE_UNIT = gql`
+  mutation DeleteUnit($id: ID!) {
+    deleteUnit(id: $id) {
+      success
+      message
+    }
+  }
+`;
 
 export const CREATE_UPDATE_UNIT = gql`
 mutation CreateUpdateUnit(
   $unitId: ID,
-  $buildingId: ID,
+  $buildingId: ID!,
   $accountNumber: String!,
   $bathrooms: Int,
   $bedrooms: Int,
@@ -19,7 +27,7 @@ mutation CreateUpdateUnit(
   $serviceCharge: Decimal,
   $squareFeet: Float,
   $unitNumber: String!,
-  $unitType: ID
+  $unitType: ID!
 ) {
   createUpdateUnit(
     id: $unitId,

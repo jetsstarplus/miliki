@@ -10,14 +10,15 @@ import { CREATE_UPDATE_UNIT } from '@/graphql/properties/mutations/units';
 import { BUILDINGS_FOR_DROPDOWN } from '@/graphql/properties/queries/building';
 import { UNIT_DETAIL_QUERY, UNIT_TYPES_QUERY, UNITS_QUERY } from '@/graphql/properties/queries/units';
 import { useMutation, useQuery } from '@apollo/client';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const PAYMENT_PERIODS = ['MONTHLY', 'QUARTERLY', 'YEARLY'];
@@ -48,7 +49,7 @@ export default function AddEditUnit() {
 
   const [serverError, setServerError] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM & { building: string }>>({});
+  const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM & { building: string; unitType: string }>>({}); 
   const [selectedBuildingId, setSelectedBuildingId] = useState(presetBuildingId ?? '');
   const [selectedUnitTypeId, setSelectedUnitTypeId] = useState('');
   const [autofilled, setAutofilled] = useState(false);
@@ -65,8 +66,10 @@ export default function AddEditUnit() {
   const buildings: { id: string; name: string }[] =
     buildingsData?.buildings?.edges?.map((e: any) => e.node) ?? [];
 
-  const unitTypes: any[] =
-    unitTypesData?.unitTypes?.edges?.map((e: any) => e.node).filter((t: any) => t.isActive !== false) ?? [];
+  const unitTypes: any[] = useMemo(
+    () => unitTypesData?.unitTypes?.edges?.map((e: any) => e.node).filter((t: any) => t.isActive !== false) ?? [],
+    [unitTypesData]
+  );
 
   useEffect(() => {
     if (editData?.unit) {
@@ -87,8 +90,17 @@ export default function AddEditUnit() {
         isAvailableForPurchase: u.isAvailableForPurchase ? 'true' : 'false',
         paymentPeriod: u.paymentPeriod ?? 'MONTHLY',
       });
+      if (u.building?.id) setSelectedBuildingId(u.building.id);
     }
   }, [editData]);
+
+  // Keep unit type chip in sync regardless of which query loads first
+  useEffect(() => {
+    const typeId = editData?.unit?.unitType?.id;
+    if (typeId && unitTypes.length > 0) {
+      setSelectedUnitTypeId(typeId);
+    }
+  }, [editData, unitTypes]);
 
   function selectUnitType(typeId: string) {
     if (selectedUnitTypeId === typeId) {
@@ -97,6 +109,7 @@ export default function AddEditUnit() {
       return;
     }
     setSelectedUnitTypeId(typeId);
+    setErrors(e => ({ ...e, unitType: '' }));
     const t = unitTypes.find(ut => ut.id === typeId);
     if (t) {
       setForm(f => ({
@@ -131,12 +144,13 @@ export default function AddEditUnit() {
   }
 
   function validate() {
-    const e: Partial<typeof EMPTY_FORM & { building: string }> = {};
+    const e: Partial<typeof EMPTY_FORM & { building: string; unitType: string }> = {};
     if (!form.unitNumber.trim()) e.unitNumber = 'Unit number is required';
     if (!form.accountNumber.trim()) e.accountNumber = 'Account number is required';
     if (!form.monthlyRent.trim()) e.monthlyRent = 'Monthly rent is required';
     if (!form.depositAmount.trim()) e.depositAmount = 'Deposit amount is required';
-    if (!isEdit && !selectedBuildingId) e.building = 'Please select a building';
+    if (!selectedBuildingId) e.building = 'Please select a building';
+    if (!selectedUnitTypeId) e.unitType = 'Please select a unit type';
     return e;
   }
 
@@ -208,7 +222,7 @@ export default function AddEditUnit() {
       )}
 
       {/* Unit type picker with auto-populate */}
-      <SectionLabel>Unit type</SectionLabel>
+      <SectionLabel>Unit type *</SectionLabel>
       {unitTypes.length === 0 ? (
         <Text style={styles.hint}>Loading unit types…</Text>
       ) : (
@@ -223,11 +237,14 @@ export default function AddEditUnit() {
             return (
               <TouchableOpacity
                 key={t.id}
-                style={[styles.typeChip, sel && styles.chipSelected]}
+                style={[styles.typeChip, sel && styles.typeChipSelected]}
                 onPress={() => selectUnitType(t.id)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, sel && styles.chipTextSelected]}>{t.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  {sel && <Ionicons name="checkmark-circle" size={14} color="#fff" />}
+                  <Text style={[styles.chipText, sel && styles.chipTextSelected]}>{t.name}</Text>
+                </View>
                 {(t.defaultBedrooms != null || t.defaultBathrooms != null) && (
                   <Text style={[styles.chipSub, sel && styles.chipSubSelected]}>
                     {t.defaultBedrooms != null ? `${t.defaultBedrooms}bd` : ''}
@@ -243,6 +260,7 @@ export default function AddEditUnit() {
       {autofilled && (
         <Text style={styles.autofillHint}>Configuration auto-filled from unit type — you may still edit below.</Text>
       )}
+      {errors.unitType ? <Text style={styles.fieldError}>{errors.unitType}</Text> : null}
 
       <SectionLabel>Basic info</SectionLabel>
 
@@ -454,13 +472,22 @@ function makeStyles(c: AppColors) {
     borderColor: c.primary,
     backgroundColor: c.overlay,
   },
+  typeChipSelected: {
+    borderColor: c.primary,
+    backgroundColor: c.primary,
+    shadowColor: c.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   chipText: {
     fontSize: Typography.fontSizeSm,
     fontWeight: Typography.fontWeightMedium,
     color: c.textSecondary,
   },
   chipTextSelected: {
-    color: c.primary,
+    color: '#fff',
     fontWeight: Typography.fontWeightSemibold,
   },
   chipSub: {
@@ -468,7 +495,7 @@ function makeStyles(c: AppColors) {
     color: c.textMuted,
     marginTop: 2,
   },
-  chipSubSelected: { color: c.primaryLight },
+  chipSubSelected: { color: 'rgba(255,255,255,0.8)' },
   autofillHint: {
     fontSize: Typography.fontSizeXs,
     color: Colors.success,

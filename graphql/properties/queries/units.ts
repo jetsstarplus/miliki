@@ -119,6 +119,11 @@ query UNIT_DETAIL($id: ID!) {
       searchName
     }
     building {
+      id
+      name
+    }
+    unitType {
+      id
       name
     }
     unitNumber

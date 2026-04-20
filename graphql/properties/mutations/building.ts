@@ -1,5 +1,14 @@
 import { gql } from "@apollo/client";
 
+export const DELETE_BUILDING = gql`
+  mutation DeleteBuilding($id: ID!) {
+    deleteBuilding(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
 export const CREATE_BUILDING_MUTATION = gql`
   mutation CreateUpdateBuilding(
     $id: ID

@@ -7,12 +7,14 @@ import { StatRow } from '@/components/ui/StatRow';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
-import { BUILDING_DETAIL } from '@/graphql/properties/queries/building';
-import { useQuery } from '@apollo/client';
+import { DELETE_BUILDING } from '@/graphql/properties/mutations/building';
+import { BUILDING_DETAIL, BUILDING_LIST } from '@/graphql/properties/queries/building';
+import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
+    Alert,
     Linking,
     ScrollView,
     StyleSheet,
@@ -35,6 +37,23 @@ export default function BuildingDetail() {
   });
 
   const building = data?.oneBuilding;
+
+  const [deleteBuilding, { loading: deleting }] = useMutation(DELETE_BUILDING, {
+    refetchQueries: [{ query: BUILDING_LIST, variables: { first: 50 } }],
+    onCompleted: () => router.replace('/(tabs)/building' as any),
+    onError: (err) => Alert.alert('Error', err.message),
+  });
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete Building',
+      `Delete "${building?.name ?? 'this building'}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteBuilding({ variables: { id } }) },
+      ]
+    );
+  }
 
   const typeLabel = building?.buildingType
     ? building.buildingType.replace(/_/g, ' ')
@@ -200,6 +219,19 @@ export default function BuildingDetail() {
             </SectionCard>
           )}
 
+          {/* Danger Zone */}
+          <SectionCard title="Danger Zone">
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={confirmDelete}
+              disabled={deleting}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={18} color={Colors.error} />
+              <Text style={styles.deleteBtnText}>{deleting ? 'Deleting…' : 'Delete Building'}</Text>
+            </TouchableOpacity>
+          </SectionCard>
+
           <View style={{ height: Spacing.xxl }} />
         </ScrollView>
       )}
@@ -280,5 +312,21 @@ function makeStyles(c: AppColors) {
     borderBottomColor: c.borderLight,
   },
   docText: { flex: 1, fontSize: Typography.fontSizeSm, color: c.primary },
+  deleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 48,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.error + '44',
+    backgroundColor: Colors.error + '0A',
+  },
+  deleteBtnText: {
+    fontSize: Typography.fontSizeMd,
+    fontWeight: Typography.fontWeightSemibold,
+    color: Colors.error,
+  },
   });
 }

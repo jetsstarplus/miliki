@@ -1,5 +1,14 @@
 import { gql } from "@apollo/client";
 
+export const DELETE_TENANT = gql`
+  mutation DeleteTenant($id: ID!) {
+    deleteTenant(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
 export const CREATE_UPDATE_TENANT_MUTATION = gql`
 mutation CreateUpdateTenant($id:ID, $firstName: String!, $middleName: String, $lastName: String!, $email: String!, $phone: String!, $emergencyContactName: String, $emergencyContactPhone: String, $emergencyContactRelationship: String, $employer: String, $idNumber: String!, $occupation: String) {
   createUpdateTenant(

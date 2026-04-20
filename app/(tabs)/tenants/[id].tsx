@@ -6,12 +6,14 @@ import { StatRow } from '@/components/ui/StatRow';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
-import { TENANT_DETAIL_QUERY } from '@/graphql/properties/queries/tenants';
-import { useQuery } from '@apollo/client';
+import { DELETE_TENANT } from '@/graphql/properties/mutations/tenants';
+import { TENANT_DETAIL_QUERY, TENANTS_QUERY } from '@/graphql/properties/queries/tenants';
+import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
+    Alert,
     Linking,
     ScrollView,
     StyleSheet,
@@ -34,6 +36,27 @@ export default function TenantDetail() {
   });
 
   const tenant = data?.tenant;
+
+  const [deleteTenant, { loading: deleting }] = useMutation(DELETE_TENANT, {
+    refetchQueries: [{ query: TENANTS_QUERY, variables: { first: 50 } }],
+    onCompleted(d: any) {
+      const r = d?.deleteTenant;
+      if (r?.success) router.back();
+      else Alert.alert('Error', r?.message ?? 'Failed to delete tenant.');
+    },
+    onError(err: any) { Alert.alert('Error', err.message); },
+  });
+
+  function confirmDelete() {
+    Alert.alert(
+      'Delete Tenant',
+      `Delete ${displayName}? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteTenant({ variables: { id } }) },
+      ]
+    );
+  }
 
   function initials(name: string) {
     return name.split(' ').slice(0, 2).map((n: string) => n[0] ?? '').join('').toUpperCase();
@@ -237,6 +260,19 @@ export default function TenantDetail() {
             </SectionCard>
           )}
 
+          {/* Danger Zone */}
+          <SectionCard title="Danger Zone">
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={confirmDelete}
+              disabled={deleting}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={18} color={Colors.error} />
+              <Text style={styles.deleteBtnText}>{deleting ? 'Deleting…' : 'Delete Tenant'}</Text>
+            </TouchableOpacity>
+          </SectionCard>
+
           <View style={{ height: Spacing.xxl }} />
         </ScrollView>
       )}
@@ -337,5 +373,21 @@ function makeStyles(c: AppColors) {
   txRef: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
   txMode: { fontSize: Typography.fontSizeXs, color: c.textMuted },
   txAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, marginBottom: 2 },
+  deleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 48,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.error + '44',
+    backgroundColor: Colors.error + '0A',
+  },
+  deleteBtnText: {
+    fontSize: Typography.fontSizeMd,
+    fontWeight: Typography.fontWeightSemibold,
+    color: Colors.error,
+  },
   });
 }
