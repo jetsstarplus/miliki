@@ -2,16 +2,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Image,
-  PanResponder,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
+import { Gesture, GestureDetector, ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import Animated, {
+    Easing,
+    interpolate,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Typography } from '../constants/theme';
 import { useAuth } from '../context/auth';
@@ -109,89 +115,69 @@ export function DrawerMenu() {
   const [expanded, setExpanded] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
 
-  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-  // Track drag offset separately so we can add it to the base position
-  const dragX = useRef(new Animated.Value(0)).current;
-  // Set to true when the drag gesture has already completed the close animation
+  // Reanimated shared values replace Animated.Value
+  const panelX = useSharedValue(-DRAWER_WIDTH);
+  const dragX = useSharedValue(0);
+  const backdropAlpha = useSharedValue(0);
+  // Avoid double-animation when gesture already completed the close
   const dragDidClose = useRef(false);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      // Only capture horizontal swipes that start moving left
-      onMoveShouldSetPanResponder: (_, gs) =>
-        Math.abs(gs.dx) > 8 && Math.abs(gs.dx) > Math.abs(gs.dy) && gs.dx < 0,
-      onPanResponderMove: (_, gs) => {
-        // Only allow leftward drag (clamped at 0)
-        const clamped = Math.min(0, gs.dx);
-        dragX.setValue(clamped);
-        // Fade backdrop proportionally
-        backdropOpacity.setValue(1 + clamped / DRAWER_WIDTH);
-      },
-      onPanResponderRelease: (_, gs) => {
-        const shouldClose = gs.dx < -DRAWER_WIDTH * 0.35 || gs.vx < -0.4;
-        if (shouldClose) {
-          Animated.parallel([
-            Animated.timing(dragX, { toValue: -DRAWER_WIDTH, duration: 200, useNativeDriver: true }),
-            Animated.timing(backdropOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
-          ]).start(() => {
-            // Move the offset into translateX so resetting dragX causes no visual jump
-            translateX.setValue(-DRAWER_WIDTH);
-            dragX.setValue(0);
-            // Signal the useEffect to skip its own close animation
-            dragDidClose.current = true;
-            close();
-          });
-        } else {
-          Animated.parallel([
-            Animated.spring(dragX, { toValue: 0, damping: 20, stiffness: 300, useNativeDriver: true }),
-            Animated.timing(backdropOpacity, { toValue: 1, duration: 150, useNativeDriver: true }),
-          ]).start();
-        }
-      },
-    }),
-  ).current;
+  const panelStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: panelX.value + dragX.value }],
+  }));
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropAlpha.value,
+  }));
+
+  // RNGH Gesture.Pan replaces PanResponder — no conflict with TouchableOpacity/ScrollView
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-10, 0])   // only leftward horizontal swipes
+    .failOffsetY([-12, 12])    // fail if vertical movement exceeds threshold
+    .onUpdate((e) => {
+      const clamped = Math.min(0, e.translationX);
+      dragX.value = clamped;
+      backdropAlpha.value = interpolate(clamped, [-DRAWER_WIDTH, 0], [0, 1]);
+    })
+    .onEnd((e) => {
+      const shouldClose =
+        e.translationX < -DRAWER_WIDTH * 0.35 || e.velocityX < -400;
+      if (shouldClose) {
+        // Absorb dragX into panelX first so the animation starts from the
+        // current visual position (no rightward jump on reset).
+        const currentX = panelX.value + dragX.value;
+        panelX.value = currentX;
+        dragX.value = 0;
+        panelX.value = withTiming(-DRAWER_WIDTH, { duration: 200 });
+        backdropAlpha.value = withTiming(0, { duration: 200 });
+        dragDidClose.current = true;
+        runOnJS(close)();
+      } else {
+        dragX.value = withSpring(0, { damping: 40, stiffness: 300 });
+        backdropAlpha.value = withTiming(1, { duration: 150 });
+      }
+    });
 
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
-      dragX.setValue(0);
-      Animated.parallel([
-        Animated.spring(translateX, {
-          toValue: 0,
-          damping: 20,
-          stiffness: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      dragX.value = 0;
+      panelX.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) });
+      backdropAlpha.value = withTiming(1, { duration: 280 });
     } else {
-      // If the drag gesture already animated the close, just hide — no re-animation
       if (dragDidClose.current) {
         dragDidClose.current = false;
-        dragX.setValue(0);
+        dragX.value = 0;
         setVisible(false);
         return;
       }
-      Animated.parallel([
-        Animated.timing(translateX, {
-          toValue: -DRAWER_WIDTH,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        dragX.setValue(0);
-        setVisible(false);
+      panelX.value = withTiming(-DRAWER_WIDTH, { duration: 220 }, (finished) => {
+        if (finished) {
+          dragX.value = 0;
+          runOnJS(setVisible)(false);
+        }
       });
+      backdropAlpha.value = withTiming(0, { duration: 220 });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -205,8 +191,8 @@ export function DrawerMenu() {
   }
 
   function navigate(route: string) {
+    router.navigate(route as any);
     close();
-    router.push(route as any);
   }
 
   function isActive(route: string) {
@@ -215,26 +201,24 @@ export function DrawerMenu() {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={isOpen ? 'auto' : 'box-none'}>
-      {/* Backdrop */}
-      <TouchableWithoutFeedback onPress={close}>
-        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
-      </TouchableWithoutFeedback>
+      {/* Backdrop — only covers area outside the panel */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={close}>
+        <Animated.View style={[styles.backdrop, backdropStyle]} />
+      </Pressable>
 
-      {/* Panel */}
-      <Animated.View
-        style={[styles.panel, { transform: [{ translateX: Animated.add(translateX, dragX) }] }]}
-        {...panResponder.panHandlers}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.lg }}
-        >
+      {/* Panel wrapped in RNGH GestureDetector for swipe-to-close */}
+      <GestureDetector gesture={swipeGesture}>
+        <Animated.View style={[styles.panel, panelStyle]}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.lg }}
+          >
           {/* Header: logo + company */}
           <View style={[styles.drawerHeader, { paddingTop: insets.top + Spacing.lg }]}>
             <Image
               source={require('../assets/images/favicons/logo-wide.png')}
               style={styles.logo}
-              resizeMode="contain"
+              resizeMode="cover"
             />
             {activeCompany && (
               <View style={styles.companyRow}>
@@ -317,7 +301,8 @@ export function DrawerMenu() {
             </View>
           ))}
         </ScrollView>
-      </Animated.View>
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }
@@ -340,7 +325,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.lg,
   },
   logo: {
-    width: 140,
+    width: 130,
     height: 40,
     marginBottom: Spacing.md,
     tintColor: '#fff',

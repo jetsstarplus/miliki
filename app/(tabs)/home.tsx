@@ -12,11 +12,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '../../constants/theme';
-import { useAuth } from '../../context/auth';
-import { useDrawer } from '../../context/drawer';
-import { useTheme } from '../../context/theme';
-import { DASHBOARD } from '../../graphql/properties/queries/building';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useAuth } from '@/context/auth';
+import { useDrawer } from '@/context/drawer';
+import { useTheme } from '@/context/theme';
+import { DASHBOARD } from '@/graphql/properties/queries/building';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
