@@ -2,21 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { Gesture, GestureDetector, ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
 import Animated, {
-    Easing,
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Typography } from '../constants/theme';
@@ -121,6 +120,7 @@ export function DrawerMenu() {
   const backdropAlpha = useSharedValue(0);
   // Avoid double-animation when gesture already completed the close
   const dragDidClose = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   const panelStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: panelX.value + dragX.value }],
@@ -132,8 +132,9 @@ export function DrawerMenu() {
 
   // RNGH Gesture.Pan replaces PanResponder — no conflict with TouchableOpacity/ScrollView
   const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-10, 0])   // only leftward horizontal swipes
-    .failOffsetY([-12, 12])    // fail if vertical movement exceeds threshold
+    .activeOffsetX([-15, 0])          // require 15px leftward movement before activating
+    .failOffsetY([-8, 8])             // fail on vertical scroll
+    .simultaneousWithExternalGesture(scrollRef as any) // scroll & pan coexist, no blocking
     .onUpdate((e) => {
       const clamped = Math.min(0, e.translationX);
       dragX.value = clamped;
@@ -162,8 +163,8 @@ export function DrawerMenu() {
     if (isOpen) {
       setVisible(true);
       dragX.value = 0;
-      panelX.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.cubic) });
-      backdropAlpha.value = withTiming(1, { duration: 280 });
+      panelX.value = withSpring(0, { damping: 14, stiffness: 160, mass: 1 });
+      backdropAlpha.value = withTiming(1, { duration: 300 });
     } else {
       if (dragDidClose.current) {
         dragDidClose.current = false;
@@ -209,11 +210,7 @@ export function DrawerMenu() {
       {/* Panel wrapped in RNGH GestureDetector for swipe-to-close */}
       <GestureDetector gesture={swipeGesture}>
         <Animated.View style={[styles.panel, panelStyle]}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.lg }}
-          >
-          {/* Header: logo + company */}
+          {/* Fixed header — stays visible while nav list scrolls */}
           <View style={[styles.drawerHeader, { paddingTop: insets.top + Spacing.lg }]}>
             <Image
               source={require('../assets/images/favicons/logo-wide.png')}
@@ -241,6 +238,13 @@ export function DrawerMenu() {
 
           <View style={styles.divider} />
 
+          {/* Scrollable nav list */}
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.lg }}
+          >
           {/* Navigation sections */}
           {NAV.map(section => (
             <View key={section.title} style={styles.section}>
@@ -253,13 +257,16 @@ export function DrawerMenu() {
 
                 return (
                   <View key={item.label}>
-                    <TouchableOpacity
-                      style={[styles.navItem, active && [styles.navItemActive, { backgroundColor: colors.primary }]]}
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.navItem,
+                        active && [styles.navItemActive, { backgroundColor: colors.primary }],
+                        pressed && { opacity: 0.7 },
+                      ]}
                       onPress={() => {
                         if (hasChildren) toggleExpand(item.label);
                         else navigate(item.route);
                       }}
-                      activeOpacity={0.7}
                     >
                       <Ionicons
                         name={active ? item.icon : (`${item.icon}-outline` as IoniconName)}
@@ -277,21 +284,18 @@ export function DrawerMenu() {
                           color="rgba(255,255,255,0.4)"
                         />
                       )}
-                    </TouchableOpacity>
-
-                    {/* Children */}
+                    </Pressable>
                     {hasChildren && isExpanded && (
                       <View style={styles.childrenWrap}>
                         {item.children!.map(child => (
-                          <TouchableOpacity
+                          <Pressable
                             key={child.label}
-                            style={styles.childItem}
+                            style={({ pressed }) => [styles.childItem, pressed && { opacity: 0.7 }]}
                             onPress={() => navigate(child.route)}
-                            activeOpacity={0.7}
                           >
                             <View style={styles.childDot} />
                             <Text style={styles.childLabel}>{child.label}</Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         ))}
                       </View>
                     )}
@@ -300,7 +304,7 @@ export function DrawerMenu() {
               })}
             </View>
           ))}
-        </ScrollView>
+          </ScrollView>
         </Animated.View>
       </GestureDetector>
     </View>

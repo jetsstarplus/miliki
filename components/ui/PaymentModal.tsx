@@ -1,13 +1,14 @@
 import { AppColors, Radius, Spacing, Typography } from '@/constants/theme';
+import { useAuth } from '@/context/auth';
+import { useMessaging } from '@/context/messaging';
 import { useTheme } from '@/context/theme';
 import {
-    INITIATE_CARD_PAYMENT,
-    INITIATE_MPESA_TOPUP,
-    VERIFY_PAYSTACK_PAYMENT,
+  INITIATE_CARD_PAYMENT,
+  INITIATE_MPESA_TOPUP,
 } from '@/graphql/properties/mutations/subscription';
 import {
-    PAYMENT_STATUS,
-    SUBSCRIPTION_PAYMENT_CONTEXT,
+  PAYMENT_STATUS,
+  SUBSCRIPTION_PAYMENT_CONTEXT,
 } from '@/graphql/properties/queries/subscription';
 import { SUBSCRIPTION_PAYMENT_UPDATES } from '@/graphql/properties/subscriptions/subscription';
 import { useLazyQuery, useMutation, useSubscription } from '@apollo/client';
@@ -16,17 +17,17 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // ── Brand colours ────────────────────────────────────────────────────────────
@@ -86,13 +87,15 @@ export function PaymentModal({
   onSuccess,
 }: PaymentModalProps) {
   const { colors } = useTheme();
+  const { user, activeCompany } = useAuth();
+  const { refetchBalances, refetchSubscription } = useMessaging();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   // Form state
   const [channel, setChannel] = useState<TopupChannel>('SMS_TOPUP');
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>('mpesa');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(user?.phoneNumber ?? '');
+  const [email, setEmail] = useState(activeCompany?.email ?? user?.email ?? '');
   const [amount, setAmount] = useState('');
   const [standingOrder, setStandingOrder] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
@@ -147,12 +150,11 @@ export function PaymentModal({
     useLazyQuery(SUBSCRIPTION_PAYMENT_CONTEXT);
   const [initiateMpesa, { loading: mpesaLoading }] = useMutation(INITIATE_MPESA_TOPUP);
   const [initiateCard, { loading: cardLoading }] = useMutation(INITIATE_CARD_PAYMENT);
-  const [verifyPaystack, { loading: verifyLoading }] = useMutation(VERIFY_PAYSTACK_PAYMENT);
   const [pollPaymentStatus, { data: pollData }] = useLazyQuery(PAYMENT_STATUS, {
     fetchPolicy: 'no-cache',
   });
 
-  const isLoading = ctxLoading || mpesaLoading || cardLoading || verifyLoading;
+  const isLoading = ctxLoading || mpesaLoading || cardLoading;
 
   // ── Tracking helpers ────────────────────────────────────────────────
   const stopTracking = useCallback(() => {
@@ -174,9 +176,15 @@ export function PaymentModal({
     (status: string, message: string) => {
       const terminalStatuses = ['COMPLETED', 'FAILED', 'REFUNDED', 'CANCELLED'];
       if (!terminalStatuses.includes(status)) return;
+      WebBrowser.dismissAuthSession(); // close Paystack browser if still open
       stopTracking();
       if (status === 'COMPLETED') {
         Alert.alert('Payment Successful', message || 'Your payment was processed successfully.');
+        if (mode === 'topup') {
+          refetchBalances();
+        } else if (mode === 'subscription') {
+          refetchSubscription();
+        }
         onClose();
         onSuccess?.();
       } else {
@@ -187,10 +195,12 @@ export function PaymentModal({
         onClose();
       }
     },
-    [stopTracking, onClose, onSuccess],
+    [stopTracking, onClose, onSuccess, mode, refetchBalances, refetchSubscription],
   );
 
-  // WebSocket subscription — active only while awaiting an M-Pesa payment
+  // WebSocket subscription — active while awaiting any payment (M-Pesa or Paystack)
+  // handlePaymentStatus calls WebBrowser.dismissAuthSession() on terminal status,
+  // so the Paystack browser closes automatically when the WS fires.
   useSubscription(SUBSCRIPTION_PAYMENT_UPDATES, {
     variables: { rawCompanyId, paymentId: trackingPaymentId },
     skip: !awaitingPayment || !trackingPaymentId,
@@ -239,6 +249,7 @@ export function PaymentModal({
   useEffect(() => {
     if (awaitingPayment) {
       timeoutRef.current = setTimeout(() => {
+        WebBrowser.dismissAuthSession(); // close Paystack browser if still open
         stopTracking();
         Alert.alert(
           'Confirmation Timeout',
@@ -261,8 +272,8 @@ export function PaymentModal({
     }
     if (!visible) {
       stopTracking();
-      setPhone('');
-      setEmail('');
+      setPhone(user?.phoneNumber ?? '');
+      setEmail(activeCompany?.email ?? user?.email ?? '');
       setAmount('');
       setStandingOrder(false);
       setChannel('SMS_TOPUP');
@@ -323,16 +334,8 @@ export function PaymentModal({
         const res = result.data?.initiateMpesaPayment;
         if (res?.success) {
           // Decode Relay global ID to integer for subscription/polling
-          let numericId: number | null = null;
-          try {
-            const relayId: string = res.payment?.id ?? '';
-            const decoded = atob(relayId);
-            const colon = decoded.lastIndexOf(':');
-            if (colon !== -1) numericId = parseInt(decoded.substring(colon + 1), 10) || null;
-          } catch {}
-
-          if (numericId) {
-            setTrackingPaymentId(numericId);
+          if (res.payment) {
+            setTrackingPaymentId(res.payment?.id);
             setAwaitingPayment(true);
           } else {
             // Fallback: show alert and close if we can't track
@@ -362,51 +365,29 @@ export function PaymentModal({
           return;
         }
 
-        // Open Paystack in an in-app browser session
-        const redirectUrl = Linking.createURL('payment-callback');
-        const browserResult = await WebBrowser.openAuthSessionAsync(
-          res.authorizationUrl,
-          redirectUrl,
-        );
-
-        if (browserResult.type === 'success') {
-          // Extract Paystack reference from redirect URL
-          let reference: string | undefined;
-          try {
-            const parsed = Linking.parse(browserResult.url);
-            reference =
-              (parsed.queryParams?.reference as string | undefined) ??
-              (parsed.queryParams?.trxref as string | undefined);
-          } catch {}
-
-          if (reference) {
-            const verifyResult = await verifyPaystack({ variables: { reference } });
-            const verifyRes = verifyResult.data?.verifyPaystackPayment;
-            if (verifyRes?.success) {
-              Alert.alert('Payment Verified', verifyRes.message ?? 'Payment completed successfully!');
-              onClose();
-              onSuccess?.();
-            } else {
-              Alert.alert(
-                'Verification Pending',
-                verifyRes?.message ??
-                  'Your payment was submitted but could not be verified immediately. It will be processed shortly.',
-              );
-            }
-          } else {
-            // Reference not in redirect — payment likely processed server-side
-            Alert.alert(
-              'Payment Submitted',
-              'Your payment was submitted. It will be reflected once confirmed.',
-            );
-            onClose();
-            onSuccess?.();
-          }
-        } else if (browserResult.type === 'cancel') {
-          // User cancelled — do nothing, leave modal open
-        } else {
-          Alert.alert('Not Completed', 'The payment was not completed.');
+        if (!res.payment?.id) {
+          Alert.alert('Error', 'Could not track this payment. Please try again.');
+          return;
         }
+
+        // Start polling immediately — same as M-Pesa flow.
+        // handlePaymentStatus will call WebBrowser.dismissAuthSession() when
+        // a terminal status arrives, which auto-closes the browser.
+        setTrackingPaymentId(res.payment?.id);
+        setAwaitingPayment(true);
+
+        // Open the browser as fire-and-forget. We do NOT await it because
+        // polling drives the outcome, not the browser result.
+        const redirectUrl = Linking.createURL('payment-callback');
+        WebBrowser.openAuthSessionAsync(res.authorizationUrl, redirectUrl).then(
+          (browserResult) => {
+            // Only handle an explicit user-cancel (back button / close).
+            // All other outcomes (success, dismiss) are handled by polling.
+            if (browserResult.type === 'cancel') {
+              stopTracking();
+            }
+          },
+        );
       }
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'Something went wrong. Please try again.');
@@ -448,7 +429,9 @@ export function PaymentModal({
             <View style={styles.awaitingContainer}>
               <ActivityIndicator size="large" color={MPESA_COLOR} style={{ marginBottom: 16 }} />
               <Text style={styles.awaitingText}>
-                {'STK Push sent to ' + phone + '.\nEnter your M-Pesa PIN to complete payment.'}
+                {selectedGateway === 'mpesa'
+                  ? 'STK Push sent to ' + phone + '.\nEnter your M-Pesa PIN to complete payment.'
+                  : 'Complete payment in the browser.\nDo not close this screen.'}
               </Text>
               <Text style={styles.awaitingSubText}>
                 {'Checking payment status...'}

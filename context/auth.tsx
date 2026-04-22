@@ -11,6 +11,7 @@ export interface UserNode {
   firstName: string;
   lastName: string;
   verified: boolean;
+  phoneNumber?: string | null;
 }
 
 export interface Company {

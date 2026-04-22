@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../context/auth';
+import { MessagingProvider } from '../context/messaging';
 import { ThemeProvider, useTheme } from '../context/theme';
 import { apolloClient } from '../lib/apollo';
 
@@ -58,7 +59,9 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <ApolloProvider client={apolloClient}>
             <AuthProvider>
-              <RootNavigator />
+              <MessagingProvider>
+                <RootNavigator />
+              </MessagingProvider>
             </AuthProvider>
           </ApolloProvider>
         </SafeAreaProvider>

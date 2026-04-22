@@ -1,7 +1,14 @@
+import { PaymentModal } from '@/components/ui/PaymentModal';
+import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
+import { useAuth } from '@/context/auth';
+import { useDrawer } from '@/context/drawer';
+import { useMessaging } from '@/context/messaging';
+import { useTheme } from '@/context/theme';
+import { DASHBOARD } from '@/graphql/properties/queries/building';
 import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -12,13 +19,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
-import { useAuth } from '@/context/auth';
-import { useDrawer } from '@/context/drawer';
-import { useTheme } from '@/context/theme';
-import { DASHBOARD } from '@/graphql/properties/queries/building';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const SMS_COLOR = '#0EA5E9';
+const WA_COLOR = '#25D366';
 
 function MetricCard({
   label,
@@ -97,6 +102,127 @@ function QuickAction({
       </View>
       <Text style={styles.quickLabel}>{label}</Text>
     </TouchableOpacity>
+  );
+}
+
+function MessagingPanel() {
+  const { colors } = useTheme();
+  const { activeCompany } = useAuth();
+  const { balances, subscription, refetchBalances, refetchSubscription } = useMessaging();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [modalMode, setModalMode] = useState<'topup' | 'subscription' | null>(null);
+
+  const daysUntilDue = useMemo(() => {
+    if (!subscription?.currentPeriodEnd) return null;
+    const end = new Date(subscription.currentPeriodEnd);
+    const now = new Date();
+    return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }, [subscription?.currentPeriodEnd]);
+
+  if (!activeCompany) return null;
+
+  const fmtBalance = (v: string | null) =>
+    v != null ? Number(v).toLocaleString() : '—';
+  const fmtRate = (v: string | null) =>
+    v != null ? `KES ${Number(v).toFixed(2)}/unit` : null;
+
+  const showSubWarning = daysUntilDue !== null && daysUntilDue <= 5;
+
+  const subDueLabel = (() => {
+    if (daysUntilDue == null) return '';
+    if (daysUntilDue < 0) return 'Subscription has expired';
+    if (daysUntilDue === 0) return 'Subscription expires today';
+    return `Subscription due in ${daysUntilDue} day${daysUntilDue === 1 ? '' : 's'}`;
+  })();
+
+  return (
+    <>
+      {/* ── Messaging Credits ── */}
+      <View style={styles.msgCard}>
+        <View style={styles.msgCardHeader}>
+          <Text style={styles.cardTitle}>Messaging Credits</Text>
+          <TouchableOpacity
+            style={styles.topupPill}
+            onPress={() => setModalMode('topup')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={13} color={colors.primary} />
+            <Text style={styles.topupPillText}>Top Up</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.msgBalanceRow}>
+          {/* SMS */}
+          <View style={styles.msgBalance}>
+            <View style={[styles.msgIconWrap, { backgroundColor: SMS_COLOR + '18' }]}>
+              <Ionicons name="chatbubble-ellipses-outline" size={15} color={SMS_COLOR} />
+            </View>
+            <View>
+              <Text style={styles.msgBalanceValue}>{fmtBalance(balances.smsBalance)}</Text>
+              <Text style={styles.msgBalanceLabel}>SMS credits</Text>
+              {fmtRate(balances.smsTopupRate) ? (
+                <Text style={styles.msgRate}>{fmtRate(balances.smsTopupRate)}</Text>
+              ) : null}
+            </View>
+          </View>
+          <View style={styles.msgDivider} />
+          {/* WhatsApp */}
+          <View style={styles.msgBalance}>
+            <View style={[styles.msgIconWrap, { backgroundColor: WA_COLOR + '18' }]}>
+              <Ionicons name="logo-whatsapp" size={15} color={WA_COLOR} />
+            </View>
+            <View>
+              <Text style={styles.msgBalanceValue}>{fmtBalance(balances.whatsappBalance)}</Text>
+              <Text style={styles.msgBalanceLabel}>WhatsApp credits</Text>
+              {fmtRate(balances.whatsappTopupRate) ? (
+                <Text style={styles.msgRate}>{fmtRate(balances.whatsappTopupRate)}</Text>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* ── Subscription due ── */}
+      {showSubWarning && (
+        <TouchableOpacity
+          style={styles.subDueCard}
+          onPress={() => setModalMode('subscription')}
+          activeOpacity={0.85}
+        >
+          <View style={[styles.msgIconWrap, { backgroundColor: Colors.warning + '18', width: 34, height: 34, borderRadius: 9 }]}>
+            <Ionicons name="time-outline" size={17} color={Colors.warning} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.subDueTitle}>{subDueLabel}</Text>
+            <Text style={styles.subDueSub}>
+              {subscription?.plan?.name ?? 'Subscription'} · Tap to renew
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={14} color={Colors.warning} />
+        </TouchableOpacity>
+      )}
+
+      {/* ── PaymentModal ── */}
+      <PaymentModal
+        visible={modalMode !== null}
+        onClose={() => setModalMode(null)}
+        mode={modalMode ?? 'topup'}
+        companyId={activeCompany.id}
+        balances={
+          modalMode === 'topup'
+            ? {
+                sms: balances.smsBalance ?? 0,
+                whatsapp: balances.whatsappBalance ?? 0,
+                sms_topup_rate: balances.smsTopupRate ?? 0,
+                whatsapp_topup_rate: balances.whatsappTopupRate ?? 0,
+              }
+            : undefined
+        }
+        onSuccess={() => {
+          if (modalMode === 'topup') refetchBalances();
+          else refetchSubscription();
+        }}
+      />
+    </>
   );
 }
 
@@ -359,6 +485,9 @@ export default function Dashboard() {
           </View>
         )}
 
+        {/* ── Messaging Credits + Subscription ── */}
+        <MessagingPanel />
+
         {/* ── Quick Actions ── */}
         <Text style={[styles.sectionLabel, { marginTop: Spacing.sm }]}>Quick actions</Text>
         <View style={styles.quickGrid}>
@@ -574,5 +703,100 @@ function makeStyles(c: AppColors) {
       marginBottom: Spacing.xs,
     },
     quickLabel: { fontSize: 11, color: c.text, fontWeight: Typography.fontWeightMedium, textAlign: 'center' },
+
+    // ── Messaging panel ──
+    msgCard: {
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      ...Shadow.sm,
+    },
+    msgCardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    topupPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: c.primary + '40',
+      backgroundColor: c.primary + '0D',
+    },
+    topupPillText: {
+      fontSize: 11,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.primary,
+    },
+    msgBalanceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    msgBalance: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+    },
+    msgDivider: {
+      width: 1,
+      height: 38,
+      backgroundColor: c.borderLight,
+      marginHorizontal: Spacing.sm,
+    },
+    msgIconWrap: {
+      width: 30,
+      height: 30,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    msgBalanceValue: {
+      fontSize: Typography.fontSizeMd,
+      fontWeight: Typography.fontWeightBold,
+      color: c.text,
+      lineHeight: 20,
+    },
+    msgBalanceLabel: {
+      fontSize: 10,
+      color: c.textMuted,
+    },
+    msgRate: {
+      fontSize: 10,
+      color: c.textMuted,
+      marginTop: 1,
+    },
+    subDueCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      backgroundColor: c.surface,
+      borderRadius: Radius.md,
+      padding: Spacing.md,
+      marginBottom: Spacing.sm,
+      borderWidth: 1,
+      borderColor: Colors.warning + '30',
+      borderLeftWidth: 3,
+      borderLeftColor: Colors.warning,
+      ...Shadow.sm,
+    },
+    subDueTitle: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightSemibold,
+      color: c.text,
+    },
+    subDueSub: {
+      fontSize: 11,
+      color: c.textMuted,
+      marginTop: 1,
+    },
   });
 }

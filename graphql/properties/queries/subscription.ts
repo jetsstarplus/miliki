@@ -8,15 +8,34 @@ export const SUBSCRIPTION_PAYMENT_CONTEXT = gql`
 `;
 
 export const PAYMENT_STATUS = gql`
-  query PaymentStatus($paymentId: Int!) {
-    paymentStatus(paymentId: $paymentId) {
-      success
-      payment {
+  query PaymentStatus($paymentId: ID!) {
+    paymentStatus(paymentId: $paymentId)
+  }
+`;
+
+export const MESSAGING_BALANCES = gql`
+  query MessagingBalances($companyId: ID!) {
+    messagingBalances(companyId: $companyId) {
+      smsBalance
+      whatsappBalance
+      smsTopupRate
+      whatsappTopupRate
+    }
+  }
+`;
+
+export const SUBSCRIPTION_STATUS = gql`
+  query SubscriptionStatus($companyId: ID!) {
+    subscriptionStatus(companyId: $companyId) {
+      subscription {
         id
         status
-        failure_reason
-        sms_balance
-        whatsapp_balance
+        currentPeriodEnd
+        plan {
+          id
+          name
+          planType
+        }
       }
     }
   }

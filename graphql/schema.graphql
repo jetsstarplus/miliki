@@ -23,11 +23,11 @@ type Query {
   paymentReminders(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID, reminderType: SubscriptionsPaymentReminderReminderTypeChoices): PaymentReminderTypeConnection
   subscriptionRefunds(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, paymentId: ID): SubscriptionRefundTypeConnection
   messagingQuotaAlerts(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, subscriptionId: ID): MessagingQuotaAlertTypeConnection
-  messagingBalances(companyId: UUID!): MessagingBalancesType
-  subscriptionAmounts(subscriptionId: Int!): SubscriptionAmountsType
-  subscriptionStatus(companyId: UUID!): SubscriptionStatusType
-  paymentStatus(paymentId: UUID!): GenericScalar
-  paymentHistory(companyId: UUID!, limit: Int): [SubscriptionPaymentType]
+  messagingBalances(companyId: ID!): MessagingBalancesType
+  subscriptionAmounts(subscriptionId: ID!): SubscriptionAmountsType
+  subscriptionStatus(companyId: ID!): SubscriptionStatusType
+  paymentStatus(paymentId: ID!): GenericScalar
+  paymentHistory(companyId: ID!, limit: Int): [SubscriptionPaymentType]
 
   """Setup progress / onboarding checklist for the Getting Started guide."""
   subscriptionGettingStartedData(companyId: ID!): GenericScalar
@@ -5380,7 +5380,7 @@ type Mutation {
   processMoveOut(damageAmount: Decimal, damageNotes: String, endDate: Date!, moveOutReason: String, occupancyId: Int!): ProcessMoveOutMutation
 
   """Mutation to send arrears reminder to a tenant"""
-  sendArrearsReminder(unitId: Int!): SendArrearsReminderMutation
+  sendArrearsReminder(unitId: ID!): SendArrearsReminderMutation
 
   """
   Mutation to send reminder for one overdue schedule, preferring campaign channels.
@@ -5389,21 +5389,21 @@ type Mutation {
 
   """Mutation to resend notification for an applied penalty."""
   resendAppliedPenaltyNotification(penaltyId: ID!): ResendAppliedPenaltyNotificationMutation
-  uploadBuildingDocument(buildingId: Int!, file: Upload!, name: String): UploadBuildingDocumentMutation
-  deleteBuildingDocument(documentId: Int!): DeleteBuildingDocumentMutation
-  uploadBuildingImage(buildingId: Int!, caption: String, image: Upload!, isPrimary: Boolean): UploadBuildingImageMutation
-  deleteBuildingImage(imageId: Int!): DeleteBuildingImageMutation
-  makePrimaryBuildingImage(imageId: Int!): MakePrimaryBuildingImageMutation
-  createUpdatePenaltyRule(applyOnce: Boolean, buildingId: Int, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, id: ID, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String!, notificationMessage: String, percentage: Decimal, priority: Int, sendNotification: Boolean): CreateUpdatePenaltyRuleMutation
-  updatePenaltyRule(applyOnce: Boolean, buildingId: Int, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String, notificationMessage: String, percentage: Decimal, priority: Int, ruleId: Int!, sendNotification: Boolean): UpdatePenaltyRuleMutation
-  deletePenaltyRule(ruleId: Int!): DeletePenaltyRuleMutation
-  togglePenaltyRule(ruleId: Int!): TogglePenaltyRuleMutation
-  testPenaltyCalculation(daysOverdue: Int!, rentAmount: Decimal!, ruleId: Int!): TestPenaltyCalculationMutation
-  createRentScheduleConfig(buildingId: Int!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String!, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): CreateRentScheduleConfigMutation
-  updateRentScheduleConfig(configId: Int!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): UpdateRentScheduleConfigMutation
-  toggleRentScheduleConfig(configId: Int!): ToggleRentScheduleConfigMutation
-  deleteRentScheduleConfig(configId: Int!): DeleteRentScheduleConfigMutation
-  runRentScheduleConfigNow(configId: Int!): RunRentScheduleConfigNowMutation
+  uploadBuildingDocument(buildingId: ID!, file: Upload!, name: String): UploadBuildingDocumentMutation
+  deleteBuildingDocument(documentId: ID!): DeleteBuildingDocumentMutation
+  uploadBuildingImage(buildingId: ID!, caption: String, image: Upload!, isPrimary: Boolean): UploadBuildingImageMutation
+  deleteBuildingImage(imageId: ID!): DeleteBuildingImageMutation
+  makePrimaryBuildingImage(imageId: ID!): MakePrimaryBuildingImageMutation
+  createUpdatePenaltyRule(applyOnce: Boolean, buildingId: ID, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, id: ID, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String!, notificationMessage: String, percentage: Decimal, priority: Int, sendNotification: Boolean): CreateUpdatePenaltyRuleMutation
+  updatePenaltyRule(applyOnce: Boolean, buildingId: ID, calculationType: String, dailyRate: Decimal, description: String, fixedAmount: Decimal, gracePeriodDays: Int, isActive: Boolean, maxPenaltyAmount: Decimal, maxPenaltyPercentage: Decimal, name: String, notificationMessage: String, percentage: Decimal, priority: Int, ruleId: ID!, sendNotification: Boolean): UpdatePenaltyRuleMutation
+  deletePenaltyRule(ruleId: ID!): DeletePenaltyRuleMutation
+  togglePenaltyRule(ruleId: ID!): TogglePenaltyRuleMutation
+  testPenaltyCalculation(daysOverdue: Int!, rentAmount: Decimal!, ruleId: ID!): TestPenaltyCalculationMutation
+  createRentScheduleConfig(buildingId: ID!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String!, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): CreateRentScheduleConfigMutation
+  updateRentScheduleConfig(configId: ID!, cronDayOfMonth: String, cronDayOfWeek: String, cronHour: String, cronMinute: String, cronMonthOfYear: String, daysBeforeDue: Int, intervalEvery: Int, intervalPeriod: String, isEnabled: Boolean, name: String, periodsToGenerate: Int, scheduleType: String!, solarEvent: String, solarLatitude: Float, solarLongitude: Float, specificUnits: [Int]): UpdateRentScheduleConfigMutation
+  toggleRentScheduleConfig(configId: ID!): ToggleRentScheduleConfigMutation
+  deleteRentScheduleConfig(configId: ID!): DeleteRentScheduleConfigMutation
+  runRentScheduleConfigNow(configId: ID!): RunRentScheduleConfigNowMutation
 
   """
   Create or update a lease agreement. Pass `id` to update an existing lease, omit to create a new DRAFT.
@@ -5434,21 +5434,21 @@ type Mutation {
   uploadLeaseDocument(file: Upload!, leaseId: ID!): UploadLeaseDocumentMutation
 
   """Delete a building only when it has no units."""
-  deleteBuilding(buildingId: Int!): DeleteBuildingMutation
+  deleteBuilding(buildingId: ID!): DeleteBuildingMutation
 
   """Delete a unit only when it has no related records."""
-  deleteUnit(unitId: Int!): DeleteUnitMutation
+  deleteUnit(unitId: ID!): DeleteUnitMutation
 
   """
   Delete a tenant only when they have no occupancies or financial records.
   """
-  deleteTenant(tenantId: Int!): DeleteTenantMutation
+  deleteTenant(tenantId: ID!): DeleteTenantMutation
 
   """Void (cancel) an open tenant charge."""
-  voidTenantCharge(chargeId: Int!): VoidTenantChargeMutation
+  voidTenantCharge(chargeId: ID!): VoidTenantChargeMutation
 
   """Void a PENDING or OVERDUE rent schedule and cancel its linked charges."""
-  voidRentSchedule(scheduleId: Int!): VoidRentScheduleMutation
+  voidRentSchedule(scheduleId: ID!): VoidRentScheduleMutation
 
   """Assign a tenant to a unit (create occupancy)."""
   createOccupancy(depositPaid: Decimal, depositRefunded: Decimal, scheduleGenerationMode: String, skipDepositCharge: Boolean, startDate: Date!, tenantId: ID!, unitId: ID!): CreateOccupancyMutation
@@ -5460,34 +5460,34 @@ type Mutation {
   bulkGenerateRentSchedules(buildingId: Int, dueDay: Int, month: Int!, skipExisting: Boolean, year: Int!): BulkGenerateRentSchedulesMutation
 
   """Create a new extra charge definition for a building."""
-  createExtraChargeDefinition(buildingId: Int!, chargeType: String!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String!, ratePerUnit: Decimal, serviceTypeId: Int!, unitLabel: String): CreateBuildingExtraChargeDefinitionMutation
+  createExtraChargeDefinition(buildingId: ID!, chargeType: String!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String!, ratePerUnit: Decimal, serviceTypeId: Int!, unitLabel: String): CreateBuildingExtraChargeDefinitionMutation
 
   """Update an existing extra charge definition."""
-  updateExtraChargeDefinition(chargeType: String, definitionId: Int!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String, ratePerUnit: Decimal, serviceTypeId: Int, unitLabel: String): UpdateBuildingExtraChargeDefinitionMutation
+  updateExtraChargeDefinition(chargeType: String, definitionId: ID!, description: String, fixedAmount: Decimal, isActive: Boolean, name: String, ratePerUnit: Decimal, serviceTypeId: ID, unitLabel: String): UpdateBuildingExtraChargeDefinitionMutation
 
   """Delete an extra charge definition (only if it has no posted entries)."""
-  deleteExtraChargeDefinition(definitionId: Int!): DeleteBuildingExtraChargeDefinitionMutation
+  deleteExtraChargeDefinition(definitionId: ID!): DeleteBuildingExtraChargeDefinitionMutation
 
   """Post extra charges for a billing period to all selected tenants."""
-  applyBuildingExtraCharges(billingMonth: String!, chargeDate: Date!, definitionId: Int!, dueDate: Date!, notes: String, rows: [ExtraChargeRowInput]!): ApplyBuildingExtraChargesMutation
+  applyBuildingExtraCharges(billingMonth: String!, chargeDate: Date!, definitionId: ID!, dueDate: Date!, notes: String, rows: [ExtraChargeRowInput]!): ApplyBuildingExtraChargesMutation
 
   """Update an existing extra charge entry and re-post to tenant account."""
-  updateExtraChargeEntry(amount: Decimal, chargeDate: Date, dueDate: Date, entryId: Int!, notes: String, unitsUsed: Decimal): UpdateBuildingExtraChargeEntryMutation
+  updateExtraChargeEntry(amount: Decimal, chargeDate: Date, dueDate: Date, entryId: ID!, notes: String, unitsUsed: Decimal): UpdateBuildingExtraChargeEntryMutation
 
   """Post a single extra charge to a specific tenant/occupancy."""
-  postTenantExtraCharge(amount: Decimal, billingMonth: String!, chargeDate: Date!, definitionId: Int!, dueDate: Date!, notes: String, occupancyId: ID!, unitsUsed: Decimal): PostTenantExtraChargeMutation
+  postTenantExtraCharge(amount: Decimal, billingMonth: String!, chargeDate: Date!, definitionId: ID!, dueDate: Date!, notes: String, occupancyId: ID!, unitsUsed: Decimal): PostTenantExtraChargeMutation
 
   """Copy a unit N times with a given numbering pattern."""
-  copyUnit(copyCount: Int!, incrementFloor: Boolean, numberingPattern: String, startingUnitNumber: String!, unitId: Int!): CopyUnitMutation
+  copyUnit(copyCount: Int!, incrementFloor: Boolean, numberingPattern: String, startingUnitNumber: String!, unitId: ID!): CopyUnitMutation
 
   """Generate multiple units across floors for a building."""
-  bulkGenerateUnits(bathrooms: Int, bedrooms: Int, buildingId: Int!, depositAmount: Decimal!, floorSequence: [String]!, monthlyRent: Decimal!, numberingPattern: String, serviceCharge: Decimal, startingNumber: String!, unitTypeId: Int!, unitsPerFloor: Int!): BulkGenerateUnitsMutation
+  bulkGenerateUnits(bathrooms: Int, bedrooms: Int, buildingId: ID!, depositAmount: Decimal!, floorSequence: [String]!, monthlyRent: Decimal!, numberingPattern: String, serviceCharge: Decimal, startingNumber: String!, unitTypeId: ID!, unitsPerFloor: Int!): BulkGenerateUnitsMutation
 
   """Copy a building and optionally its units."""
-  copyBuilding(buildingId: Int!, copyUnits: Boolean, newCode: String!, newName: String!): CopyBuildingMutation
+  copyBuilding(buildingId: ID!, copyUnits: Boolean, newCode: String!, newName: String!): CopyBuildingMutation
 
   """Manually link an unmatched C2B payment to a unit and reconcile."""
-  validateC2bPayment(paymentId: Int!, unitId: Int!): ValidateC2BPaymentMutation
+  validateC2bPayment(paymentId: ID!, unitId: ID!): ValidateC2BPaymentMutation
   sendSms(input: SendSMSInput!): SendSMSPayload
 
   """
@@ -6376,7 +6376,7 @@ type BulkGenerateUnitsMutation {
 type CopyBuildingMutation {
   success: Boolean
   message: String
-  newBuildingId: Int
+  newBuildingId: ID
   unitsCreated: Int
 }
 
@@ -6935,7 +6935,7 @@ input RevokeTokenInput {
 }
 
 type Subscription {
-  userUpdates(userId: Int): UserSubscription
+  userUpdates(userId: ID): UserSubscription
   subscriptionsViewsApplyDiscountUpdates(payload: JSONString): _Subscription
   subscriptionsViewsCancelStandingOrderUpdates(payload: JSONString): _Subscription
   subscriptionsViewsChangeBillingCycleUpdates(payload: JSONString): _Subscription
@@ -6945,24 +6945,26 @@ type Subscription {
   subscriptionsViewsProcessMpesaPaymentUpdates(payload: JSONString): _Subscription
   subscriptionsViewsReactivateStandingOrderUpdates(payload: JSONString): _Subscription
   subscriptionsViewsVerifyPaystackPaymentUpdates(payload: JSONString): _Subscription
-  subscriptionPlanUpdates(planId: Int): SubscriptionPlanSubscription
-  companySubscriptionUpdates(companyId: UUID!, subscriptionId: Int): CompanySubscriptionSubscription
-  subscriptionPaymentUpdates(companyId: UUID!, paymentId: Int, subscriptionId: Int): SubscriptionPaymentSubscription
-  paymentReminderUpdates(subscriptionId: Int): PaymentReminderSubscription
-  messagingQuotaAlertUpdates(subscriptionId: Int): MessagingQuotaAlertSubscription
-  transactionUpdates(transactionId: UUID): TransactionSubscription
-  transactionLineUpdates(transactionId: UUID): TransactionLineSubscription
-  paymentTypeUpdates(paymentTypeId: Int): PaymentTypeSubscription
-  configPaymentTypeUpdates(companyId: UUID!): ConfigurablePaymentTypeSubscription
-  configPaymentModeUpdates(companyId: UUID!): ConfigurablePaymentModeSubscription
-  campaignUpdates(campaignId: Int, companyId: UUID!): CampaignSubscription
-  notificationLogUpdates(campaignId: Int, tenantId: Int): NotificationLogSubscription
-  userNotificationUpdates(userId: Int): UserNotificationSubscription
-  maintenanceUpdates(buildingId: Int, companyId: UUID!): MaintenanceSubscription
-  c2bPaymentUpdates(paymentId: Int): C2BPaymentSubscription
-  initiateUpdates(initiateId: Int): InitiateSubscription
-  initiateLineUpdates(initiateId: Int): InitiateLineSubscription
-  mpesaExpressUpdates(expressId: Int): MpesaExpressSubscription
+  subscriptionPlanUpdates(planId: ID): SubscriptionPlanSubscription
+  companySubscriptionUpdates(companyId: ID!, subscriptionId: ID): CompanySubscriptionSubscription
+  subscriptionPaymentUpdates(companyId: ID!, paymentId: ID, subscriptionId: ID): SubscriptionPaymentSubscription
+  paymentReminderUpdates(subscriptionId: ID): PaymentReminderSubscription
+  messagingQuotaAlertUpdates(subscriptionId: ID): MessagingQuotaAlertSubscription
+  transactionUpdates(transactionId: ID): TransactionSubscription
+  transactionLineUpdates(transactionId: ID): TransactionLineSubscription
+  paymentTypeUpdates(paymentTypeId: ID): PaymentTypeSubscription
+  gatewayBufferUpdates(companyId: ID!, gatewayBufferId: ID): GatewayBufferSubscription
+  gatewayBufferLineUpdates(gatewayBufferId: ID!): GatewayBufferLineSubscription
+  configPaymentTypeUpdates(companyId: ID!): ConfigurablePaymentTypeSubscription
+  configPaymentModeUpdates(companyId: ID!): ConfigurablePaymentModeSubscription
+  campaignUpdates(campaignId: ID, companyId: ID!): CampaignSubscription
+  notificationLogUpdates(campaignId: ID, tenantId: ID): NotificationLogSubscription
+  userNotificationUpdates(userId: ID): UserNotificationSubscription
+  maintenanceUpdates(buildingId: ID, companyId: ID!): MaintenanceSubscription
+  c2bPaymentUpdates(paymentId: ID): C2BPaymentSubscription
+  initiateUpdates(initiateId: ID): InitiateSubscription
+  initiateLineUpdates(initiateId: ID): InitiateLineSubscription
+  mpesaExpressUpdates(expressId: ID): MpesaExpressSubscription
   companyViewsAddMemberManuallyUpdates(payload: JSONString): _Subscription
   companyViewsAssignUserRoleUpdates(payload: JSONString): _Subscription
   companyViewsBulkInviteMembersUpdates(payload: JSONString): _Subscription
@@ -6973,11 +6975,11 @@ type Subscription {
   companyViewsRemoveUserRoleUpdates(payload: JSONString): _Subscription
   companyViewsResendInvitationUpdates(payload: JSONString): _Subscription
   companyViewsUpdateMemberPermissionsUpdates(payload: JSONString): _Subscription
-  companyUpdates(companyId: UUID!): CompanySubscription
-  membershipUpdates(companyId: UUID!, userId: Int): MembershipSubscription
-  buildingOwnershipUpdates(buildingId: Int): BuildingOwnershipSubscription
-  companyInvitationUpdates(companyId: UUID!): CompanyInvitationSubscription
-  userRoleUpdates(companyId: UUID!, userId: Int): UserRoleSubscription
+  companyUpdates(companyId: ID!): CompanySubscription
+  membershipUpdates(companyId: ID!, userId: ID): MembershipSubscription
+  buildingOwnershipUpdates(buildingId: ID): BuildingOwnershipSubscription
+  companyInvitationUpdates(companyId: ID!): CompanyInvitationSubscription
+  userRoleUpdates(companyId: ID!, userId: ID): UserRoleSubscription
   viewsAccountTrendDataUpdates(payload: JSONString): _Subscription
   viewsBalanceSheetDataUpdates(payload: JSONString): _Subscription
   viewsCashFlowStatementDataUpdates(payload: JSONString): _Subscription
@@ -6989,21 +6991,21 @@ type Subscription {
   viewsRevenueTrendDataUpdates(payload: JSONString): _Subscription
   viewsTrialBalanceDataUpdates(payload: JSONString): _Subscription
   viewsUnitsByBuildingUpdates(payload: JSONString): _Subscription
-  accountUpdates(accountId: UUID, companyId: UUID!): AccountSubscription
-  journalEntryUpdates(companyId: UUID!, entryId: UUID): JournalEntrySubscription
-  journalLineUpdates(entryId: UUID): JournalLineSubscription
-  tenantCreditUpdates(companyId: UUID!, tenantId: Int): TenantCreditSubscription
-  tenantRefundUpdates(companyId: UUID!, tenantId: Int): TenantRefundSubscription
-  buildingUpdates(buildingId: Int, companyId: Int): BuildingSubscription
-  unitUpdates(buildingId: Int, unitId: Int): UnitSubscription
-  tenantUpdates(tenantId: Int): TenantSubscription
-  rentScheduleUpdates(rentScheduleId: Int, unitId: Int): RentScheduleSubscription
-  buildingDocumentUpdates(buildingId: Int): BuildingDocumentSubscription
-  buildingImageUpdates(buildingId: Int): BuildingImageSubscription
-  rentScheduleConfigUpdates(buildingId: Int, configId: Int): RentScheduleConfigSubscription
-  penaltyRuleUpdates(companyId: Int, ruleId: Int): PenaltyRuleSubscription
-  appliedPenaltyUpdates(companyId: Int, rentScheduleId: Int): AppliedPenaltySubscription
-  leaseUpdates(companyId: Int, leaseId: Int): LeaseSubscription
+  accountUpdates(accountId: ID, companyId: ID!): AccountSubscription
+  journalEntryUpdates(companyId: ID!, entryId: ID): JournalEntrySubscription
+  journalLineUpdates(entryId: ID): JournalLineSubscription
+  tenantCreditUpdates(companyId: ID!, tenantId: ID): TenantCreditSubscription
+  tenantRefundUpdates(companyId: ID!, tenantId: ID): TenantRefundSubscription
+  buildingUpdates(buildingId: ID, companyId: ID): BuildingSubscription
+  unitUpdates(buildingId: ID, unitId: ID): UnitSubscription
+  tenantUpdates(tenantId: ID): TenantSubscription
+  rentScheduleUpdates(rentScheduleId: ID, unitId: ID): RentScheduleSubscription
+  buildingDocumentUpdates(buildingId: ID): BuildingDocumentSubscription
+  buildingImageUpdates(buildingId: ID): BuildingImageSubscription
+  rentScheduleConfigUpdates(buildingId: ID, configId: ID): RentScheduleConfigSubscription
+  penaltyRuleUpdates(companyId: ID, ruleId: ID): PenaltyRuleSubscription
+  appliedPenaltyUpdates(companyId: ID, rentScheduleId: ID): AppliedPenaltySubscription
+  leaseUpdates(companyId: ID, leaseId: ID): LeaseSubscription
 }
 
 type UserSubscription {
@@ -7054,6 +7056,16 @@ type TransactionLineSubscription {
 type PaymentTypeSubscription {
   action: String
   paymentType: PaymentTypeNode
+}
+
+type GatewayBufferSubscription {
+  action: String
+  gatewayBuffer: GatewayBufferNode
+}
+
+type GatewayBufferLineSubscription {
+  action: String
+  line: GatewayBufferLineNode
 }
 
 """Real-time updates for configurable payment types (company-scoped)."""
