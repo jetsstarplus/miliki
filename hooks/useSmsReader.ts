@@ -1,3 +1,5 @@
+import { SYNC_SMS_RECEIPT_MESSAGES_SUMMARY } from '@/graphql/properties/mutations/sms';
+import { useApolloClient } from '@apollo/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, PermissionsAndroid, Platform } from 'react-native';
 
@@ -30,10 +32,9 @@ export interface SmsReaderConfig {
 interface UseSmsReaderParams {
   credential: {
     id: string;
-    syncEndpoint?: string | null;
+    messageKeyword?: string | null;
     expectedSender?: string | null;
-    sourceShortcode?: string | null;
-    sourcePhoneNumber?: string | null;
+    referenceKeyword?: string | null;
   } | null;
   readerConfig: SmsReaderConfig;
   onMessagesSubmitted?: (count: number) => void;
@@ -53,6 +54,7 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
   const [lastReadAt, setLastReadAt] = useState<Date | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const apolloClient = useApolloClient();
 
   // SmsAndroid from react-native-get-sms-android
   const SmsAndroid = _SmsAndroid;
@@ -108,11 +110,9 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
         return;
       }
 
-      const senderFilters = [
-        credential?.expectedSender,
-        credential?.sourceShortcode,
-        credential?.sourcePhoneNumber,
-      ].filter(Boolean) as string[];
+      const senderFilter = credential?.expectedSender ?? null;
+
+      const msgKeyword = credential?.messageKeyword?.toLowerCase() ?? null;
 
       // Read inbox messages from the last 24 hours
       const since = Date.now() - 24 * 60 * 60 * 1000;
@@ -131,15 +131,16 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
         (_count: number, smsList: string) => {
           try {
             const messages: SmsMessage[] = JSON.parse(smsList);
-            const filtered =
-              senderFilters.length > 0
-                ? messages.filter((m) =>
-                    senderFilters.some((f) =>
-                      m.address?.toLowerCase().includes(f.toLowerCase()),
-                    ),
-                  )
-                : messages;
-            resolve(filtered);
+            const filtered = senderFilter
+              ? messages.filter((m) =>
+                  m.address?.toLowerCase().includes(senderFilter.toLowerCase()),
+                )
+              : messages;
+            // Only keep messages whose body contains the message keyword (qualifier)
+            const keywordFiltered = msgKeyword
+              ? filtered.filter((m) => m.body?.toLowerCase().includes(msgKeyword))
+              : filtered;
+            resolve(keywordFiltered);
           } catch {
             resolve([]);
           }
@@ -149,38 +150,123 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
   }, [isSupported, SmsAndroid, credential]);
 
   /**
-   * Post messages to the credential's syncEndpoint.
+   * Sync messages to the server via the GraphQL syncSmsReceiptMessagesSummary mutation.
+   * On manual sync (isManual=true) errors are shown as an Alert.
    */
-  const postToEndpoint = useCallback(
-    async (messages: SmsMessage[]): Promise<boolean> => {
-      if (!credential?.syncEndpoint || messages.length === 0) return true;
+  const syncMessages = useCallback(
+    async (messages: SmsMessage[], isManual: boolean): Promise<boolean> => {
+      if (!credential || messages.length === 0) return true;
       try {
-        const response = await fetch(credential.syncEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            credentialId: credential.id,
-            messages: messages.map((m) => ({
-              providerMessageId: String(m.id),
-              sender: m.address,
-              messageBody: m.body,
-              messageDate: new Date(m.date).toISOString(),
-            })),
-          }),
+        const clientMutationId = `sync-${Date.now()}`;
+        const { data, errors } = await apolloClient.mutate({
+          mutation: SYNC_SMS_RECEIPT_MESSAGES_SUMMARY,
+          variables: {
+            input: {
+              credentialId: credential.id,
+              deduplicateByProviderMessageId: true,
+              messages: messages.map((m) => ({
+                providerMessageId: String(m.id),
+                sender: m.address,
+                senderPhone: m.address,
+                messageBody: m.body,
+                messageDate: new Date(m.date).toISOString(),
+                syncedAt: new Date().toISOString(),
+              })),
+              clientMutationId,
+            },
+          },
         });
-        return response.ok;
+        if (errors?.length) {
+          const msg = errors[0].message;
+          setLastError(msg);
+          if (isManual) Alert.alert('Sync Failed', msg);
+          return false;
+        }
+        const result = data?.syncSmsReceiptMessagesSummary;
+        if (!result?.success) {
+          const msg = result?.message ?? 'Sync failed.';
+          setLastError(msg);
+          if (isManual) Alert.alert('Sync Failed', msg);
+          return false;
+        }
+        if (result.lastSyncedAt) setLastReadAt(new Date(result.lastSyncedAt));
+        return true;
       } catch (e: any) {
-        setLastError(e?.message ?? 'Failed to post to endpoint');
+        const msg = e?.message ?? 'Failed to sync SMS messages';
+        setLastError(msg);
+        if (isManual) Alert.alert('Sync Error', msg);
         return false;
       }
     },
-    [credential],
+    [apolloClient, credential],
   );
 
   /**
-   * Trigger a full read-and-post cycle.
+   * DEV ONLY — generate realistic-looking payment SMS messages and sync them
+   * via the GraphQL mutation without touching the device inbox.
    */
-  const triggerRead = useCallback(async () => {
+  const simulateAndSync = useCallback(async () => {
+    if (!__DEV__) return;
+    if (!credential) {
+      Alert.alert('No credential', 'Save the policy first, then simulate.');
+      return;
+    }
+    const sender = credential.expectedSender ?? 'MPESA';
+    const names = ['VICTOR OTIENO', 'JANE MWANGI', 'PETER OTIENO', 'GRACE WANJIKU'];
+    const refs = ['APT-1A', 'APT-2B', 'UNIT-3C', 'SHOP-4D'];
+    const amounts = ['1500.00', '3200.00', '750.00', '5000.00'];
+    let receipts = ['QJD8K2L9', 'MNP4R7X1', 'BVT9S2W3', 'KCL6H0Y5', 'MNP4R7X1'];
+
+    // 1. Create a unique array from the original
+    // 2. Shuffle using Fisher-Yates
+    const finalizeReceipts = (arr: string[]): string[] => {
+      let unique = [...new Set(arr)];
+      for (let i = unique.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [unique[i], unique[j]] = [unique[j], unique[i]];
+      }
+      return unique;
+    };
+
+    // Reassign the variable to the final randomized, unique result
+    receipts = finalizeReceipts(receipts);
+    const now = Date.now();
+    const msgKeyword = credential.messageKeyword ?? 'Confirmed';
+    const refKeyword = credential.referenceKeyword ?? 'account';
+    const fakeMessages: SmsMessage[] = Array.from({ length: 3 }, (_, i) => {
+      const name = names[i % names.length];
+      const ref = refs[i % refs.length];
+      const amount = amounts[i % amounts.length];
+      const receipt = receipts[i % receipts.length];
+      return {
+        id: `sim-${now}-${i}`,
+        address: sender,
+        body: `${receipt} ${msgKeyword}. KES ${amount} received from ${name} 0701850242. ${refKeyword} ${ref}.`,
+        date: now - i * 60_000,
+        dateSent: now - i * 60_000,
+      };
+    });
+    setReading(true);
+    setLastError(null);
+    try {
+      const ok = await syncMessages(fakeMessages, true);
+      if (ok) {
+        Alert.alert(
+          'Simulation Complete',
+          `${fakeMessages.length} simulated message(s) synced successfully.`,
+        );
+        onMessagesSubmitted?.(fakeMessages.length);
+      }
+    } finally {
+      setReading(false);
+    }
+  }, [credential, syncMessages, onMessagesSubmitted]);
+
+  /**
+   * Trigger a full read-and-sync cycle.
+   * Pass isManual=false when called from the auto-poll timer to suppress Alert dialogs.
+   */
+  const triggerRead = useCallback(async (isManual = true) => {
     if (!credential) return;
     if (isIOS) {
       Alert.alert(
@@ -211,9 +297,8 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
         setLastReadAt(new Date());
         return;
       }
-      const ok = await postToEndpoint(messages);
+      const ok = await syncMessages(messages, isManual);
       if (ok) {
-        setLastReadAt(new Date());
         onMessagesSubmitted?.(messages.length);
       }
     } finally {
@@ -226,7 +311,7 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
     permissionGranted,
     requestPermission,
     readMessages,
-    postToEndpoint,
+    syncMessages,
     onMessagesSubmitted,
   ]);
 
@@ -239,7 +324,7 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
     if (readerConfig.autoRead && readerConfig.intervalMinutes > 0 && credential) {
       const ms = readerConfig.intervalMinutes * 60 * 1000;
       pollTimer.current = setInterval(() => {
-        triggerRead();
+        triggerRead(false); // auto-poll: suppress alert dialogs
       }, ms);
     }
     return () => {
@@ -256,5 +341,6 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
     lastError,
     requestPermission,
     triggerRead,
+    simulateAndSync: __DEV__ ? simulateAndSync : undefined,
   };
 }

@@ -261,7 +261,7 @@ type Query {
     """The ID of the object"""
     id: ID!
   ): SMSReceiptMessageLogNode
-  smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, company: ID, paymentMode: ID, isActive: Boolean, sourcePhoneNumber: String, sourceShortcode: String, search: String): SMSReceiptCredentialNodeConnection
+  smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, company: ID, paymentMode: ID, isActive: Boolean, expectedSender: String, messageKeyword: String, search: String): SMSReceiptCredentialNodeConnection
   smsReceiptCredential(
     """The ID of the object"""
     id: ID!
@@ -662,6 +662,7 @@ type CompanyType implements Node {
   manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int): ManualReceiptNodeConnection!
   gatewayCredentials(offset: Int, before: String, after: String, first: Int, last: Int): GatewayCredentialNodeConnection!
   smsReceiptCredentials(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptCredentialNodeConnection!
+  smsReceiptMessages(offset: Int, before: String, after: String, first: Int, last: Int): SMSReceiptMessageLogNodeConnection!
 
   """Company that created this building"""
   createdBuildings(offset: Int, before: String, after: String, first: Int, last: Int): BuildingTypeConnection!
@@ -1783,6 +1784,7 @@ type SMSReceiptMessageLogNode implements Node {
   rawPayload: JSONString!
   extractionNotes: String
   extractedAt: DateTime
+  company: CompanyType
   canExtract: Boolean
 }
 
@@ -1801,15 +1803,6 @@ type SMSReceiptCredentialNode implements Node {
   paymentMode: ConfigurablePaymentModeNode
   name: String!
 
-  """Phone number expected to receive the payment receipt SMS."""
-  sourcePhoneNumber: String
-
-  """Shortcode or sender ID expected for the receipt SMS."""
-  sourceShortcode: String
-
-  """Optional mobile-app/API endpoint used to push or pull SMS messages."""
-  syncEndpoint: String
-
   """Optional mobile device identifier used for SMS synchronization."""
   deviceIdentifier: String
 
@@ -1819,8 +1812,18 @@ type SMSReceiptCredentialNode implements Node {
   """Keyword used to identify the payment reference in the SMS body."""
   referenceKeyword: String
 
+  """
+  Keyword/prefix used to identify the external receipt/reference number in the SMS body. If left blank or whitespace-only, the first word in the message is treated as the external reference.
+  """
+  externalReferenceKeyword: String
+
   """Keyword used to identify the payment amount in the SMS body."""
   amountKeyword: String
+
+  """
+  Mandatory keyword that must exist in an SMS body for it to qualify for extraction (e.g. 'Confirmed').
+  """
+  messageKeyword: String!
 
   """
   List of words or phrases that must exist for the SMS to be treated as a receipt.
@@ -5514,12 +5517,34 @@ type Mutation {
   createManualReceiptPayment(input: CreateManualReceiptPaymentInput!): CreateManualReceiptPaymentPayload
   createUpdateGatewayCredential(apiKey: String, authBaseUrl: String, consumerSecret: String, environment: String, gatewayCode: String, id: ID, isActive: Boolean, merchantCode: String, name: String, paymentModeId: ID): CreateUpdateGatewayCredentialMutation
   deleteGatewayCredential(id: ID!): DeleteGatewayCredentialMutation
-  createUpdateSmsReceiptCredential(amountKeyword: String, deviceIdentifier: String, expectedSender: String, id: ID, isActive: Boolean, lastMessageAt: DateTime, lastSyncedAt: DateTime, matchRules: GenericScalar, name: String, paymentModeId: ID, readerConfig: GenericScalar, referenceKeyword: String, requiredKeywords: GenericScalar, sourcePhoneNumber: String, sourceShortcode: String, syncEndpoint: String, syncError: String): CreateUpdateSMSReceiptCredentialMutation
+  createUpdateSmsReceiptCredential(amountKeyword: String, deviceIdentifier: String, expectedSender: String, externalReferenceKeyword: String, id: ID, isActive: Boolean, lastMessageAt: DateTime, lastSyncedAt: DateTime, matchRules: GenericScalar, messageKeyword: String, name: String, paymentModeId: ID, readerConfig: GenericScalar, referenceKeyword: String, requiredKeywords: GenericScalar, syncError: String): CreateUpdateSMSReceiptCredentialMutation
   deleteSmsReceiptCredential(id: ID!): DeleteSMSReceiptCredentialMutation
   upsertEquityJengaGatewaySetup(accountId: String, bicCode: String, countryCode: String, credentialId: ID!, currencyCode: String, destinationAccountNumber: String, destinationCountryCode: String, destinationName: String, destinationType: String, extraConfig: GenericScalar, iban: String, sourceAccountNumber: String, sourceCountryCode: String, sourceName: String, transferType: String): UpsertEquityJengaGatewaySetupMutation
   upsertNcbaGatewaySetup(credentialId: ID!, extraConfig: GenericScalar, institutionCode: String): UpsertNcbaGatewaySetupMutation
   upsertCooperativeBankGatewaySetup(branchCode: String, credentialId: ID!, extraConfig: GenericScalar): UpsertCooperativeBankGatewaySetupMutation
   extractSmsReceiptToGatewayBuffer(id: ID!): ExtractSMSReceiptToGatewayBufferMutation
+  syncSmsReceiptMessages(input: SyncSMSReceiptMessagesMutationInput!): SyncSMSReceiptMessagesMutationPayload
+  syncSmsReceiptMessagesSummary(input: SyncSMSReceiptMessagesSummaryMutationInput!): SyncSMSReceiptMessagesSummaryMutationPayload
+
+  """
+  Re-run the intelligent SMS parser on a single message log.
+  Useful after updating credential extraction rules, or when manually
+  reviewing a message.  Does NOT create a GatewayBuffer.
+  """
+  parseSmsReceiptMessage(id: ID!): ParseSMSReceiptMessageMutation
+
+  """
+  Batch re-parse and buffer all PENDING SMS receipt logs for a credential.
+  
+  This is the mutation to run after updating extraction rules on a credential
+  or after a rules rollout.  It will:
+    1. Re-run the intelligent parser on every PENDING message.
+    2. Attempt to create a GatewayBuffer for each message where a reference
+       and amount could be determined.
+    3. Mark messages that cannot be buffered back to PENDING with updated
+       extraction_notes so the operator can inspect them.
+  """
+  reExtractPendingSmsReceipts(input: ReExtractPendingSMSReceiptsMutationInput!): ReExtractPendingSMSReceiptsMutationPayload
   createPageVisit(input: CreatePageVisitInput!): CreatePageVisitPayload
   createCookieConsent(input: CreateCookieConsentInput!): CreateCookieConsentPayload
 
@@ -6556,6 +6581,111 @@ type ExtractSMSReceiptToGatewayBufferMutation {
   message: String
   smsReceiptMessageLog: SMSReceiptMessageLogNode
   gatewayBufferId: Int
+}
+
+type SyncSMSReceiptMessagesMutationPayload {
+  success: Boolean
+  message: String
+  createdCount: Int
+  updatedCount: Int
+  skippedCount: Int
+  logs: [SMSReceiptMessageLogNode]
+  clientMutationId: String
+}
+
+input SyncSMSReceiptMessagesMutationInput {
+  credentialId: ID!
+  messages: [SMSReceiptMessageSyncInput!]!
+  deduplicateByProviderMessageId: Boolean
+  clientMutationId: String
+}
+
+input SMSReceiptMessageSyncInput {
+  providerMessageId: String
+  messageThreadId: String
+  sender: String
+  senderPhone: String
+  recipientPhone: String
+  recipientShortcode: String
+  messageBody: String!
+  messageDate: DateTime
+  syncedAt: DateTime
+  isCandidate: Boolean
+  matchedReference: String
+  matchedExternalReference: String
+  matchedAmount: Decimal
+  matchedCurrency: String
+  payerName: String
+  payerPhone: String
+  parsedData: GenericScalar
+  rawPayload: GenericScalar
+  extractionNotes: String
+}
+
+type SyncSMSReceiptMessagesSummaryMutationPayload {
+  success: Boolean
+  message: String
+  createdCount: Int
+  updatedCount: Int
+  skippedCount: Int
+  credential: SMSReceiptCredentialNode
+  lastSyncedAt: DateTime
+  clientMutationId: String
+}
+
+input SyncSMSReceiptMessagesSummaryMutationInput {
+  credentialId: ID!
+  messages: [SMSReceiptMessageSyncInput!]!
+  deduplicateByProviderMessageId: Boolean
+  clientMutationId: String
+}
+
+"""
+Re-run the intelligent SMS parser on a single message log.
+Useful after updating credential extraction rules, or when manually
+reviewing a message.  Does NOT create a GatewayBuffer.
+"""
+type ParseSMSReceiptMessageMutation {
+  success: Boolean
+  message: String
+  smsReceiptMessageLog: SMSReceiptMessageLogNode
+  extractionNotes: String
+}
+
+"""
+Batch re-parse and buffer all PENDING SMS receipt logs for a credential.
+
+This is the mutation to run after updating extraction rules on a credential
+or after a rules rollout.  It will:
+  1. Re-run the intelligent parser on every PENDING message.
+  2. Attempt to create a GatewayBuffer for each message where a reference
+     and amount could be determined.
+  3. Mark messages that cannot be buffered back to PENDING with updated
+     extraction_notes so the operator can inspect them.
+"""
+type ReExtractPendingSMSReceiptsMutationPayload {
+  success: Boolean
+  message: String
+  parsedCount: Int
+  bufferedCount: Int
+  skippedCount: Int
+  failedCount: Int
+  credential: SMSReceiptCredentialNode
+  clientMutationId: String
+}
+
+input ReExtractPendingSMSReceiptsMutationInput {
+  credentialId: ID!
+
+  """Re-parse even messages that already have matched_amount/reference set."""
+  forceReparse: Boolean = true
+
+  """Also attempt to re-extract messages previously marked IGNORED."""
+  includeIgnored: Boolean = false
+
+  """Maximum number of messages to process in one call."""
+  limit: Int = 500
+  clientMutationId: String
 }
 
 type CreatePageVisitPayload {

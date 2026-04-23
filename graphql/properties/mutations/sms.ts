@@ -4,15 +4,14 @@ export const CREATE_UPDATE_SMS_CREDENTIAL = gql`
   mutation CreateUpdateSmsReceiptCredential(
     $id: ID
     $name: String
-    $sourcePhoneNumber: String
-    $sourceShortcode: String
+    $messageKeyword: String
     $expectedSender: String
     $referenceKeyword: String
+    $externalReferenceKeyword: String
     $amountKeyword: String
     $requiredKeywords: GenericScalar
     $matchRules: GenericScalar
     $readerConfig: GenericScalar
-    $syncEndpoint: String
     $deviceIdentifier: String
     $isActive: Boolean
     $paymentModeId: ID
@@ -20,15 +19,14 @@ export const CREATE_UPDATE_SMS_CREDENTIAL = gql`
     createUpdateSmsReceiptCredential(
       id: $id
       name: $name
-      sourcePhoneNumber: $sourcePhoneNumber
-      sourceShortcode: $sourceShortcode
+      messageKeyword: $messageKeyword
       expectedSender: $expectedSender
       referenceKeyword: $referenceKeyword
+      externalReferenceKeyword: $externalReferenceKeyword
       amountKeyword: $amountKeyword
       requiredKeywords: $requiredKeywords
       matchRules: $matchRules
       readerConfig: $readerConfig
-      syncEndpoint: $syncEndpoint
       deviceIdentifier: $deviceIdentifier
       isActive: $isActive
       paymentModeId: $paymentModeId
@@ -42,6 +40,46 @@ export const CREATE_UPDATE_SMS_CREDENTIAL = gql`
         deviceIdentifier
         lastSyncedAt
       }
+    }
+  }
+`;
+
+export const SYNC_SMS_RECEIPT_MESSAGES_SUMMARY = gql`
+  mutation SyncSmsReadMessages($input: SyncSMSReceiptMessagesSummaryMutationInput!) {
+    syncSmsReceiptMessagesSummary(input: $input) {
+      success
+      message
+      createdCount
+      updatedCount
+      skippedCount
+      lastSyncedAt
+      credential {
+        id
+        name
+        lastSyncedAt
+        lastMessageAt
+        syncError
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const RE_EXTRACT_PENDING_SMS_RECEIPTS = gql`
+  mutation ReExtractPendingSmsReceipts($input: ReExtractPendingSMSReceiptsMutationInput!) {
+    reExtractPendingSmsReceipts(input: $input) {
+      success
+      message
+      parsedCount
+      bufferedCount
+      skippedCount
+      failedCount
+      credential {
+        id
+        lastSyncedAt
+        syncError
+      }
+      clientMutationId
     }
   }
 `;

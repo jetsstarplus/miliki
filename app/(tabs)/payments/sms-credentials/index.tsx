@@ -27,13 +27,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 interface SmsCredential {
   id: string;
   name: string;
-  sourcePhoneNumber: string | null;
-  sourceShortcode: string | null;
+  messageKeyword: string | null;
   expectedSender: string | null;
   referenceKeyword: string | null;
+  externalReferenceKeyword: string | null;
   amountKeyword: string | null;
   readerConfig: string;
-  syncEndpoint: string | null;
   deviceIdentifier: string | null;
   isActive: boolean;
   lastSyncedAt: string | null;
@@ -82,7 +81,7 @@ function CredentialCard({
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const config = parseReaderConfig(item.readerConfig);
-  const senderLabel = item.expectedSender ?? item.sourceShortcode ?? item.sourcePhoneNumber ?? '—';
+  const senderLabel = item.expectedSender ?? '—';
 
   return (
     <TouchableOpacity

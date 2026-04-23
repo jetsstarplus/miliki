@@ -39,6 +39,7 @@ export const LOGIN_MUTATION = gql`
         firstName
         lastName
         verified
+        phoneNumber
         preferences{
           lastCompanyId
           currentRole
@@ -55,6 +56,7 @@ export const LOGIN_MUTATION = gql`
                 name
                 companyType
                 status
+                email
               }
             }
           }

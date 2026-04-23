@@ -15,6 +15,14 @@
     "/^\\$env:JAVA_HOME = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\"; \\$env:PATH = \"\\$env:JAVA_HOME\\\\bin;\\$env:PATH\"; cmd /c \"cd /d Z:\\\\android && gradlew\\.bat assembleRelease\" 2>&1 \\| Tee-Object \"\\$env:TEMP\\\\gradle-release-out\\.txt\" \\| Select-Object -Last 20$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^\\$env:JAVA_HOME = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\"; \\$env:PATH = \"\\$env:JAVA_HOME\\\\bin;\\$env:PATH\"; cmd /c \"cd /d C:\\\\Users\\\\Administrator\\\\OneDrive\\\\Documents\\\\SDAKCC\\\\monerom\\\\android && gradlew\\.bat assembleRelease\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^\\$env:JAVA_HOME = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\"; \\$env:PATH = \"\\$env:JAVA_HOME\\\\bin;\\$env:PATH\"; cmd /c \"cd /d C:\\\\Users\\\\Administrator\\\\OneDrive\\\\Documents\\\\SDAKCC\\\\monerom\\\\android && gradlew\\.bat clean assembleRelease\"$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   }
 }

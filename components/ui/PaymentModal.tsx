@@ -176,7 +176,7 @@ export function PaymentModal({
     (status: string, message: string) => {
       const terminalStatuses = ['COMPLETED', 'FAILED', 'REFUNDED', 'CANCELLED'];
       if (!terminalStatuses.includes(status)) return;
-      WebBrowser.dismissAuthSession(); // close Paystack browser if still open
+      if (Platform.OS === 'ios') WebBrowser.dismissAuthSession(); // iOS only — Android closes itself
       stopTracking();
       if (status === 'COMPLETED') {
         Alert.alert('Payment Successful', message || 'Your payment was processed successfully.');
@@ -249,7 +249,7 @@ export function PaymentModal({
   useEffect(() => {
     if (awaitingPayment) {
       timeoutRef.current = setTimeout(() => {
-        WebBrowser.dismissAuthSession(); // close Paystack browser if still open
+        if (Platform.OS === 'ios') WebBrowser.dismissAuthSession(); // iOS only — Android closes itself
         stopTracking();
         Alert.alert(
           'Confirmation Timeout',
@@ -269,6 +269,9 @@ export function PaymentModal({
       const payFor = mode === 'subscription' ? 'SUBSCRIPTION' : 'SMS_TOPUP';
       fetchContext({ variables: { companyId, paymentFor: payFor } });
       setHasFetched(true);
+      // Populate phone/email from user/company on every open
+      setPhone(user?.phoneNumber ?? '');
+      setEmail(activeCompany?.email ?? user?.email ?? '');
     }
     if (!visible) {
       stopTracking();

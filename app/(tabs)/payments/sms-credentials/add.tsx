@@ -14,23 +14,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Alert,
-    Platform,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Platform,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface FormState {
   name: string;
+  messageKeyword: string;
   expectedSender: string;
-  sourcePhoneNumber: string;
-  sourceShortcode: string;
   referenceKeyword: string;
+  externalReferenceKeyword: string;
   amountKeyword: string;
-  syncEndpoint: string;
   isActive: boolean;
   autoRead: boolean;
   intervalMinutes: string;
@@ -38,12 +37,11 @@ interface FormState {
 
 const DEFAULTS: FormState = {
   name: '',
+  messageKeyword: '',
   expectedSender: '',
-  sourcePhoneNumber: '',
-  sourceShortcode: '',
   referenceKeyword: '',
+  externalReferenceKeyword: '',
   amountKeyword: '',
-  syncEndpoint: '',
   isActive: true,
   autoRead: false,
   intervalMinutes: '15',
@@ -80,12 +78,11 @@ export default function AddSmsCredential() {
     } catch { /* keep defaults */ }
     setForm({
       name: c.name ?? '',
+      messageKeyword: c.messageKeyword ?? '',
       expectedSender: c.expectedSender ?? '',
-      sourcePhoneNumber: c.sourcePhoneNumber ?? '',
-      sourceShortcode: c.sourceShortcode ?? '',
       referenceKeyword: c.referenceKeyword ?? '',
+      externalReferenceKeyword: c.externalReferenceKeyword ?? '',
       amountKeyword: c.amountKeyword ?? '',
-      syncEndpoint: c.syncEndpoint ?? '',
       isActive: c.isActive ?? true,
       autoRead,
       intervalMinutes,
@@ -108,9 +105,7 @@ export default function AddSmsCredential() {
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) e.name = 'Policy name is required.';
-    if (!form.expectedSender.trim() && !form.sourceShortcode.trim() && !form.sourcePhoneNumber.trim()) {
-      e.expectedSender = 'At least one sender identifier is required (Sender ID, shortcode, or phone).';
-    }
+    if (!form.messageKeyword.trim()) e.messageKeyword = 'Message keyword is required (e.g. Confirmed).';
     const interval = parseInt(form.intervalMinutes, 10);
     if (form.autoRead && (!interval || interval < 1)) {
       e.intervalMinutes = 'Enter a valid interval (minimum 1 minute).';
@@ -131,12 +126,11 @@ export default function AddSmsCredential() {
         variables: {
           ...(isEdit ? { id } : {}),
           name: form.name.trim(),
+          messageKeyword: form.messageKeyword.trim() || null,
           expectedSender: form.expectedSender.trim() || null,
-          sourcePhoneNumber: form.sourcePhoneNumber.trim() || null,
-          sourceShortcode: form.sourceShortcode.trim() || null,
-          referenceKeyword: form.referenceKeyword.trim() || null,
+          referenceKeyword: form.referenceKeyword.trim(),
+          externalReferenceKeyword: form.externalReferenceKeyword,
           amountKeyword: form.amountKeyword.trim() || null,
-          syncEndpoint: form.syncEndpoint.trim() || null,
           deviceIdentifier: deviceId || null,
           isActive: form.isActive,
           readerConfig,
@@ -183,14 +177,13 @@ export default function AddSmsCredential() {
   const credentialForReader = isEdit && editData?.smsReceiptCredential
     ? {
         id,
-        syncEndpoint: form.syncEndpoint || null,
+        messageKeyword: form.messageKeyword || null,
         expectedSender: form.expectedSender || null,
-        sourceShortcode: form.sourceShortcode || null,
-        sourcePhoneNumber: form.sourcePhoneNumber || null,
+        referenceKeyword: form.referenceKeyword || null,
       }
     : null;
 
-  const { triggerRead, reading, permissionGranted, requestPermission, isSupported, isIOS } = useSmsReader({
+  const { triggerRead, reading, permissionGranted, requestPermission, isSupported, isIOS, simulateAndSync } = useSmsReader({
     credential: credentialForReader as any,
     readerConfig: { autoRead: false, intervalMinutes: 15 },
   });
@@ -241,7 +234,7 @@ export default function AddSmsCredential() {
         <View style={[styles.permBanner, { borderColor: colors.border }]}>
           <Ionicons name="information-circle-outline" size={16} color={colors.textMuted} />
           <Text style={[styles.permBannerText, { color: colors.textSecondary }]}>
-            Automatic SMS reading is Android-only. On iOS, messages must be submitted via the sync endpoint.
+          Automatic SMS reading is Android-only. On iOS, messages must be submitted via the server sync API.
           </Text>
         </View>
       )}
@@ -260,7 +253,6 @@ export default function AddSmsCredential() {
       <View style={styles.toggleRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.toggleLabel}>Active</Text>
-          <Text style={styles.toggleSub}>Enable this policy to process incoming SMS</Text>
         </View>
         <Switch
           value={form.isActive}
@@ -282,39 +274,40 @@ export default function AddSmsCredential() {
         hint="Exact sender name as it appears in SMS (case-insensitive)"
       />
 
-      <Input
-        label="Source Shortcode"
-        placeholder="e.g. 247247"
-        value={form.sourceShortcode}
-        onChangeText={(v) => setField('sourceShortcode', v)}
-        keyboardType="phone-pad"
-      />
-
-      <Input
-        label="Source Phone Number"
-        placeholder="e.g. +2547XXXXXXXX"
-        value={form.sourcePhoneNumber}
-        onChangeText={(v) => setField('sourcePhoneNumber', v)}
-        keyboardType="phone-pad"
-      />
-
       {/* Extraction Rules */}
       <SectionLabel>Extraction Rules</SectionLabel>
 
       <Input
+        label="Message Keyword *"
+        placeholder="e.g. Confirmed"
+        value={form.messageKeyword}
+        onChangeText={(v) => setField('messageKeyword', v)}
+        error={errors.messageKeyword}
+        hint="Required. Word that must appear in the SMS body for it to qualify as a payment receipt. Example: Confirmed"
+      />
+
+      <Input
         label="Reference Keyword"
-        placeholder="e.g. Ref, reference:, Txn Ref"
+        placeholder="e.g. Ref"
         value={form.referenceKeyword}
         onChangeText={(v) => setField('referenceKeyword', v)}
-        hint="Keyword preceding the transaction reference in the SMS body"
+        // hint="Keyword that precedes the transaction reference in the SMS. Example: Ref"
+      />
+
+      <Input
+        label="Account No. Keyword"
+        placeholder="e.g. Receipt"
+        value={form.externalReferenceKeyword}
+        onChangeText={(v) => setField('externalReferenceKeyword', v)}
+        // hint="Keyword that precedes the account code. Example: Receipt. Leave blank or use a single space to capture the first word of the SMS."
       />
 
       <Input
         label="Amount Keyword"
-        placeholder="e.g. Ksh, KES, Amount:"
+        placeholder="e.g. KES, Ksh, Amount:"
         value={form.amountKeyword}
         onChangeText={(v) => setField('amountKeyword', v)}
-        hint="Keyword preceding the payment amount in the SMS body"
+        // hint="Keyword preceding the payment amount. Leave blank to use the built-in amount parser."
       />
 
       {/* Read Policy */}
@@ -350,23 +343,13 @@ export default function AddSmsCredential() {
         />
       )}
 
-      <Input
-        label="Sync Endpoint (optional)"
-        placeholder="https://your-server.com/sms/ingest"
-        value={form.syncEndpoint}
-        onChangeText={(v) => setField('syncEndpoint', v)}
-        hint="Server URL where SMS messages are posted for processing"
-        autoCapitalize="none"
-        keyboardType="url"
-      />
-
       {/* Manual Trigger (edit mode only) */}
       {isEdit && (
         <>
           <SectionLabel>Manual Trigger</SectionLabel>
           <TouchableOpacity
             style={[styles.readNowBtn, (reading || !isSupported && !isIOS) && styles.readNowBtnDisabled]}
-            onPress={triggerRead}
+            onPress={() => triggerRead()}
             disabled={reading}
             activeOpacity={0.8}
           >
@@ -384,6 +367,41 @@ export default function AddSmsCredential() {
               Install react-native-get-sms-android to enable device SMS reading.
             </Text>
           )}
+
+          {__DEV__ && simulateAndSync && (
+            <>
+              <TouchableOpacity
+                style={[styles.simulateBtn, reading && styles.readNowBtnDisabled]}
+                onPress={simulateAndSync}
+                disabled={reading}
+                activeOpacity={0.8}
+              >
+                {reading ? (
+                  <Text style={styles.simulateBtnText}>Simulating…</Text>
+                ) : (
+                  <>
+                    <Ionicons name="flask-outline" size={16} color={Colors.warning} />
+                    <Text style={styles.simulateBtnText}>Simulate & Sync (Dev)</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+
+          <TouchableOpacity
+            style={styles.messagesBtn}
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/payments/sms-credentials/messages',
+                params: { credentialId: id, credentialName: form.name },
+              } as any)
+            }
+            activeOpacity={0.8}
+          >
+            <Ionicons name="list-outline" size={16} color={colors.primary} />
+            <Text style={styles.messagesBtnText}>View Synced Messages</Text>
+            <Ionicons name="chevron-forward" size={14} color={colors.primary} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
         </>
       )}
 
@@ -485,6 +503,44 @@ function makeStyles(c: ReturnType<typeof useTheme>['colors']) {
       fontSize: Typography.fontSizeSm,
       fontWeight: Typography.fontWeightSemibold,
       color: '#fff',
+    },
+
+    simulateBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.xs,
+      backgroundColor: Colors.warning + '18',
+      borderWidth: 1,
+      borderColor: Colors.warning + '60',
+      borderRadius: Radius.sm,
+      paddingVertical: Spacing.sm,
+      marginBottom: Spacing.xs,
+      marginTop: Spacing.xs,
+    },
+    simulateBtnText: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightSemibold,
+      color: Colors.warning,
+    },
+
+    messagesBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      backgroundColor: c.overlay,
+      borderWidth: 1,
+      borderColor: c.borderLight,
+      borderRadius: Radius.sm,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      marginTop: Spacing.sm,
+    },
+    messagesBtnText: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightMedium,
+      color: c.primary,
+      flex: 1,
     },
 
     moduleNote: {

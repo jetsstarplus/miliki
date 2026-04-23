@@ -1,8 +1,8 @@
 import { ErrorState } from '@/components/ui/ErrorState';
 import { InfoRow } from '@/components/ui/InfoRow';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { SectionCard } from '@/components/ui/SectionCard';
 import { DropdownOption, SearchableDropdown } from '@/components/ui/SearchableDropdown';
+import { SectionCard } from '@/components/ui/SectionCard';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
 import { RECONCILE_GATEWAY_BUFFER } from '@/graphql/properties/mutations/payments';
@@ -71,25 +71,61 @@ export default function GatewayBufferDetail() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const unitOptions: DropdownOption[] = useMemo(
-    () =>
-      (unitsData?.units?.edges ?? []).map((e: any) => ({
-        id: e.node.id,
-        label: e.node.unitNumber,
-        sublabel: e.node.building?.name ?? undefined,
-      })),
-    [unitsData]
-  );
+  const unitOptions: DropdownOption[] = useMemo(() => {
+    const edges: any[] = unitsData?.units?.edges ?? [];
+    const occupied = edges.filter((e: any) =>
+      e.node.occupancies?.edges?.some((oe: any) => oe.node.isCurrent)
+    );
+    const filtered = selectedTenantId
+      ? occupied.filter((e: any) =>
+          e.node.occupancies?.edges?.some(
+            (oe: any) => oe.node.isCurrent && oe.node.tenant?.id === selectedTenantId
+          )
+        )
+      : occupied;
+    return filtered.map((e: any) => ({
+      id: e.node.id,
+      label: e.node.unitNumber,
+      sublabel: e.node.building?.name ?? undefined,
+    }));
+  }, [unitsData, selectedTenantId]);
 
   const tenantOptions: DropdownOption[] = useMemo(
     () =>
       (tenantsData?.tenants?.edges ?? []).map((e: any) => ({
         id: e.node.id,
         label: e.node.fullName,
-        sublabel: e.node.phoneNumber ?? undefined,
+        sublabel: e.node.phone ?? undefined,
       })),
     [tenantsData]
   );
+
+  function handleUnitSelect(opt: DropdownOption) {
+    setSelectedUnitId(opt.id);
+    setUnitDisplay(opt.label + (opt.sublabel ? ` · ${opt.sublabel}` : ''));
+    setUnitError('');
+    // Auto-fill tenant from the unit's current occupant
+    const unitNode = (unitsData?.units?.edges ?? []).find((e: any) => e.node.id === opt.id)?.node;
+    const currentOcc = unitNode?.occupancies?.edges?.find((oe: any) => oe.node.isCurrent);
+    if (currentOcc?.node?.tenant) {
+      setSelectedTenantId(currentOcc.node.tenant.id);
+      setTenantDisplay(currentOcc.node.tenant.fullName);
+    }
+  }
+
+  function handleTenantSelect(opt: DropdownOption) {
+    setSelectedTenantId(opt.id);
+    setTenantDisplay(opt.label);
+    // Auto-fill unit from the tenant's current occupancy
+    const tenantNode = (tenantsData?.tenants?.edges ?? []).find((e: any) => e.node.id === opt.id)?.node;
+    const currentOcc = tenantNode?.occupancies?.edges?.find((oe: any) => oe.node.isCurrent);
+    if (currentOcc?.node?.unit) {
+      const u = currentOcc.node.unit;
+      setSelectedUnitId(u.id);
+      setUnitDisplay(u.unitNumber + (u.building?.name ? ` · ${u.building.name}` : ''));
+      setUnitError('');
+    }
+  }
 
   const [reconcile, { loading: reconciling }] = useMutation(RECONCILE_GATEWAY_BUFFER, {
     refetchQueries: [{ query: UNRECONCILED_GATEWAY_BUFFERS_QUERY, variables: { first: 20 } }],
@@ -229,11 +265,7 @@ export default function GatewayBufferDetail() {
                 value={selectedUnitId}
                 displayValue={unitDisplay}
                 options={unitOptions}
-                onSelect={(opt) => {
-                  setSelectedUnitId(opt.id);
-                  setUnitDisplay(opt.label + (opt.sublabel ? ` · ${opt.sublabel}` : ''));
-                  setUnitError('');
-                }}
+                onSelect={handleUnitSelect}
                 onSearch={setUnitSearch}
                 onClear={() => { setSelectedUnitId(''); setUnitDisplay(''); }}
                 loading={unitsLoading}
@@ -246,7 +278,7 @@ export default function GatewayBufferDetail() {
                 value={selectedTenantId}
                 displayValue={tenantDisplay}
                 options={tenantOptions}
-                onSelect={(opt) => { setSelectedTenantId(opt.id); setTenantDisplay(opt.label); }}
+                onSelect={handleTenantSelect}
                 onSearch={setTenantSearch}
                 onClear={() => { setSelectedTenantId(''); setTenantDisplay(''); }}
                 loading={tenantsLoading}

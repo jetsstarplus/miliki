@@ -7,15 +7,14 @@ export const SMS_CREDENTIALS_QUERY = gql`
         node {
           id
           name
-          sourcePhoneNumber
-          sourceShortcode
+          messageKeyword
           expectedSender
           referenceKeyword
+          externalReferenceKeyword
           amountKeyword
           requiredKeywords
           matchRules
           readerConfig
-          syncEndpoint
           deviceIdentifier
           isActive
           lastSyncedAt
@@ -40,15 +39,14 @@ export const SMS_CREDENTIAL_DETAIL = gql`
     smsReceiptCredential(id: $id) {
       id
       name
-      sourcePhoneNumber
-      sourceShortcode
+      messageKeyword
       expectedSender
       referenceKeyword
+      externalReferenceKeyword
       amountKeyword
       requiredKeywords
       matchRules
       readerConfig
-      syncEndpoint
       deviceIdentifier
       isActive
       lastSyncedAt
