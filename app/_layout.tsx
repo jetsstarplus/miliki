@@ -11,7 +11,7 @@ import { ThemeProvider, useTheme } from '../context/theme';
 import { apolloClient } from '../lib/apollo';
 
 function RootNavigator() {
-  const { isAuthenticated, isLoading, hasCompany } = useAuth();
+  const { isAuthenticated, isLoading, hasCompany, hasSubscription } = useAuth();
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const segments = useSegments();
@@ -26,11 +26,13 @@ function RootNavigator() {
     if (!isAuthenticated) {
       if (!inAuth) router.replace('/(auth)/welcome' as any);
     } else if (!hasCompany) {
-      if (!inOnboarding) router.replace('/(onboarding)/create-company' as any);
+      if (!inOnboarding) router.replace('/(onboarding)/company-or-join' as any);
+    } else if (!hasSubscription) {
+      if (!inOnboarding) router.replace('/(onboarding)/select-plan' as any);
     } else {
       if (!inTabs) router.replace('/(tabs)/home' as any);
     }
-  }, [isAuthenticated, isLoading, hasCompany, segments, router]);
+  }, [isAuthenticated, isLoading, hasCompany, hasSubscription, segments, router]);
 
   if (isLoading) {
     return (

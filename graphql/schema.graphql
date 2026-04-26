@@ -5547,6 +5547,11 @@ type Mutation {
   reExtractPendingSmsReceipts(input: ReExtractPendingSMSReceiptsMutationInput!): ReExtractPendingSMSReceiptsMutationPayload
   createPageVisit(input: CreatePageVisitInput!): CreatePageVisitPayload
   createCookieConsent(input: CreateCookieConsentInput!): CreateCookieConsentPayload
+  registerMemberMobile(email: String!, firstName: String!, lastName: String!, password1: String!, password2: String!, phoneNumber: String, role: String!): RegisterMemberMobileMutation
+  verifyRegistrationOtp(code: String!, email: String!): VerifyRegistrationOTPMutation
+  resendRegistrationOtp(email: String!): ResendRegistrationOTPMutation
+  sendPasswordResetOtp(email: String, phoneNumber: String): SendPasswordResetOTPMutation
+  resetPasswordWithOtp(code: String!, email: String, newPassword1: String!, newPassword2: String!, phoneNumber: String): ResetPasswordWithOTPMutation
 
   """
   Register user with fields defined in the settings.
@@ -5802,6 +5807,8 @@ type CancelCompanySubscriptionMutation {
 
 type SelectSubscriptionPlanMutation {
   subscription: CompanySubscriptionType
+  requiresGettingStarted: Boolean
+  gettingStartedData: GenericScalar
   success: Boolean
   message: String
 }
@@ -6714,6 +6721,39 @@ input CreateCookieConsentInput {
   cookie: String!
   consented: Boolean!
   clientMutationId: String
+}
+
+type RegisterMemberMobileMutation {
+  success: Boolean
+  message: String
+  user: UserNode
+  otpChannels: [String]
+  otpExpiresInSeconds: Int
+}
+
+type VerifyRegistrationOTPMutation {
+  success: Boolean
+  message: String
+  user: UserNode
+}
+
+type ResendRegistrationOTPMutation {
+  success: Boolean
+  message: String
+  otpChannels: [String]
+  otpExpiresInSeconds: Int
+}
+
+type SendPasswordResetOTPMutation {
+  success: Boolean
+  message: String
+  otpChannels: [String]
+  otpExpiresInSeconds: Int
+}
+
+type ResetPasswordWithOTPMutation {
+  success: Boolean
+  message: String
 }
 
 """

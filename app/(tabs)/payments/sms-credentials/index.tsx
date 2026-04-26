@@ -11,11 +11,14 @@ import { SmsReaderConfig, useSmsReader } from '@/hooks/useSmsReader';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     FlatList,
+    Linking,
+    PermissionsAndroid,
+    Platform,
     RefreshControl,
     StyleSheet,
     Text,
@@ -176,6 +179,7 @@ function CredentialCardWithReader({
   const { triggerRead, reading } = useSmsReader({
     credential: isThisDevice ? item : null,
     readerConfig: config,
+    lastSyncedAt: item.lastSyncedAt,
     onMessagesSubmitted: async (count) => {
       Alert.alert('SMS Read', `${count} message(s) submitted for processing.`);
     },
@@ -212,6 +216,51 @@ export default function SmsCredentials() {
   const router = useRouter();
   const { deviceId, ready: deviceReady } = useDeviceId();
 
+  // Screen-level SMS permission state
+  const [smsPermission, setSmsPermission] = useState<'unknown' | 'granted' | 'denied' | 'requesting' | 'never_ask_again'>('unknown');
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS).then((granted) => {
+      setSmsPermission(granted ? 'granted' : 'denied');
+    });
+  }, []);
+
+  const handleRequestSmsPermission = useCallback(async () => {
+    if (smsPermission === 'never_ask_again') {
+      // System dialog won't show — send user to Settings
+      Linking.openSettings();
+      return;
+    }
+    setSmsPermission('requesting');
+    try {
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_SMS,
+        {
+          title: 'SMS Read Permission',
+          message:
+            'This app needs to read SMS messages to automatically detect and process payment receipts according to your configured policies.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Deny',
+        },
+      );
+      if (result === PermissionsAndroid.RESULTS.GRANTED) {
+        setSmsPermission('granted');
+      } else if (result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+        setSmsPermission('never_ask_again');
+        Alert.alert(
+          'Permission Blocked',
+          'SMS permission has been permanently denied. Tap the banner again to open Settings and enable it manually.',
+          [{ text: 'Open Settings', onPress: () => Linking.openSettings() }, { text: 'Cancel', style: 'cancel' }],
+        );
+      } else {
+        setSmsPermission('denied');
+      }
+    } catch {
+      setSmsPermission('denied');
+    }
+  }, [smsPermission]);
+
   const { data, loading, error, refetch } = useQuery(SMS_CREDENTIALS_QUERY, {
     variables: { first: 100 },
     fetchPolicy: 'cache-and-network',
@@ -243,6 +292,35 @@ export default function SmsCredentials() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <AppHeader title="SMS Read Policies" showBack />
+
+      {/* SMS permission banner — Android only, shown when permission is not yet granted */}
+      {Platform.OS === 'android' && smsPermission !== 'granted' && smsPermission !== 'unknown' && (
+        <TouchableOpacity
+          style={styles.permissionBanner}
+          onPress={handleRequestSmsPermission}
+          activeOpacity={0.8}
+          disabled={smsPermission === 'requesting'}
+        >
+          <Ionicons
+            name={smsPermission === 'requesting' ? 'hourglass-outline' : smsPermission === 'never_ask_again' ? 'settings-outline' : 'shield-outline'}
+            size={18}
+            color="#fff"
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.permissionBannerTitle}>SMS Permission Required</Text>
+            <Text style={styles.permissionBannerSub}>
+              {smsPermission === 'requesting'
+                ? 'Requesting permission…'
+                : smsPermission === 'never_ask_again'
+                  ? 'Permission blocked. Tap to open Settings and enable it manually.'
+                  : 'Tap to grant SMS read access so this device can process payment receipts.'}
+            </Text>
+          </View>
+          {smsPermission !== 'requesting' && (
+            <Ionicons name="chevron-forward" size={16} color="#fff" />
+          )}
+        </TouchableOpacity>
+      )}
 
       {(loading && credentials.length === 0) || !deviceReady ? <LoadingState /> : null}
 
@@ -310,6 +388,25 @@ function makeStyles(c: AppColors) {
       alignItems: 'center',
       justifyContent: 'center',
       ...Shadow.md,
+    },
+
+    permissionBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      backgroundColor: Colors.warning,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+    },
+    permissionBannerTitle: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightSemibold,
+      color: '#fff',
+    },
+    permissionBannerSub: {
+      fontSize: Typography.fontSizeXs,
+      color: 'rgba(255,255,255,0.85)',
+      marginTop: 1,
     },
 
     card: {

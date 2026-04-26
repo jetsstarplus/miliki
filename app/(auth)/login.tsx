@@ -1,4 +1,4 @@
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
@@ -21,6 +21,7 @@ import { AppColors, Spacing, Typography } from '../../constants/theme';
 import { useAuth } from '../../context/auth';
 import { useTheme } from '../../context/theme';
 import { LOGIN_MUTATION } from '../../graphql/mutations';
+import { DASHBOARD_COMPANY_CONTEXT_QUERY } from '../../graphql/subscriptions/queries';
 import { parseGqlErrors } from '../../lib/gql-errors';
 
 interface LoginErrors {
@@ -30,9 +31,10 @@ interface LoginErrors {
 
 export default function Login() {
   const router = useRouter();
-  const { signIn, setActiveCompany } = useAuth();
+  const { signIn, setActiveCompany, setHasSubscription } = useAuth();
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const apolloClient = useApolloClient();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -62,7 +64,6 @@ export default function Login() {
             const lastId = String(result.user.preferences.lastCompanyId);
             const active = companies.find((c: any) => {
               const relayId: string = c.node.company.id ?? '';
-              // Relay encodes IDs as base64("TypeName:rawId") — decode and extract the raw part
               try {
                 const decoded = atob(relayId).split(':').pop() ?? '';
                 return decoded === lastId;
@@ -76,9 +77,20 @@ export default function Login() {
             const firstCompany = companies[0]?.node?.company;
             if (firstCompany) await setActiveCompany(firstCompany);
           }
-          router.replace('/(tabs)/home' as any);
+          // Check subscription status so root layout routes correctly
+          try {
+            const { data: dashData } = await apolloClient.query({
+              query: DASHBOARD_COMPANY_CONTEXT_QUERY,
+              fetchPolicy: 'network-only',
+            });
+            const hasSub = dashData?.dashboard?.companyContext?.hasSubscription ?? false;
+            await setHasSubscription(hasSub);
+          } catch {
+            // Non-fatal — root layout will route to select-plan if needed
+          }
+          // Root layout handles final routing based on hasSubscription
         } else {
-          router.replace('/(onboarding)/create-company');
+          router.replace('/(onboarding)/company-or-join' as any);
         }
       } else {
         Alert.alert('Sign In Failed', parseGqlErrors(result?.errors, 'Invalid credentials. Please try again.'));

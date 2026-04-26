@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { ACTIVE_COMPANY_KEY, API_URL, LAST_REFRESH_KEY, REFRESH_TOKEN_KEY, TOKEN_KEY } from '../constants/api';
+import { ACTIVE_COMPANY_KEY, API_URL, HAS_SUBSCRIPTION_KEY, LAST_REFRESH_KEY, REFRESH_TOKEN_KEY, TOKEN_KEY } from '../constants/api';
 import { apolloClient } from '../lib/apollo';
 
 export interface UserNode {
@@ -30,12 +30,14 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasCompany: boolean;
+  hasSubscription: boolean;
 }
 
 interface AuthContextValue extends AuthState {
   signIn: (token: string, refreshToken: string, user: UserNode) => Promise<void>;
   signOut: () => Promise<void>;
   setActiveCompany: (company: Company) => Promise<void>;
+  setHasSubscription: (val: boolean) => Promise<void>;
   updateUser: (user: UserNode) => void;
 }
 
@@ -84,6 +86,7 @@ async function clearAuthStorage() {
     AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
     AsyncStorage.removeItem(ACTIVE_COMPANY_KEY),
     AsyncStorage.removeItem(LAST_REFRESH_KEY),
+    AsyncStorage.removeItem(HAS_SUBSCRIPTION_KEY),
   ]);
 }
 
@@ -95,6 +98,7 @@ const SIGNED_OUT_STATE: AuthState = {
   isLoading: false,
   isAuthenticated: false,
   hasCompany: false,
+  hasSubscription: false,
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -113,11 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [token, storedRefresh, companyJson, lastRefreshStr] = await Promise.all([
+        const [token, storedRefresh, companyJson, lastRefreshStr, hasSubStr] = await Promise.all([
           AsyncStorage.getItem(TOKEN_KEY),
           AsyncStorage.getItem(REFRESH_TOKEN_KEY),
           AsyncStorage.getItem(ACTIVE_COMPANY_KEY),
           AsyncStorage.getItem(LAST_REFRESH_KEY),
+          AsyncStorage.getItem(HAS_SUBSCRIPTION_KEY),
         ]);
 
         if (!token) {
@@ -157,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           activeCompany,
           isAuthenticated: true,
           hasCompany: !!activeCompany,
+          hasSubscription: hasSubStr === 'true',
           isLoading: false,
         }));
       } catch {
@@ -231,12 +237,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState(s => ({ ...s, activeCompany: company, hasCompany: true }));
   }, []);
 
+  const setHasSubscription = useCallback(async (val: boolean) => {
+    await AsyncStorage.setItem(HAS_SUBSCRIPTION_KEY, val ? 'true' : 'false');
+    setState(s => ({ ...s, hasSubscription: val }));
+  }, []);
+
   const updateUser = useCallback((user: UserNode) => {
     setState(s => ({ ...s, user }));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, signIn, signOut, setActiveCompany, updateUser }}>
+    <AuthContext.Provider value={{ ...state, signIn, signOut, setActiveCompany, setHasSubscription, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

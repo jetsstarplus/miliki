@@ -7,33 +7,34 @@ This document covers all available GraphQL operations for building an Expo React
 **Schema file:** `schema.graphql` (root of repo)  
 **Auth header:** `Authorization: JWT <token>`
 
-> **Note:** Authentication (login, register, verify account, password reset, password change) and registration flows are already implemented in the mobile app. Start from Section 2 below.
+> **Update:** Mobile-first onboarding and OTP flows are now available in GraphQL (registration OTP, resend OTP, OTP password reset, improved company/subscription onboarding).
 
 ---
 
 ## Table of Contents
 
 1. [Auth Context & Session Hydration](#1-auth-context--session-hydration)
-2. [Company Management & Switching](#2-company-management--switching)
-3. [Subscription Management](#3-subscription-management)
-4. [Dashboard](#4-dashboard)
-5. [Buildings](#5-buildings)
-6. [Units](#6-units)
-7. [Tenants](#7-tenants)
-8. [Occupancy Management](#8-occupancy-management)
-9. [Rent Schedules](#9-rent-schedules)
-10. [Tenant Charges](#10-tenant-charges)
-11. [Payments & Allocation](#11-payments--allocation)
-12. [Building Extra Charges](#12-building-extra-charges)
-13. [Leases](#13-leases)
-14. [Rent Schedule Config & Penalties](#14-rent-schedule-config--penalties)
-15. [Maintenance](#15-maintenance)
-16. [Notifications](#16-notifications)
-17. [Accounting](#17-accounting)
-18. [Payment Configuration](#18-payment-configuration)
-19. [Tenant Payment Link (Public)](#19-tenant-payment-link-public)
-20. [Real-Time WebSocket Subscriptions](#20-real-time-websocket-subscriptions)
-21. [Technical Requirements](#21-technical-requirements)
+2. [Mobile OTP Auth & Registration](#2-mobile-otp-auth--registration)
+3. [Company Management & Switching](#3-company-management--switching)
+4. [Subscription Management](#4-subscription-management)
+5. [Dashboard](#4-dashboard)
+6. [Buildings](#5-buildings)
+7. [Units](#6-units)
+8. [Tenants](#7-tenants)
+9. [Occupancy Management](#8-occupancy-management)
+10. [Rent Schedules](#9-rent-schedules)
+11. [Tenant Charges](#10-tenant-charges)
+12. [Payments & Allocation](#11-payments--allocation)
+13. [Building Extra Charges](#12-building-extra-charges)
+14. [Leases](#13-leases)
+15. [Rent Schedule Config & Penalties](#14-rent-schedule-config--penalties)
+16. [Maintenance](#15-maintenance)
+17. [Notifications](#16-notifications)
+18. [Accounting](#17-accounting)
+19. [Payment Configuration](#18-payment-configuration)
+20. [Tenant Payment Link (Public)](#19-tenant-payment-link-public)
+21. [Real-Time WebSocket Subscriptions](#20-real-time-websocket-subscriptions)
+22. [Technical Requirements](#21-technical-requirements)
 
 ---
 
@@ -50,6 +51,7 @@ query AuthContext {
 ```
 
 **`authContext`** returns:
+
 ```json
 {
   "currentRole": "ADMINISTRATOR",
@@ -68,6 +70,7 @@ query AuthContext {
 ```
 
 **`companiesContext`** returns:
+
 ```json
 {
   "hasCompanies": true,
@@ -92,7 +95,93 @@ query AuthContext {
 
 ---
 
-## 2. Company Management & Switching
+## 2. Mobile OTP Auth & Registration
+
+These flows are designed for mobile onboarding and do not rely on web email links.
+
+### Register Member (Mobile)
+
+```graphql
+mutation RegisterMemberMobile($inputFirstName: String!, $inputLastName: String!, $inputEmail: String!, $inputPhone: String, $inputPassword1: String!, $inputPassword2: String!, $inputRole: String!) {
+  registerMemberMobile(
+    firstName: $inputFirstName,
+    lastName: $inputLastName,
+    email: $inputEmail,
+    phoneNumber: $inputPhone,
+    password1: $inputPassword1,
+    password2: $inputPassword2,
+    role: $inputRole
+  ) {
+    success
+    message
+    otpChannels
+    otpExpiresInSeconds
+    user { id email firstName lastName verified }
+  }
+}
+```
+
+`otpChannels` is driven by Setup configuration:
+
+- `setup.otpViaEmailEnabled`
+- `setup.otpViaSmsEnabled`
+
+### Verify Registration OTP
+
+```graphql
+mutation VerifyRegistrationOtp($email: String!, $code: String!) {
+  verifyRegistrationOtp(email: $email, code: $code) {
+    success
+    message
+    user { id email verified }
+  }
+}
+```
+
+### Resend Registration OTP
+
+```graphql
+mutation ResendRegistrationOtp($email: String!) {
+  resendRegistrationOtp(email: $email) {
+    success
+    message
+    otpChannels
+    otpExpiresInSeconds
+  }
+}
+```
+
+### Request Password Reset OTP
+
+```graphql
+mutation SendPasswordResetOtp($email: String, $phoneNumber: String) {
+  sendPasswordResetOtp(email: $email, phoneNumber: $phoneNumber) {
+    success
+    message
+    otpChannels
+    otpExpiresInSeconds
+  }
+}
+```
+
+### Reset Password with OTP
+
+```graphql
+mutation ResetPasswordWithOtp($email: String, $phoneNumber: String, $code: String!, $newPassword1: String!, $newPassword2: String!) {
+  resetPasswordWithOtp(
+    email: $email,
+    phoneNumber: $phoneNumber,
+    code: $code,
+    newPassword1: $newPassword1,
+    newPassword2: $newPassword2
+  ) {
+    success
+    message
+  }
+}
+```
+
+## 3. Company Management & Switching
 
 ### Switch Active Company
 
@@ -109,6 +198,8 @@ mutation SwitchCompany($companyId: UUID!) {
 After switching, refetch `authContext` + `companiesContext` and reset the Apollo cache.
 
 ### Create Company
+
+This mutation now mirrors webpage onboarding behavior by automatically assigning the logged-in creator as an active OWNER membership with full owner permissions.
 
 ```graphql
 mutation CreateCompany(
@@ -140,6 +231,7 @@ mutation UpdateCompany($companyId: UUID!, $name: String, $email: String, $phone:
 **List:** `companyMemberships` connection — fields: `user { email firstName lastName }`, `role`, `status`, permission flags.
 
 **Add directly:**
+
 ```graphql
 mutation AddMember($companyId: UUID!, $email: String!, $firstName: String!, $lastName: String!, $role: String!) {
   addCompanyMember(companyId: $companyId, email: $email, firstName: $firstName, lastName: $lastName, role: $role) {
@@ -158,6 +250,52 @@ mutation AddMember($companyId: UUID!, $email: String!, $firstName: String!, $las
 
 **Decline invitation:** `declineCompanyInvitation(invitationToken)`
 
+### Join Existing Company (If Invited)
+
+After login/registration, the app should check invitations sent to the user email and offer a "Join Existing Company" option.
+
+1. Fetch invitations for the logged-in user email:
+
+```graphql
+query MyCompanyInvitations {
+  companyInvitations(isAccepted: false, isDeclined: false) {
+    edges {
+      node {
+        id
+        invitationToken
+        email
+        expiresAt
+        company { id name }
+        role
+      }
+    }
+  }
+}
+```
+
+1. Accept invitation and join the company:
+
+```graphql
+mutation AcceptCompanyInvitation($invitationToken: UUID!) {
+  acceptCompanyInvitation(invitationToken: $invitationToken) {
+    success
+    message
+    membership {
+      id
+      role
+      status
+      company { id name }
+    }
+  }
+}
+```
+
+Behavior notes:
+
+- Invite acceptance is allowed only for the user whose email matches the invitation email.
+- On success, the backend sets the accepted company as the current active company context.
+- If the membership already exists, it is reactivated/updated from invitation permissions.
+
 ### User Roles
 
 **List:** `userRoles` connection  
@@ -167,7 +305,7 @@ mutation AddMember($companyId: UUID!, $email: String!, $firstName: String!, $las
 
 ---
 
-## 3. Subscription Management
+## 4. Subscription Management
 
 ### Current Subscription Status
 
@@ -204,6 +342,46 @@ query SubscriptionPlans {
 | Cancel standing order | `cancelStandingOrder` | `subscriptionId`, `reason?` |
 | Reactivate standing order | `reactivateStandingOrder` | `subscriptionId` |
 | Request refund | `requestSubscriptionRefund` | `paymentId`, `refundAmount?`, `refundType`, `reason` |
+
+### Select Plan (Mobile Onboarding-Aware)
+
+`selectSubscriptionPlan` now returns onboarding context for mobile routing decisions.
+
+```graphql
+mutation SelectPlan($companyId: UUID!, $planId: UUID!, $billingCycle: String) {
+  selectSubscriptionPlan(companyId: $companyId, planId: $planId, billingCycle: $billingCycle) {
+    success
+    message
+    requiresGettingStarted
+    gettingStartedData
+    subscription { id status billingCycle plan { id name planType } }
+  }
+}
+```
+
+Use `requiresGettingStarted` to decide whether to route users to setup checklist screens immediately after plan selection.
+
+### Getting Started Workflow State
+
+Use these mutations to persist onboarding guidance state per user/company:
+
+```graphql
+mutation SkipGettingStarted($companyId: UUID!) {
+  skipGettingStarted(companyId: $companyId) {
+    success
+    message
+  }
+}
+```
+
+```graphql
+mutation ResumeGettingStarted($companyId: UUID!) {
+  resumeGettingStarted(companyId: $companyId) {
+    success
+    message
+  }
+}
+```
 
 ### Pay for Subscription via M-Pesa
 
@@ -589,6 +767,7 @@ query TenantChargesHistory(
 ```
 
 Returns `GenericScalar`:
+
 ```json
 {
   "charges": [{ "id": 1, "description": "Rent", "amount": "15000.00", "balance": "0.00", "status": "PAID" }],
@@ -734,6 +913,7 @@ query UnmatchedPayments {
 ```
 
 Returns:
+
 ```json
 [{
   "id": 1, "transactionId": "MP123", "amount": "5000.00",
@@ -949,6 +1129,7 @@ mutation MarkRead($notificationId: Int!, $isRead: Boolean!) {
 ### Campaign Management
 
 **List (paginated):**
+
 ```graphql
 query CampaignListData($search: String, $status: String, $buildingId: Int, $first: Int, $after: String) {
   notificationCampaignListData(search: $search, status: $status, buildingId: $buildingId, first: $first, after: $after)
@@ -956,6 +1137,7 @@ query CampaignListData($search: String, $status: String, $buildingId: Int, $firs
 ```
 
 **Create / Update:**
+
 ```graphql
 mutation CreateUpdateCampaign(
   $id: Int, $name: String!, $subject: String!, $message: String!,
@@ -1065,6 +1247,7 @@ query TenantPaymentLinkData($token: String!) {
 ```
 
 Returns:
+
 ```json
 {
   "unit": { "id": 1, "unitNumber": "A1" },

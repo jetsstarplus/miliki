@@ -113,7 +113,7 @@ export default function CreateCompany() {
       const result = (data as any)?.createCompany;
       if (result?.success && result?.company) {
         await setActiveCompany(result.company);
-        router.replace('/(tabs)/home' as any);
+        router.replace('/(onboarding)/select-plan' as any);
       } else {
         Alert.alert('Failed', parseGqlErrors(result?.errors, result?.message ?? 'Could not create company. Please try again.'));
       }

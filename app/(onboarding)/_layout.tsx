@@ -11,7 +11,10 @@ export default function OnboardingLayout() {
         animation: 'slide_from_right',
       }}
     >
+      <Stack.Screen name="company-or-join" />
       <Stack.Screen name="create-company" />
+      <Stack.Screen name="select-plan" />
+      <Stack.Screen name="getting-started" />
     </Stack>
   );
 }

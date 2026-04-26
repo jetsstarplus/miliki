@@ -29,6 +29,18 @@ export interface SmsReaderConfig {
   intervalMinutes: number;
 }
 
+export interface ReadDiagnostic {
+  moduleLoaded: boolean;
+  totalInbox: number;
+  afterSenderFilter: number;
+  senderFilter: string | null;
+  afterKeywordFilter: number;
+  keywordFilter: string | null;
+  submitted: number;
+  syncFrom: string;
+  error: string | null;
+}
+
 interface UseSmsReaderParams {
   credential: {
     id: string;
@@ -37,7 +49,20 @@ interface UseSmsReaderParams {
     referenceKeyword?: string | null;
   } | null;
   readerConfig: SmsReaderConfig;
+  lastSyncedAt?: string | null;
   onMessagesSubmitted?: (count: number) => void;
+}
+
+const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+function defaultSyncFrom(lastSyncedAt: string | null | undefined): Date {
+  if (lastSyncedAt) {
+    try {
+      const d = new Date(lastSyncedAt);
+      if (!isNaN(d.getTime())) return d;
+    } catch { /* fall through */ }
+  }
+  return new Date(Date.now() - ONE_MONTH_MS);
 }
 
 /**
@@ -48,13 +73,24 @@ interface UseSmsReaderParams {
  *
  * On iOS, SMS reading is not available and this hook is a no-op.
  */
-export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: UseSmsReaderParams) {
+export function useSmsReader({ credential, readerConfig, lastSyncedAt, onMessagesSubmitted }: UseSmsReaderParams) {
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
   const [reading, setReading] = useState(false);
   const [lastReadAt, setLastReadAt] = useState<Date | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [lastDiagnostic, setLastDiagnostic] = useState<ReadDiagnostic | null>(null);
+  const [syncFromDate, setSyncFromDate] = useState<Date>(() => defaultSyncFrom(lastSyncedAt));
+  const prevCredentialId = useRef<string | null | undefined>(credential?.id);
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const apolloClient = useApolloClient();
+
+  // When the credential changes, reset syncFromDate to lastSyncedAt (or 1 month ago)
+  useEffect(() => {
+    if (prevCredentialId.current !== credential?.id) {
+      prevCredentialId.current = credential?.id;
+      setSyncFromDate(defaultSyncFrom(lastSyncedAt));
+    }
+  }, [credential?.id, lastSyncedAt]);
 
   // SmsAndroid from react-native-get-sms-android
   const SmsAndroid = _SmsAndroid;
@@ -101,53 +137,80 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
 
   /**
    * Read SMS messages from the device inbox and filter by the credential's sender rules.
-   * Returns filtered messages or null on error.
+   * Returns filtered messages and a diagnostic breakdown of each filter stage.
    */
-  const readMessages = useCallback((): Promise<SmsMessage[]> => {
+  const readMessages = useCallback((): Promise<{ messages: SmsMessage[]; diagnostic: ReadDiagnostic }> => {
+    const senderFilter = credential?.expectedSender?.trim() || null;
+    const msgKeyword = credential?.messageKeyword?.trim().toLowerCase() || null;
+    const moduleLoaded = isSupported && SmsAndroid != null && typeof SmsAndroid?.list === 'function';
+    const syncFrom = syncFromDate.toISOString();
+
+    const emptyDiag = (error: string | null): ReadDiagnostic => ({
+      moduleLoaded,
+      totalInbox: 0,
+      afterSenderFilter: 0,
+      senderFilter,
+      afterKeywordFilter: 0,
+      keywordFilter: msgKeyword,
+      submitted: 0,
+      syncFrom,
+      error,
+    });
+
     return new Promise((resolve) => {
-      if (!isSupported || !SmsAndroid) {
-        resolve([]);
+      if (!moduleLoaded) {
+        resolve({ messages: [], diagnostic: emptyDiag(!isSupported ? 'Platform not supported' : 'SMS module not loaded or missing list()') });
         return;
       }
-
-      const senderFilter = credential?.expectedSender ?? null;
-
-      const msgKeyword = credential?.messageKeyword?.toLowerCase() ?? null;
-
-      // Read inbox messages from the last 24 hours
-      const since = Date.now() - 24 * 60 * 60 * 1000;
 
       SmsAndroid.list(
         JSON.stringify({
           box: 'inbox',
-          minDate: since,
+          minDate: syncFromDate.getTime(),
           indexFrom: 0,
-          maxCount: 200,
+          maxCount: 500,
         }),
         (error: any) => {
-          setLastError(String(error));
-          resolve([]);
+          const errMsg = String(error);
+          setLastError(errMsg);
+          resolve({ messages: [], diagnostic: emptyDiag(errMsg) });
         },
         (_count: number, smsList: string) => {
           try {
-            const messages: SmsMessage[] = JSON.parse(smsList);
-            const filtered = senderFilter
-              ? messages.filter((m) =>
+            const allMessages: SmsMessage[] = JSON.parse(smsList);
+            const totalInbox = allMessages.length;
+
+            const afterSender = senderFilter
+              ? allMessages.filter((m) =>
                   m.address?.toLowerCase().includes(senderFilter.toLowerCase()),
                 )
-              : messages;
-            // Only keep messages whose body contains the message keyword (qualifier)
-            const keywordFiltered = msgKeyword
-              ? filtered.filter((m) => m.body?.toLowerCase().includes(msgKeyword))
-              : filtered;
-            resolve(keywordFiltered);
-          } catch {
-            resolve([]);
+              : allMessages;
+
+            const afterKeyword = msgKeyword
+              ? afterSender.filter((m) => m.body?.toLowerCase().includes(msgKeyword))
+              : afterSender;
+
+            resolve({
+              messages: afterKeyword,
+              diagnostic: {
+                moduleLoaded,
+                totalInbox,
+                afterSenderFilter: afterSender.length,
+                senderFilter,
+                afterKeywordFilter: afterKeyword.length,
+                keywordFilter: msgKeyword,
+                submitted: 0, // updated after sync
+                syncFrom,
+                error: null,
+              },
+            });
+          } catch (e: any) {
+            resolve({ messages: [], diagnostic: emptyDiag(`Parse error: ${e?.message}`) });
           }
         },
       );
     });
-  }, [isSupported, SmsAndroid, credential]);
+  }, [isSupported, SmsAndroid, credential, syncFromDate]);
 
   /**
    * Sync messages to the server via the GraphQL syncSmsReceiptMessagesSummary mutation.
@@ -292,14 +355,46 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
     setReading(true);
     setLastError(null);
     try {
-      const messages = await readMessages();
-      if (messages.length === 0) {
-        setLastReadAt(new Date());
+      const { messages, diagnostic } = await readMessages();
+
+      if (diagnostic.error) {
+        setLastDiagnostic(diagnostic);
+        if (isManual) Alert.alert('SMS Read Error', diagnostic.error);
         return;
       }
-      const ok = await syncMessages(messages, isManual);
-      if (ok) {
-        onMessagesSubmitted?.(messages.length);
+
+      let submitted = 0;
+      if (messages.length > 0) {
+        const ok = await syncMessages(messages, isManual);
+        if (ok) {
+          submitted = messages.length;
+          onMessagesSubmitted?.(messages.length);
+        }
+      }
+
+      const finalDiagnostic: ReadDiagnostic = { ...diagnostic, submitted };
+      setLastDiagnostic(finalDiagnostic);
+      setLastReadAt(new Date());
+
+      if (isManual) {
+        const lines: string[] = [
+          `� Reading from: ${new Date(finalDiagnostic.syncFrom).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          `📥 Inbox total: ${finalDiagnostic.totalInbox} message${finalDiagnostic.totalInbox !== 1 ? 's' : ''}`,
+        ];
+        if (finalDiagnostic.senderFilter) {
+          lines.push(`👤 After sender "${finalDiagnostic.senderFilter}": ${finalDiagnostic.afterSenderFilter}`);
+        } else {
+          lines.push(`👤 Sender filter: none (all senders)`);
+        }
+        if (finalDiagnostic.keywordFilter) {
+          lines.push(`🔑 After keyword "${finalDiagnostic.keywordFilter}": ${finalDiagnostic.afterKeywordFilter}`);
+        } else {
+          lines.push(`🔑 Keyword filter: none (all messages)`);
+        }
+        lines.push(`✅ Submitted to server: ${finalDiagnostic.submitted}`);
+
+        const title = finalDiagnostic.submitted > 0 ? 'SMS Read Complete' : 'No Matching Messages';
+        Alert.alert(title, lines.join('\n'));
       }
     } finally {
       setReading(false);
@@ -339,6 +434,9 @@ export function useSmsReader({ credential, readerConfig, onMessagesSubmitted }: 
     reading,
     lastReadAt,
     lastError,
+    lastDiagnostic,
+    syncFromDate,
+    setSyncFromDate,
     requestPermission,
     triggerRead,
     simulateAndSync: __DEV__ ? simulateAndSync : undefined,

@@ -2,16 +2,16 @@ import { useMutation } from '@apollo/client';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
@@ -19,14 +19,13 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { AppColors, Spacing, Typography } from '../../constants/theme';
 import { useTheme } from '../../context/theme';
-import { REGISTER_MUTATION } from '../../graphql/mutations';
-import { parseGqlErrors } from '../../lib/gql-errors';
+import { REGISTER_MEMBER_MOBILE_MUTATION } from '../../graphql/auth/mutations';
 
 interface RegErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
-  username?: string;
+  phone?: string;
   password1?: string;
   password2?: string;
 }
@@ -39,13 +38,13 @@ export default function Register() {
     firstName: '',
     lastName: '',
     email: '',
-    username: '',
+    phone: '',
     password1: '',
     password2: '',
   });
   const [errors, setErrors] = useState<RegErrors>({});
 
-  const [register, { loading }] = useMutation(REGISTER_MUTATION);
+  const [register, { loading }] = useMutation(REGISTER_MEMBER_MOBILE_MUTATION);
 
   function set(field: keyof typeof form) {
     return (val: string) => setForm(f => ({ ...f, [field]: val }));
@@ -57,8 +56,6 @@ export default function Register() {
     if (!form.lastName.trim()) e.lastName = 'Last name is required';
     if (!form.email.trim()) e.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email';
-    if (!form.username.trim()) e.username = 'Username is required';
-    else if (form.username.length < 3) e.username = 'Username must be at least 3 characters';
     if (!form.password1) e.password1 = 'Password is required';
     else if (form.password1.length < 8) e.password1 = 'Password must be at least 8 characters';
     if (form.password1 !== form.password2) e.password2 = 'Passwords do not match';
@@ -74,19 +71,25 @@ export default function Register() {
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           email: form.email.trim().toLowerCase(),
-          username: form.username.trim().toLowerCase(),
+          phone: form.phone.trim() || undefined,
           password1: form.password1,
           password2: form.password2,
+          role: 'ADMINISTRATOR',
         },
       });
-      const result = (data as any)?.register;
+      const result = (data as any)?.registerMemberMobile;
       if (result?.success) {
-        router.push({ pathname: '/(auth)/verify', params: { email: form.email.trim() } });
+        router.push({
+          pathname: '/(auth)/verify-otp',
+          params: { email: form.email.trim().toLowerCase() },
+        } as any);
       } else {
-        Alert.alert('Registration Failed', parseGqlErrors(result?.errors, 'Please check your details and try again.'));
+        Alert.alert('Registration Failed', result?.message ?? 'Please check your details and try again.');
       }
     } catch (e: any) {
-      const msg = e?.networkError ? 'Network error. Please check your connection.' : (e?.message ?? 'Something went wrong. Please try again.');
+      const msg = e?.networkError
+        ? 'Network error. Please check your connection.'
+        : (e?.message ?? 'Something went wrong. Please try again.');
       Alert.alert('Error', msg);
     }
   }
@@ -147,16 +150,18 @@ export default function Register() {
               onChangeText={set('email')}
               keyboardType="email-address"
               autoComplete="email"
+              autoCapitalize="none"
               error={errors.email}
             />
 
             <Input
-              label="Username"
-              placeholder="john_doe"
-              value={form.username}
-              onChangeText={set('username')}
-              autoComplete="username"
-              error={errors.username}
+              label="Phone Number (optional)"
+              placeholder="+254 700 000 000"
+              value={form.phone}
+              onChangeText={set('phone')}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              error={errors.phone}
             />
 
             <Input

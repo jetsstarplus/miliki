@@ -11,16 +11,17 @@ import { useDeviceId } from '@/hooks/useDeviceId';
 import { useSmsReader } from '@/hooks/useSmsReader';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Platform,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Platform,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface FormState {
@@ -183,10 +184,13 @@ export default function AddSmsCredential() {
       }
     : null;
 
-  const { triggerRead, reading, permissionGranted, requestPermission, isSupported, isIOS, simulateAndSync } = useSmsReader({
+  const { triggerRead, reading, permissionGranted, requestPermission, isSupported, isIOS, simulateAndSync, syncFromDate, setSyncFromDate } = useSmsReader({
     credential: credentialForReader as any,
     readerConfig: { autoRead: false, intervalMinutes: 15 },
+    lastSyncedAt: editData?.smsReceiptCredential?.lastSyncedAt,
   });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   return (
     <FormLayout
@@ -347,6 +351,34 @@ export default function AddSmsCredential() {
       {isEdit && (
         <>
           <SectionLabel>Manual Trigger</SectionLabel>
+
+          {/* Sync from date */}
+          <View style={styles.syncFromRow}>
+            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.syncFromLabel}>Read SMS from date</Text>
+              <Text style={styles.syncFromValue}>
+                {syncFromDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} hitSlop={8}>
+              <Ionicons name="create-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={syncFromDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              maximumDate={new Date()}
+              onChange={(_event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setSyncFromDate(date);
+              }}
+            />
+          )}
+
           <TouchableOpacity
             style={[styles.readNowBtn, (reading || !isSupported && !isIOS) && styles.readNowBtnDisabled]}
             onPress={() => triggerRead()}
@@ -485,6 +517,26 @@ function makeStyles(c: ReturnType<typeof useTheme>['colors']) {
     toggleSub: {
       fontSize: Typography.fontSizeXs,
       color: c.textMuted,
+      marginTop: 2,
+    },
+
+    syncFromRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      backgroundColor: c.overlay,
+      borderRadius: Radius.sm,
+      padding: Spacing.sm,
+      marginBottom: Spacing.sm,
+    },
+    syncFromLabel: {
+      fontSize: Typography.fontSizeXs,
+      color: c.textMuted,
+    },
+    syncFromValue: {
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightMedium,
+      color: c.text,
       marginTop: 2,
     },
 

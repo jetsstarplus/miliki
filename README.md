@@ -49,6 +49,4 @@ Join our community of developers creating universal apps.
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 ### Release The AP
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-cmd /c "cd /d C:\Users\Administrator\OneDrive\Documents\SDAKCC\monerom\android && gradlew.bat assembleRelease"
+Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue; $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"; $env:ANDROID_HOME = "C:\Users\Administrator\AppData\Local\Android\Sdk"; $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME; cmd /c "cd /d C:\Users\Administrator\OneDrive\Documents\SDAKCC\monerom\android && gradlew.bat assembleRelease 2>&1"
