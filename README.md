@@ -1,52 +1,95 @@
-# Welcome to your Expo app 👋
+# Miliki mobile app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Miliki is an Expo Router mobile app for property and real-estate operations. It combines authentication, company onboarding, portfolio and tenancy workflows, rent operations, maintenance, communication, and payment tooling on top of a GraphQL API.
 
-## Get started
+## Platform overview
 
-1. Install dependencies
+- **Framework:** Expo + React Native + TypeScript
+- **Navigation:** Expo Router file-based routing
+- **Data layer:** Apollo Client with HTTP queries/mutations and GraphQL subscriptions
+- **State:** React context providers for auth, theme, messaging balances, and drawer state
+- **Target:** Mobile-first property management workflows
 
-   ```bash
-   npm install
-   ```
+## Main user flows
 
-2. Start the app
+### Authentication
 
-   ```bash
-   npx expo start
-   ```
+Routes under `app/(auth)` cover:
 
-In the output, you'll find options to open the app in a
+- welcome
+- login
+- registration
+- email / OTP verification
+- password reset
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Authentication state is managed in `context/auth.tsx`, including token persistence, active company selection, and token refresh on app foreground.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Onboarding
 
-## Get a fresh project
+Routes under `app/(onboarding)` cover:
 
-When you're ready, run:
+- choosing whether to create or join a company
+- company creation
+- plan selection
+- getting-started guidance
 
-```bash
-npm run reset-project
+### Main application
+
+The main shell lives under `app/(tabs)`:
+
+- `home` — dashboard and balances
+- `building` — property/building management
+- `tenants` — tenant listing and management
+- `profile` — account and company settings
+
+Additional drawer-accessible screens include units, leases, maintenance, payments, communication, rent schedules, arrears, accounting, agent statements, portfolio, and manual transfers.
+
+## Data and integrations
+
+- Apollo client setup: `lib/apollo.ts`
+- GraphQL operations: `graphql/`
+- API constants: `constants/api.ts`
+
+The app sends:
+
+- `Authorization: JWT <token>`
+- `X-COMPANY-ID: <company id>`
+
+for authenticated company-scoped requests.
+
+## Project structure
+
+```text
+app/          Route definitions and screens
+components/   Reusable UI and navigation pieces
+constants/    API endpoints, theme constants, shared configuration
+context/      Auth, theme, messaging, and drawer providers
+graphql/      Queries, mutations, and subscriptions
+hooks/        Reusable hooks such as pagination and SMS reading
+lib/          Apollo setup and GraphQL helpers
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
+Install dependencies:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Start the Expo dev server:
 
-## Join the community
+```bash
+npm run start
+```
 
-Join our community of developers creating universal apps.
+Run linting:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-### Release The AP
-Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue; $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"; $env:ANDROID_HOME = "C:\Users\Administrator\AppData\Local\Android\Sdk"; $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME; cmd /c "cd /d C:\Users\Administrator\OneDrive\Documents\SDAKCC\monerom\android && gradlew.bat assembleRelease 2>&1"
+```bash
+npm run lint
+```
+
+## Current implementation notes
+
+- Several accounting/reporting screens currently use placeholder content rather than full workflows.
+- The repository currently has pre-existing lint findings unrelated to this README update.
