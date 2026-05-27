@@ -81,6 +81,17 @@ function formatMoney(amount: any): string {
   return `KES ${Number.isNaN(value) ? '0' : value.toLocaleString()}`;
 }
 
+function formatDisplayDate(value?: string | null): string {
+  if (!value) return '';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export default function TenantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -88,6 +99,8 @@ export default function TenantDetail() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const isTablet = width >= 768;
+  const isSmallTablet = width >= 768 && width < 1100;
+  const isWideTablet = width >= 1100;
   const now = new Date();
   const defaultScheduleMonth = String(now.getMonth() + 1);
   const defaultScheduleYear = String(now.getFullYear());
@@ -1150,27 +1163,37 @@ export default function TenantDetail() {
           {/* Rent schedules */}
           {tenant.rentSchedules?.edges?.length > 0 && (
             <SectionCard title="Recent Rent Schedules">
-              {tenant.rentSchedules.edges.slice(0, 6).map(({ node }: any) => (
-                <View key={node.id} style={styles.scheduleRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.scheduleUnit}>{node.unit?.unitNumber}</Text>
-                    <Text style={styles.scheduleDue}>{node.dueDate}</Text>
+              <View style={[styles.scheduleGrid, isTablet && styles.scheduleGridTablet]}>
+                {tenant.rentSchedules.edges.slice(0, 6).map(({ node }: any) => (
+                  <View
+                    key={node.id}
+                    style={[
+                      styles.scheduleRow,
+                      styles.scheduleItem,
+                      isSmallTablet && styles.scheduleItemSmallTablet,
+                      isWideTablet && styles.scheduleItemWideTablet,
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.scheduleUnit}>{node.unit?.unitNumber}</Text>
+                      <Text style={styles.scheduleDue}>{node.dueDate}</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={[styles.scheduleAmount,
+                        node.status === 'PAID' ? { color: Colors.success } :
+                        node.isOverdue ? { color: Colors.error } :
+                        { color: Colors.warning }
+                      ]}>
+                        KES {Number(node.expectedAmount).toLocaleString()}
+                      </Text>
+                      <StatusBadge
+                        label={node.status}
+                        color={node.status === 'PAID' ? 'success' : node.isOverdue ? 'error' : 'warning'}
+                      />
+                    </View>
                   </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[styles.scheduleAmount,
-                      node.status === 'PAID' ? { color: Colors.success } :
-                      node.isOverdue ? { color: Colors.error } :
-                      { color: Colors.warning }
-                    ]}>
-                      KES {Number(node.expectedAmount).toLocaleString()}
-                    </Text>
-                    <StatusBadge
-                      label={node.status}
-                      color={node.status === 'PAID' ? 'success' : node.isOverdue ? 'error' : 'warning'}
-                    />
-                  </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </SectionCard>
           )}
 
@@ -1179,10 +1202,19 @@ export default function TenantDetail() {
             <SectionCard title="Recent Transactions">
               <View style={[styles.transactionGrid, isTablet && styles.transactionGridTablet]}>
                 {tenant.transactions.edges.slice(0, 6).map(({ node }: any) => (
-                  <View key={node.id} style={[styles.txRow, styles.transactionItem, isTablet && styles.transactionItemTablet]}>
+                  <View
+                    key={node.id}
+                    style={[
+                      styles.txRow,
+                      styles.transactionItem,
+                      isSmallTablet && styles.transactionItemSmallTablet,
+                      isWideTablet && styles.transactionItemWideTablet,
+                    ]}
+                  >
                     <View style={{ flex: 1 }}>
                       <Text style={styles.txRef}>#{node.no || node.reference || node.id}</Text>
                       <Text style={styles.txMode}>{node.paymentMode}</Text>
+                      <Text style={styles.txDate}>{formatDisplayDate(node.transactionDate || node.paymentDate || node.createdAt || node.date)}</Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={[styles.txAmount, { color: Colors.success }]}>
@@ -1378,6 +1410,30 @@ function makeStyles(c: AppColors) {
     borderBottomWidth: 1,
     borderBottomColor: c.borderLight,
   },
+  scheduleGrid: {
+    width: '100%',
+  },
+  scheduleGridTablet: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: Spacing.sm,
+  },
+  scheduleItem: {
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: c.borderLight,
+    backgroundColor: c.inputBackground,
+    paddingHorizontal: Spacing.sm,
+  },
+  scheduleItemSmallTablet: {
+    width: '48.5%',
+    borderBottomWidth: 1,
+  },
+  scheduleItemWideTablet: {
+    width: '32%',
+    borderBottomWidth: 1,
+  },
   scheduleUnit: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
   scheduleDue: { fontSize: Typography.fontSizeXs, color: c.textMuted },
   scheduleAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, marginBottom: 2 },
@@ -1391,6 +1447,7 @@ function makeStyles(c: AppColors) {
   },
   txRef: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightMedium, color: c.text },
   txMode: { fontSize: Typography.fontSizeXs, color: c.textMuted },
+  txDate: { fontSize: Typography.fontSizeXs, color: c.textMuted, marginTop: 2 },
   txAmount: { fontSize: Typography.fontSizeSm, fontWeight: Typography.fontWeightSemibold, marginBottom: 2 },
   transactionGrid: {
     width: '100%',
@@ -1408,8 +1465,12 @@ function makeStyles(c: AppColors) {
     backgroundColor: c.inputBackground,
     paddingHorizontal: Spacing.sm,
   },
-  transactionItemTablet: {
+  transactionItemSmallTablet: {
     width: '48.5%',
+    borderBottomWidth: 1,
+  },
+  transactionItemWideTablet: {
+    width: '32%',
     borderBottomWidth: 1,
   },
   receiptActionsRow: {

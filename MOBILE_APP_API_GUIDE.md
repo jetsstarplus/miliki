@@ -310,7 +310,7 @@ Behavior notes:
 ### Current Subscription Status
 
 ```graphql
-query SubscriptionStatus($companyId: UUID!) {
+query SubscriptionStatus($companyId: ID!) {
   subscriptionStatus(companyId: $companyId) {
     subscription { id status billingCycle nextBillingDate }
     metrics { activeUnitsCount activeBuildingsCount activeTenantsCount activeUsersCount }

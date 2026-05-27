@@ -20,7 +20,7 @@ export default function PaymentsMenu() {
   const router = useRouter();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const menuItems: MenuItem[] = [
+  const menuItemsBase: MenuItem[] = [
     {
       label: 'Transactions',
       description: 'View all received payments and allocate them to tenant accounts.',
@@ -43,13 +43,29 @@ export default function PaymentsMenu() {
       accentColor: '#10B981',
     },
     {
+      label: 'Gateway Credentials',
+      description: 'Configure gateway provider credentials, rotate webhook auth, and inspect callback history.',
+      icon: 'server-outline',
+      route: '/(tabs)/payments/gateway-credentials',
+      accentColor: '#0EA5E9',
+    },
+    {
+      label: 'M-Pesa Setup',
+      description: 'Manage M-Pesa setups, URL registrations, activation, balance checks, and pull fetch actions.',
+      icon: 'phone-portrait-outline',
+      route: '/(tabs)/payments/mpesa-setup',
+      accentColor: '#00A651',
+    },
+    {
       label: 'SMS Read Policies',
       description: 'Configure per-device SMS reading policies to auto-capture payment receipts.',
       icon: 'phone-portrait-outline',
       route: '/(tabs)/payments/sms-credentials',
       accentColor: '#8B5CF6',
     },
-  ].filter(() => Platform.OS !== 'ios');
+  ];
+
+  const menuItems = menuItemsBase.filter(() => Platform.OS !== 'ios');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

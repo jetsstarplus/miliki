@@ -2,20 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
 import Animated, {
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Typography } from '../constants/theme';
@@ -88,14 +88,14 @@ const NAV: NavSection[] = [
         label: 'Accounting',
         icon: 'calculator',
         route: '/(tabs)/accounting',
-        children: [
-          { label: 'Dashboard', route: '/(tabs)/accounting' },
-          { label: 'Chart of Accounts', route: '/(tabs)/accounting' },
-          { label: 'Journal Entries', route: '/(tabs)/accounting' },
-          { label: 'Tenant Credits', route: '/(tabs)/accounting' },
-          { label: 'Refunds', route: '/(tabs)/accounting' },
-          { label: 'Reports', route: '/(tabs)/accounting' },
-        ],
+        // children: [
+        //   { label: 'Dashboard', route: '/(tabs)/accounting' },
+        //   { label: 'Chart of Accounts', route: '/(tabs)/accounting' },
+        //   { label: 'Journal Entries', route: '/(tabs)/accounting' },
+        //   { label: 'Tenant Credits', route: '/(tabs)/accounting' },
+        //   { label: 'Refunds', route: '/(tabs)/accounting' },
+        //   { label: 'Reports', route: '/(tabs)/accounting' },
+        // ],
       },
       { label: 'Agent Statements', icon: 'stats-chart', route: '/(tabs)/agent-statements' },
       { label: 'Manual Transfer', icon: 'swap-horizontal', route: '/(tabs)/manual-transfer' },

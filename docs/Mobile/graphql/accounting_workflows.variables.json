@@ -1,0 +1,88 @@
+{
+  "AccountingMenuData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  },
+  "AccountingTemplateWorkflows": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  },
+  "AccountingDashboardPageData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  },
+  "ChartOfAccountsPageData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "accountType": null,
+    "search": null,
+    "isActive": true
+  },
+  "JournalEntriesPageData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "status": null,
+    "entryType": null
+  },
+  "TenantRefundsPageData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "status": null,
+    "search": null
+  },
+  "ManualTransferFormData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  },
+  "SetupDefaultAccountsPageData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  },
+  "TrialBalanceReportData": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "filters": {
+      "period_id": "QWNjb3VudGluZ1BlcmlvZFR5cGU6MQ==",
+      "building": "QnVpbGRpbmdUeXBlOjE=",
+      "unit": "VW5pdFR5cGU6MQ=="
+    }
+  },
+  "UpdateAccountingSettings": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "accountingMethod": "ACCRUAL",
+    "fiscalYearStartMonth": 1,
+    "fiscalYearStartDay": 1,
+    "periodFrequency": "MONTHLY"
+  },
+  "CreateAccountingPeriod": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "name": "Jan 2026",
+    "startDate": "2026-01-01",
+    "endDate": "2026-01-31"
+  },
+  "GenerateAccountingPeriods": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "year": 2026
+  },
+  "CloseAccountingPeriod": {
+    "periodId": "QWNjb3VudGluZ1BlcmlvZFR5cGU6MQ=="
+  },
+  "VoidJournalEntry": {
+    "journalEntryId": "Sm91cm5hbEVudHJ5VHlwZTox"
+  },
+  "DeleteJournalEntry": {
+    "journalEntryId": "Sm91cm5hbEVudHJ5VHlwZTox"
+  },
+  "ApproveTenantRefund": {
+    "refundId": "VGVuYW50UmVmdW5kVHlwZTox"
+  },
+  "CompleteTenantRefund": {
+    "refundId": "VGVuYW50UmVmdW5kVHlwZTox"
+  },
+  "CancelTenantRefund": {
+    "refundId": "VGVuYW50UmVmdW5kVHlwZTox"
+  },
+  "CreateManualTransfer": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5",
+    "fromAccountId": "QWNjb3VudFR5cGU6MQ==",
+    "toAccountId": "QWNjb3VudFR5cGU6Mg==",
+    "amount": 1000.00,
+    "description": "Cash transfer for adjustments",
+    "reference": "MT-1001",
+    "autoPost": true
+  },
+  "SetupDefaultAccounts": {
+    "companyId": "Q29tcGFueVR5cGU6Y2YzN2Q2YmMtYjI3MS00YTY5LWFhY2MtY2UzYTYzN2M4OTQ5"
+  }
+}

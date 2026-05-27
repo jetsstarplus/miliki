@@ -7,12 +7,17 @@ export const SUBSCRIPTION_PLANS_QUERY = gql`
         node {
           id
           name
+          description
+          planType
           priceMonthly
+          priceQuarterly
           priceAnnually
-          maxUnits
-          maxProperties
+          maxUsers
+          maxStorageGb
+          maxTransactionsPerMonth
+          maxPropertiesPerMonth
+          maxUnitsPerMonth
           maxTenants
-          features
           isActive
         }
       }
@@ -21,19 +26,19 @@ export const SUBSCRIPTION_PLANS_QUERY = gql`
 `;
 
 export const SUBSCRIPTION_STATUS_QUERY = gql`
-  query SubscriptionStatus($companyId: UUID!) {
+  query SubscriptionStatus($companyId: ID!) {
     subscriptionStatus(companyId: $companyId) {
       subscription {
         id
         status
         billingCycle
-        nextBillingDate
+        nextPaymentDate
         plan { id name planType }
       }
       metrics {
-        activeUnitsCount
-        activeBuildingsCount
-        activeTenantsCount
+        unitsCount
+        propertiesCount
+        tenantsCount
         activeUsersCount
       }
       amounts {

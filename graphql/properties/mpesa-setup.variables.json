@@ -1,0 +1,85 @@
+{
+  "MpesaSetupListData": {
+    "companyId": "Q29tcGFueU5vZGU6MQ=="
+  },
+  "MpesaSetupDetailData": {
+    "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+  },
+  "MpesaSetupFormDataEdit": {
+    "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+  },
+  "MpesaSetupDeleteData": {
+    "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+  },
+  "CreateMpesaSetup": {
+    "input": {
+      "name": "Main Company M-Pesa",
+      "shortCode": "174379",
+      "passKey": "replace-with-pass-key",
+      "consumerKey": "replace-with-consumer-key",
+      "consumerSecret": "replace-with-consumer-secret",
+      "initiatorName": "testapi",
+      "initiatorPassword": "replace-with-initiator-password",
+      "certificate": "",
+      "deployment": "sandbox",
+      "paymentModeId": "Q29uZmlndXJhYmxlUGF5bWVudE1vZGVOb2RlOjE=",
+      "active": true,
+      "buildingIds": [
+        "QnVpbGRpbmdOb2RlOjE=",
+        "QnVpbGRpbmdOb2RlOjI="
+      ]
+    }
+  },
+  "UpdateMpesaSetup": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ==",
+      "name": "Main Company M-Pesa",
+      "shortCode": "174379",
+      "passKey": "replace-with-pass-key",
+      "consumerKey": "replace-with-consumer-key",
+      "consumerSecret": "replace-with-consumer-secret",
+      "initiatorName": "testapi",
+      "initiatorPassword": "replace-with-initiator-password",
+      "certificate": "",
+      "deployment": "api",
+      "paymentModeId": "Q29uZmlndXJhYmxlUGF5bWVudE1vZGVOb2RlOjE=",
+      "active": true,
+      "buildingIds": [
+        "QnVpbGRpbmdOb2RlOjE="
+      ]
+    }
+  },
+  "DeleteMpesaSetup": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "ToggleMpesaSetupActive": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "RegisterMpesaSetupC2B": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "RegisterMpesaSetupPull": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "CheckMpesaSetupBalance": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "FetchMpesaSetupPullForOne": {
+    "input": {
+      "setupId": "TXBlc2FTZXR1cE5vZGU6MQ=="
+    }
+  },
+  "FetchMpesaSetupPullAll": {
+    "input": {}
+  }
+}

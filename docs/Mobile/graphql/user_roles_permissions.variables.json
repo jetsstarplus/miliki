@@ -1,0 +1,48 @@
+{
+  "UserRolesPageData": {
+    "companyId": "Q29tcGFueVR5cGU6MQ=="
+  },
+  "AssignRoleFormData": {
+    "companyId": "Q29tcGFueVR5cGU6MQ=="
+  },
+  "MemberPermissionsFormData": {
+    "companyId": "Q29tcGFueVR5cGU6MQ==",
+    "membershipId": "Q29tcGFueU1lbWJlcnNoaXBUeXBlOjI="
+  },
+  "InviteCompanyMember": {
+    "companyId": "Q29tcGFueVR5cGU6MQ==",
+    "email": "member@example.com",
+    "role": "AGENT",
+    "message": "Welcome to the team"
+  },
+  "BulkInviteCompanyMembers": {
+    "companyId": "Q29tcGFueVR5cGU6MQ==",
+    "emails": [
+      "member1@example.com",
+      "member2@example.com"
+    ],
+    "role": "AGENT"
+  },
+  "AssignUserRole": {
+    "companyId": "Q29tcGFueVR5cGU6MQ==",
+    "userId": "VXNlclR5cGU6Mg==",
+    "role": "AGENT",
+    "buildingId": "QnVpbGRpbmdUeXBlOjE=",
+    "notes": "Handles blocks A and B"
+  },
+  "RemoveUserRole": {
+    "roleId": "VXNlclJvbGVUeXBlOjE="
+  },
+  "UpdateMemberPermissions": {
+    "membershipId": "Q29tcGFueU1lbWJlcnNoaXBUeXBlOjI=",
+    "canManageProperties": true,
+    "canManageTenants": true,
+    "canManagePayments": true,
+    "canValidatePayments": false,
+    "canViewAccounting": true,
+    "canManageMembers": false,
+    "canViewReports": true,
+    "canModifyCompany": false,
+    "canInviteUsers": true
+  }
+}

@@ -127,6 +127,7 @@ query TENANT_DETAIL($id: ID!){
           reference
           status
           confirmationCode
+          transactionDate
           paymentMode
           amount
           excessAmount

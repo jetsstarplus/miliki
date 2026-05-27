@@ -1,0 +1,168 @@
+query AccountingMenuData($companyId: ID!) {
+  accountingMenuData(companyId: $companyId)
+}
+
+query AccountingTemplateWorkflows($companyId: ID!) {
+  accountingTemplateWorkflows(companyId: $companyId)
+}
+
+query AccountingDashboardPageData($companyId: ID!) {
+  accountingDashboardPageData(companyId: $companyId)
+}
+
+query ChartOfAccountsPageData($companyId: ID!, $accountType: String, $search: String, $isActive: Boolean) {
+  chartOfAccountsPageData(companyId: $companyId, accountType: $accountType, search: $search, isActive: $isActive)
+}
+
+query JournalEntriesPageData($companyId: ID!, $status: String, $entryType: String) {
+  journalEntriesPageData(companyId: $companyId, status: $status, entryType: $entryType)
+}
+
+query TenantRefundsPageData($companyId: ID!, $status: String, $search: String) {
+  tenantRefundsPageData(companyId: $companyId, status: $status, search: $search)
+}
+
+query ManualTransferFormData($companyId: ID!) {
+  manualTransferFormData(companyId: $companyId)
+}
+
+query SetupDefaultAccountsPageData($companyId: ID!) {
+  setupDefaultAccountsPageData(companyId: $companyId)
+}
+
+query TrialBalanceReportData($companyId: ID!, $filters: GenericScalar) {
+  trialBalanceReportData(companyId: $companyId, filters: $filters)
+}
+
+mutation UpdateAccountingSettings(
+  $companyId: ID!
+  $accountingMethod: String
+  $fiscalYearStartMonth: Int
+  $fiscalYearStartDay: Int
+  $periodFrequency: String
+) {
+  updateAccountingSettings(
+    companyId: $companyId
+    accountingMethod: $accountingMethod
+    fiscalYearStartMonth: $fiscalYearStartMonth
+    fiscalYearStartDay: $fiscalYearStartDay
+    periodFrequency: $periodFrequency
+  ) {
+    success
+    message
+  }
+}
+
+mutation CreateAccountingPeriod($companyId: ID!, $name: String!, $startDate: Date!, $endDate: Date!) {
+  createAccountingPeriod(companyId: $companyId, name: $name, startDate: $startDate, endDate: $endDate) {
+    success
+    message
+  }
+}
+
+mutation GenerateAccountingPeriods($companyId: ID!, $year: Int!) {
+  generateAccountingPeriods(companyId: $companyId, year: $year) {
+    success
+    message
+    periodsCreated
+  }
+}
+
+mutation CloseAccountingPeriod($periodId: ID!) {
+  closeAccountingPeriod(periodId: $periodId) {
+    success
+    message
+    periodId
+    closingEntryId
+  }
+}
+
+mutation VoidJournalEntry($journalEntryId: ID!) {
+  voidJournalEntry(journalEntryId: $journalEntryId) {
+    success
+    message
+    journalEntry {
+      id
+      status
+    }
+  }
+}
+
+mutation DeleteJournalEntry($journalEntryId: ID!) {
+  deleteJournalEntry(journalEntryId: $journalEntryId) {
+    success
+    message
+    journalEntryId
+  }
+}
+
+mutation ApproveTenantRefund($refundId: ID!) {
+  approveTenantRefund(refundId: $refundId) {
+    success
+    message
+    refund {
+      id
+      status
+      approvedAt
+    }
+  }
+}
+
+mutation CompleteTenantRefund($refundId: ID!) {
+  completeTenantRefund(refundId: $refundId) {
+    success
+    message
+    refund {
+      id
+      status
+      completedAt
+    }
+  }
+}
+
+mutation CancelTenantRefund($refundId: ID!) {
+  cancelTenantRefund(refundId: $refundId) {
+    success
+    message
+    refund {
+      id
+      status
+    }
+  }
+}
+
+mutation CreateManualTransfer(
+  $companyId: ID!
+  $fromAccountId: ID!
+  $toAccountId: ID!
+  $amount: Decimal!
+  $description: String!
+  $reference: String
+  $autoPost: Boolean
+) {
+  createManualTransfer(
+    companyId: $companyId
+    fromAccountId: $fromAccountId
+    toAccountId: $toAccountId
+    amount: $amount
+    description: $description
+    reference: $reference
+    autoPost: $autoPost
+  ) {
+    success
+    message
+    journalEntry {
+      id
+      entryNumber
+      status
+    }
+  }
+}
+
+mutation SetupDefaultAccounts($companyId: ID!) {
+  setupDefaultAccounts(companyId: $companyId) {
+    success
+    message
+    createdCount
+  }
+}

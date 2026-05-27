@@ -11,7 +11,7 @@ import { UPDATE_COMPANY_MUTATION } from '@/graphql/companies/mutations';
 import { COMPANY_DETAIL_QUERY } from '@/graphql/queries';
 import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -148,7 +148,7 @@ export default function Settings() {
   if (queryLoading && !data) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <AppHeader title="Company Settings" />
+        <AppHeader title="Company Settings" showBack />
         <LoadingState />
       </SafeAreaView>
     );
@@ -157,7 +157,7 @@ export default function Settings() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={styles.safe.backgroundColor} />
-      <AppHeader title="Company Settings" />
+      <AppHeader title="Company Settings" showBack />
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">

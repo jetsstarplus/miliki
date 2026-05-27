@@ -81,6 +81,11 @@ type Query {
   userRoles(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, userId: ID, role: KccauthUserRoleRoleChoices, companyId: ID, tenantId: ID, buildingId: ID, isActive: Boolean): UserRoleTypeConnection
   safeBalance(creditValue: Decimal!, consumedValue: Decimal!): Decimal
   companiesContext: GenericScalar
+
+  """
+  Company settings payload for mobile company detail/settings screen (excludes properties overview).
+  """
+  companySettingsPageData(companyId: ID!): GenericScalar
   viewsAccountTrendData(payload: JSONString): ViewOpResult
   viewsBalanceSheetData(payload: JSONString): ViewOpResult
   viewsCashFlowStatementData(payload: JSONString): ViewOpResult
@@ -132,15 +137,18 @@ type Query {
     first: Int
     last: Int
     id: ID
-    buildingId: ID
-    status: PropertiesUnitStatusChoices
-    unitType: ID
-    isAvailableForRent: Boolean
-    isAvailableForPurchase: Boolean
+    code: String
+    name: String
+    category: PropertiesUnitTypeCategoryChoices
+    isActive: Boolean
 
     """Search"""
     search: String
   ): UnitTypeNodeConnection
+  unitType(
+    """The ID of the object"""
+    id: ID!
+  ): UnitTypeNode
   units(
     offset: Int
     before: String
@@ -212,8 +220,8 @@ type Query {
   arrearsReport(statuses: [String]): ArrearsReportPayload
   occupancyReport: [BuildingOccupancyType]
   unmatchedPayments: GenericScalar
-  paymentAllocationBreakdown(unitId: Int!): GenericScalar
-  previewPaymentAllocation(unitId: Int!, amount: Decimal!): GenericScalar
+  paymentAllocationBreakdown(unitId: ID!): GenericScalar
+  previewPaymentAllocation(unitId: ID!, amount: Decimal!): GenericScalar
   buildingExtraChargesData(buildingId: Int!, historyMonth: String, historySearch: String, page: Int): GenericScalar
   tenantChargesHistory(tenantId: ID!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
   tenantVacationNotices(tenantId: ID!, status: String, limit: Int): GenericScalar
@@ -228,6 +236,10 @@ type Query {
     """The ID of the object"""
     id: ID!
   ): InitiateLineNode
+  mpesaSetupListData(companyId: ID!): GenericScalar
+  mpesaSetupDetailData(setupId: ID!): GenericScalar
+  mpesaSetupFormData(setupId: ID): GenericScalar
+  mpesaSetupDeleteData(setupId: ID!): GenericScalar
   MpesaExpresses(offset: Int, before: String, after: String, first: Int, last: Int, createdAt: DateTime, modifiedAt: DateTime, createdBy: ID, modifiedBy: ID, CheckoutRequestID: String, MerchantRequestID: String, ResultCode: Int, ResultDesc: String, Amount: Float, MpesaReceiptNumber: String, Balance: String, TransationDate: DateTime, phonenumber: String, state: String): MpesaExpressNodeConnection
   MpesaExpress(
     """The ID of the object"""
@@ -283,6 +295,10 @@ type Query {
     """The ID of the object"""
     id: ID!
   ): GatewayCredentialNode
+  gatewayCredentialListData(companyId: ID!): GenericScalar
+  gatewayCredentialFormData(credentialId: ID): GenericScalar
+  gatewayCredentialDeleteData(credentialId: ID!): GenericScalar
+  gatewayCredentialCallbackHistoryData(credentialId: ID!): GenericScalar
 
   """List configurable payment types for current company."""
   configPaymentTypes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeNodeConnection
@@ -300,6 +316,10 @@ type Query {
 
   """List allowed type-mode combinations for current company."""
   configPaymentTypeModes(offset: Int, before: String, after: String, first: Int, last: Int): ConfigurablePaymentTypeModeNodeConnection
+  configPaymentTypeMode(
+    """The ID of the object"""
+    id: ID!
+  ): ConfigurablePaymentTypeModeNode
 
   """Full dashboard data: payment types, modes, and category/mode choices."""
   paymentConfigDashboardData: GenericScalar
@@ -5306,6 +5326,9 @@ type Mutation {
   Replaces the existing mode links for the given payment type.
   """
   setConfigPaymentTypeModes(modeIds: [ID!]!, paymentTypeId: ID!, preferredModeId: ID): SetConfigPaymentTypeModesMutation
+  createConfigPaymentTypeMode(isPreferred: Boolean, overridePaymentAccountId: ID, overrideRevenueAccountId: ID, paymentModeId: ID!, paymentTypeId: ID!): CreateConfigPaymentTypeModeMutation
+  updateConfigPaymentTypeMode(id: ID!, isPreferred: Boolean, overridePaymentAccountId: ID, overrideRevenueAccountId: ID): UpdateConfigPaymentTypeModeMutation
+  deleteConfigPaymentTypeMode(id: ID!): DeleteConfigPaymentTypeModeMutation
 
   """Manually allocate a successful payment to tenant charges."""
   allocatePayment(paymentId: ID!): AllocatePaymentMutation
@@ -5363,7 +5386,7 @@ type Mutation {
   """
   updateMaintenanceStatus(id: ID!, status: String!): UpdateMaintenanceStatusMutation
   createCompany(city: String, companyType: String!, country: String, county: String, currencyId: Int!, email: String!, name: String!, phone: String!, physicalAddress: String!, registrationNumber: String, taxNumber: String): CreateCompanyMutation
-  updateCompany(city: String, companyId: ID!, country: String, county: String, email: String, name: String, phone: String, physicalAddress: String, registrationNumber: String, status: String, taxNumber: String): UpdateCompanyMutation
+  updateCompany(alternativePhone: String, bankAccountName: String, bankAccountNumber: String, bankBranch: String, bankName: String, city: String, companyId: ID!, country: String, county: String, dueDateDays: Int, email: String, name: String, phone: String, physicalAddress: String, postalAddress: String, prorationThresholdDays: Int, registrationNumber: String, status: String, taxNumber: String): UpdateCompanyMutation
   createCompanyInvitation(companyId: ID!, email: String!, message: String, role: String!): CreateCompanyInvitationMutation
   addCompanyMember(canInviteUsers: Boolean, canManageMembers: Boolean, canManagePayments: Boolean, canManageProperties: Boolean, canValidatePayments: Boolean, canViewAccounting: Boolean, companyId: ID!, email: String!, firstName: String!, lastName: String!, phone: String, role: String!): AddCompanyMemberMutation
   inviteCompanyMember(companyId: ID!, email: String!, message: String, role: String!): InviteCompanyMemberMutation
@@ -5397,6 +5420,15 @@ type Mutation {
 
   """Mutation to create or update a tenant"""
   createUpdateTenant(alternativePhone: String, email: String, emergencyContactName: String, emergencyContactPhone: String, emergencyContactRelationship: String, employer: String, firstName: String!, id: ID, idNumber: String!, lastName: String!, middleName: String, occupation: String, permanentAddress: String, phone: String!): CreateUpdateTenantMutation
+
+  """Create or update a company unit type."""
+  createUpdateUnitType(category: String, code: String!, defaultBathrooms: Int, defaultBedrooms: Int, defaultSquareFeet: Float, description: String, id: ID, isActive: Boolean, name: String!, sortOrder: Int): CreateUpdateUnitTypeMutation
+
+  """Toggle a company unit type active state."""
+  toggleUnitType(id: ID!): ToggleUnitTypeMutation
+
+  """Delete a company unit type when it is unused."""
+  deleteUnitType(id: ID!): DeleteUnitTypeMutation
 
   """Mutation to process tenant move-in"""
   processMoveIn(depositAmount: Decimal!, firstRentAmount: Decimal, startDate: Date!, tenantId: Int!, unitId: Int!): ProcessMoveInMutation
@@ -5552,8 +5584,20 @@ type Mutation {
   rejectManualReceipt(input: RejectManualReceiptInput!): RejectManualReceiptPayload
   deleteManualReceipt(input: DeleteManualReceiptInput!): DeleteManualReceiptPayload
   createManualReceiptPayment(input: CreateManualReceiptPaymentInput!): CreateManualReceiptPaymentPayload
+  toggleMpesaSetupActive(input: ToggleMpesaSetupActiveInput!): ToggleMpesaSetupActivePayload
+  createMpesaSetup(input: CreateMpesaSetupInput!): CreateMpesaSetupPayload
+  updateMpesaSetup(input: UpdateMpesaSetupInput!): UpdateMpesaSetupPayload
+  deleteMpesaSetup(input: DeleteMpesaSetupInput!): DeleteMpesaSetupPayload
+  registerMpesaSetupC2b(input: RegisterMpesaSetupC2BInput!): RegisterMpesaSetupC2BPayload
+  registerMpesaSetupPull(input: RegisterMpesaSetupPullInput!): RegisterMpesaSetupPullPayload
+  checkMpesaSetupBalance(input: CheckMpesaSetupBalanceInput!): CheckMpesaSetupBalancePayload
+  fetchMpesaSetupPull(input: FetchMpesaSetupPullInput!): FetchMpesaSetupPullPayload
   createUpdateGatewayCredential(apiKey: String, authBaseUrl: String, consumerSecret: String, environment: String, gatewayCode: String, id: ID, isActive: Boolean, merchantCode: String, name: String, paymentModeId: ID): CreateUpdateGatewayCredentialMutation
   deleteGatewayCredential(id: ID!): DeleteGatewayCredentialMutation
+  createGatewayCredential(input: CreateGatewayCredentialInput!): CreateGatewayCredentialPayload
+  updateGatewayCredential(input: UpdateGatewayCredentialInput!): UpdateGatewayCredentialPayload
+  deleteGatewayCredentialRelay(input: DeleteGatewayCredentialRelayInput!): DeleteGatewayCredentialRelayPayload
+  rotateGatewayWebhookCredentials(input: RotateGatewayWebhookCredentialsInput!): RotateGatewayWebhookCredentialsPayload
   createUpdateSmsReceiptCredential(amountKeyword: String, deviceIdentifier: String, expectedSender: String, externalReferenceKeyword: String, id: ID, isActive: Boolean, lastMessageAt: DateTime, lastSyncedAt: DateTime, matchRules: GenericScalar, messageKeyword: String, name: String, paymentModeId: ID, readerConfig: GenericScalar, referenceKeyword: String, requiredKeywords: GenericScalar, syncError: String): CreateUpdateSMSReceiptCredentialMutation
   deleteSmsReceiptCredential(id: ID!): DeleteSMSReceiptCredentialMutation
   upsertEquityJengaGatewaySetup(accountId: String, bicCode: String, countryCode: String, credentialId: ID!, currencyCode: String, destinationAccountNumber: String, destinationCountryCode: String, destinationName: String, destinationType: String, extraConfig: GenericScalar, iban: String, sourceAccountNumber: String, sourceCountryCode: String, sourceName: String, transferType: String): UpsertEquityJengaGatewaySetupMutation
@@ -5796,6 +5840,23 @@ type SetConfigPaymentTypeModesMutation {
   success: Boolean
   message: String
   links: [ConfigurablePaymentTypeModeNode]
+}
+
+type CreateConfigPaymentTypeModeMutation {
+  link: ConfigurablePaymentTypeModeNode
+  success: Boolean
+  message: String
+}
+
+type UpdateConfigPaymentTypeModeMutation {
+  link: ConfigurablePaymentTypeModeNode
+  success: Boolean
+  message: String
+}
+
+type DeleteConfigPaymentTypeModeMutation {
+  success: Boolean
+  message: String
 }
 
 """Manually allocate a successful payment to tenant charges."""
@@ -6133,6 +6194,27 @@ type CreateUpdateUnitMutation {
 """Mutation to create or update a tenant"""
 type CreateUpdateTenantMutation {
   tenant: TenantType
+  success: Boolean
+  message: String
+}
+
+"""Create or update a company unit type."""
+type CreateUpdateUnitTypeMutation {
+  unitType: UnitTypeNode
+  success: Boolean
+  message: String
+}
+
+"""Toggle a company unit type active state."""
+type ToggleUnitTypeMutation {
+  unitType: UnitTypeNode
+  success: Boolean
+  message: String
+}
+
+"""Delete a company unit type when it is unused."""
+type DeleteUnitTypeMutation {
+  unitType: UnitTypeNode
   success: Boolean
   message: String
 }
@@ -6621,6 +6703,128 @@ input CreateManualReceiptPaymentInput {
   clientMutationId: String
 }
 
+type ToggleMpesaSetupActivePayload {
+  success: Boolean
+  message: String
+  setupId: ID
+  active: Boolean
+  clientMutationId: String
+}
+
+input ToggleMpesaSetupActiveInput {
+  setupId: ID!
+  clientMutationId: String
+}
+
+type CreateMpesaSetupPayload {
+  success: Boolean
+  message: String
+  setupId: ID
+  encryptedId: String
+  clientMutationId: String
+}
+
+input CreateMpesaSetupInput {
+  name: String!
+  shortCode: String!
+  passKey: String!
+  consumerKey: String!
+  consumerSecret: String!
+  initiatorName: String!
+  initiatorPassword: String
+  certificate: String
+  deployment: String!
+  paymentModeId: ID!
+  active: Boolean
+  buildingIds: [ID]
+  clientMutationId: String
+}
+
+type UpdateMpesaSetupPayload {
+  success: Boolean
+  message: String
+  setupId: ID
+  encryptedId: String
+  clientMutationId: String
+}
+
+input UpdateMpesaSetupInput {
+  setupId: ID!
+  name: String!
+  shortCode: String!
+  passKey: String!
+  consumerKey: String!
+  consumerSecret: String!
+  initiatorName: String!
+  initiatorPassword: String
+  certificate: String
+  deployment: String!
+  paymentModeId: ID!
+  active: Boolean
+  buildingIds: [ID]
+  clientMutationId: String
+}
+
+type DeleteMpesaSetupPayload {
+  success: Boolean
+  message: String
+  setupId: ID
+  clientMutationId: String
+}
+
+input DeleteMpesaSetupInput {
+  setupId: ID!
+  clientMutationId: String
+}
+
+type RegisterMpesaSetupC2BPayload {
+  success: Boolean
+  message: String
+  response: GenericScalar
+  clientMutationId: String
+}
+
+input RegisterMpesaSetupC2BInput {
+  setupId: ID!
+  clientMutationId: String
+}
+
+type RegisterMpesaSetupPullPayload {
+  success: Boolean
+  message: String
+  response: GenericScalar
+  clientMutationId: String
+}
+
+input RegisterMpesaSetupPullInput {
+  setupId: ID!
+  clientMutationId: String
+}
+
+type CheckMpesaSetupBalancePayload {
+  success: Boolean
+  message: String
+  response: String
+  clientMutationId: String
+}
+
+input CheckMpesaSetupBalanceInput {
+  setupId: ID!
+  clientMutationId: String
+}
+
+type FetchMpesaSetupPullPayload {
+  success: Boolean
+  message: String
+  response: GenericScalar
+  clientMutationId: String
+}
+
+input FetchMpesaSetupPullInput {
+  setupId: ID
+  clientMutationId: String
+}
+
 type CreateUpdateGatewayCredentialMutation {
   gatewayCredential: GatewayCredentialNode
   success: Boolean
@@ -6630,6 +6834,109 @@ type CreateUpdateGatewayCredentialMutation {
 type DeleteGatewayCredentialMutation {
   success: Boolean
   message: String
+}
+
+type CreateGatewayCredentialPayload {
+  success: Boolean
+  message: String
+  gatewayCredential: GatewayCredentialNode
+  clientMutationId: String
+}
+
+input CreateGatewayCredentialInput {
+  gatewayCode: String!
+  name: String!
+  paymentModeId: ID
+  environment: String!
+  merchantCode: String!
+  apiKey: String!
+  consumerSecret: String!
+  authBaseUrl: String
+  isActive: Boolean
+  equityCountryCode: String
+  equitySourceName: String
+  equitySourceAccountNumber: String
+  equitySourceCountryCode: String
+  equityDestinationName: String
+  equityDestinationAccountNumber: String
+  equityDestinationCountryCode: String
+  equityDestinationType: String
+  equityTransferType: String
+  equityAccountId: String
+  equityCurrencyCode: String
+  equityBicCode: String
+  equityIban: String
+  equityExtraConfig: GenericScalar
+  ncbaInstitutionCode: String
+  ncbaExtraConfig: GenericScalar
+  cooperativeBranchCode: String
+  cooperativeExtraConfig: GenericScalar
+  clientMutationId: String
+}
+
+type UpdateGatewayCredentialPayload {
+  success: Boolean
+  message: String
+  gatewayCredential: GatewayCredentialNode
+  clientMutationId: String
+}
+
+input UpdateGatewayCredentialInput {
+  credentialId: ID!
+  name: String!
+  paymentModeId: ID
+  environment: String!
+  merchantCode: String!
+  apiKey: String!
+  consumerSecret: String!
+  authBaseUrl: String
+  isActive: Boolean
+  equityCountryCode: String
+  equitySourceName: String
+  equitySourceAccountNumber: String
+  equitySourceCountryCode: String
+  equityDestinationName: String
+  equityDestinationAccountNumber: String
+  equityDestinationCountryCode: String
+  equityDestinationType: String
+  equityTransferType: String
+  equityAccountId: String
+  equityCurrencyCode: String
+  equityBicCode: String
+  equityIban: String
+  equityExtraConfig: GenericScalar
+  ncbaInstitutionCode: String
+  ncbaExtraConfig: GenericScalar
+  cooperativeBranchCode: String
+  cooperativeExtraConfig: GenericScalar
+  clientMutationId: String
+}
+
+type DeleteGatewayCredentialRelayPayload {
+  success: Boolean
+  message: String
+  credentialId: ID
+  clientMutationId: String
+}
+
+input DeleteGatewayCredentialRelayInput {
+  credentialId: ID!
+  clientMutationId: String
+}
+
+type RotateGatewayWebhookCredentialsPayload {
+  success: Boolean
+  message: String
+  credentialId: ID
+  webhookClientKey: String
+  webhookClientSecret: String
+  webhookBasicAuthHeader: String
+  clientMutationId: String
+}
+
+input RotateGatewayWebhookCredentialsInput {
+  credentialId: ID!
+  clientMutationId: String
 }
 
 type CreateUpdateSMSReceiptCredentialMutation {

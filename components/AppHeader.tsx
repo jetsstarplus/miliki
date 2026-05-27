@@ -10,9 +10,10 @@ interface AppHeaderProps {
   title: string;
   showBack?: boolean;
   rightElement?: React.ReactNode;
+  onBack?: () => void;
 }
 
-export function AppHeader({ title, showBack = false, rightElement }: AppHeaderProps) {
+export function AppHeader({ title, showBack = false, rightElement, onBack }: AppHeaderProps) {
   const { toggle } = useDrawer();
   const router = useRouter();
   const { colors } = useTheme();
@@ -21,7 +22,7 @@ export function AppHeader({ title, showBack = false, rightElement }: AppHeaderPr
   return (
     <View style={styles.header}>
       <TouchableOpacity
-        onPress={showBack ? () => router.back() : toggle}
+        onPress={showBack ? (onBack ?? (() => router.back())) : toggle}
         style={styles.leftBtn}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >

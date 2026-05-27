@@ -1,0 +1,94 @@
+query MpesaSetupListData($companyId: ID!) {
+  mpesaSetupListData(companyId: $companyId)
+}
+
+query MpesaSetupDetailData($setupId: ID!) {
+  mpesaSetupDetailData(setupId: $setupId)
+}
+
+query MpesaSetupFormDataCreate {
+  mpesaSetupFormData
+}
+
+query MpesaSetupFormDataEdit($setupId: ID!) {
+  mpesaSetupFormData(setupId: $setupId)
+}
+
+query MpesaSetupDeleteData($setupId: ID!) {
+  mpesaSetupDeleteData(setupId: $setupId)
+}
+
+mutation CreateMpesaSetup($input: CreateMpesaSetupInput!) {
+  createMpesaSetup(input: $input) {
+    success
+    message
+    setupId
+    encryptedId
+  }
+}
+
+mutation UpdateMpesaSetup($input: UpdateMpesaSetupInput!) {
+  updateMpesaSetup(input: $input) {
+    success
+    message
+    setupId
+    encryptedId
+  }
+}
+
+mutation DeleteMpesaSetup($input: DeleteMpesaSetupInput!) {
+  deleteMpesaSetup(input: $input) {
+    success
+    message
+    setupId
+  }
+}
+
+mutation ToggleMpesaSetupActive($input: ToggleMpesaSetupActiveInput!) {
+  toggleMpesaSetupActive(input: $input) {
+    success
+    message
+    setupId
+    active
+  }
+}
+
+mutation RegisterMpesaSetupC2B($input: RegisterMpesaSetupC2BInput!) {
+  registerMpesaSetupC2b(input: $input) {
+    success
+    message
+    response
+  }
+}
+
+mutation RegisterMpesaSetupPull($input: RegisterMpesaSetupPullInput!) {
+  registerMpesaSetupPull(input: $input) {
+    success
+    message
+    response
+  }
+}
+
+mutation CheckMpesaSetupBalance($input: CheckMpesaSetupBalanceInput!) {
+  checkMpesaSetupBalance(input: $input) {
+    success
+    message
+    response
+  }
+}
+
+mutation FetchMpesaSetupPullForOne($input: FetchMpesaSetupPullInput!) {
+  fetchMpesaSetupPull(input: $input) {
+    success
+    message
+    response
+  }
+}
+
+mutation FetchMpesaSetupPullAll {
+  fetchMpesaSetupPull(input: {}) {
+    success
+    message
+    response
+  }
+}
