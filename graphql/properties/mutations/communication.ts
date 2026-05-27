@@ -72,3 +72,15 @@ export const TOGGLE_CAMPAIGN = gql`
     }
   }
 `;
+
+export const PREVIEW_CAMPAIGN_RECIPIENTS = gql`
+  mutation PreviewCampaignRecipients($campaignId: Int!) {
+    previewCampaignRecipientsView(campaignId: $campaignId) {
+      result {
+        success
+        message
+        payload
+      }
+    }
+  }
+`;

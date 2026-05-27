@@ -23,6 +23,8 @@
     "/^\\$env:JAVA_HOME = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\"; \\$env:PATH = \"\\$env:JAVA_HOME\\\\bin;\\$env:PATH\"; cmd /c \"cd /d C:\\\\Users\\\\Administrator\\\\OneDrive\\\\Documents\\\\SDAKCC\\\\monerom\\\\android && gradlew\\.bat clean assembleRelease\"$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "npm install": true,
+    ".\\gradlew.bat": true
   }
 }

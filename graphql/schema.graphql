@@ -188,9 +188,9 @@ type Query {
   leases(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, status: PropertiesLeaseAgreementStatusChoices, leaseType: PropertiesLeaseAgreementLeaseTypeChoices, companyId: ID, occupancyId: ID, search: String, buildingId: Decimal, tenantId: Decimal, unitId: Decimal): LeaseAgreementTypeConnection
   allBuildings: [BuildingType]
   building(id: Int): BuildingType
-  allOccupancies(unitId: Int, tenantId: Int, isCurrent: Boolean): [UnitOccupancyType]
+  allOccupancies(unitId: ID, tenantId: ID, isCurrent: Boolean): [UnitOccupancyType]
   occupancy(id: Int): UnitOccupancyType
-  allRentSchedules(unitId: Int, tenantId: Int, status: String): [RentScheduleType]
+  allRentSchedules(unitId: ID, tenantId: ID, status: String): [RentScheduleType]
   rentSchedule(id: Int): RentScheduleType
   allPurchaseAgreements(unitId: Int, buyerId: Int, status: String): [UnitPurchaseAgreementType]
   purchaseAgreement(id: Int): UnitPurchaseAgreementType
@@ -215,9 +215,11 @@ type Query {
   paymentAllocationBreakdown(unitId: Int!): GenericScalar
   previewPaymentAllocation(unitId: Int!, amount: Decimal!): GenericScalar
   buildingExtraChargesData(buildingId: Int!, historyMonth: String, historySearch: String, page: Int): GenericScalar
-  tenantChargesHistory(tenantId: Int!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  tenantChargesHistory(tenantId: ID!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  tenantVacationNotices(tenantId: ID!, status: String, limit: Int): GenericScalar
+  tenantStatementData(tenantId: ID!, dateFrom: Date, dateTo: Date, buildingId: Int, unitId: Int, page: Int, pageSize: Int): GenericScalar
   unitChargesHistory(unitId: Int!, search: String, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
-  buildingChargesReport(buildingId: Int!, search: String, unitId: Int, tenantId: Int, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
+  buildingChargesReport(buildingId: Int!, search: String, unitId: Int, tenantId: ID, status: String, serviceTypeId: Int, fromDate: Date, toDate: Date, page: Int): GenericScalar
   tenantPaymentLinkData(token: String!): GenericScalar
   smsBalance: BalanceType
   manualReceipts(offset: Int, before: String, after: String, first: Int, last: Int, id: ID, state: DarajaManualReceiptStateChoices, tenant: ID, unit: ID, building: Decimal, paymentMethodConfig: ID, paymentDate: DateTime, search: String): ManualReceiptNodeConnection
@@ -2237,6 +2239,11 @@ type UnitOccupancyType implements Node {
   notes: String
 
   """
+  Billing period for this occupancy. Defaults to the unit payment period for new occupancies.
+  """
+  paymentPeriod: PropertiesUnitOccupancyPaymentPeriodChoices
+
+  """
   Optional due day (1-31). Overrides tenant/company defaults for this occupancy.
   """
   dueDayOfPeriod: Int
@@ -2254,6 +2261,21 @@ value as specified by
 [iso8601](https://en.wikipedia.org/wiki/ISO_8601).
 """
 scalar Date
+
+"""An enumeration."""
+enum PropertiesUnitOccupancyPaymentPeriodChoices {
+  """Monthly"""
+  MONTHLY
+
+  """Quarterly"""
+  QUARTERLY
+
+  """Semi-Annual"""
+  SEMI_ANNUAL
+
+  """Annual"""
+  ANNUAL
+}
 
 type LeaseAgreementTypeConnection {
   """Pagination data for this connection."""
@@ -5454,10 +5476,22 @@ type Mutation {
   voidRentSchedule(scheduleId: ID!): VoidRentScheduleMutation
 
   """Assign a tenant to a unit (create occupancy)."""
-  createOccupancy(depositPaid: Decimal, depositRefunded: Decimal, scheduleGenerationMode: String, skipDepositCharge: Boolean, startDate: Date!, tenantId: ID!, unitId: ID!): CreateOccupancyMutation
+  createOccupancy(depositPaid: Decimal, depositRefunded: Decimal, paymentPeriod: String, scheduleGenerationMode: String, skipDepositCharge: Boolean, startDate: Date!, tenantId: ID!, unitId: ID!): CreateOccupancyMutation
+
+  """Transfer an active occupancy to a different vacant unit."""
+  transferOccupancy(generateDepositCharge: Boolean, occupancyId: ID!, scheduleGenerationMode: String, targetUnitId: ID!, transferDate: Date!, voidPendingCharges: Boolean): TransferOccupancyMutation
 
   """Issue a vacation notice for a currently occupied unit."""
   createVacationNotice(balanceToPay: Decimal, message: String, occupancyId: ID!, vacationDate: Date!): CreateVacationNoticeMutation
+
+  """Cancel a pending vacation notice before its vacation date."""
+  cancelVacationNotice(noticeId: ID!, reason: String): CancelVacationNoticeMutation
+
+  """Send an immediate custom tenant message through selected channels."""
+  sendTenantCustomMessage(message: String!, sendEmail: Boolean, sendInApp: Boolean, sendSms: Boolean, sendWhatsapp: Boolean, subject: String, tenantId: ID!): SendTenantCustomMessageMutation
+
+  """Queue rent schedule generation for a specific tenant and period."""
+  generateTenantRentSchedule(dueDay: Int, month: Int!, skipExisting: Boolean, tenantId: ID!, year: Int!): GenerateTenantRentScheduleMutation
 
   """Generate rent schedules for all occupied units for a given month."""
   bulkGenerateRentSchedules(buildingId: Int, dueDay: Int, month: Int!, skipExisting: Boolean, year: Int!): BulkGenerateRentSchedulesMutation
@@ -5491,6 +5525,9 @@ type Mutation {
 
   """Manually link an unmatched C2B payment to a unit and reconcile."""
   validateC2bPayment(paymentId: ID!, unitId: ID!): ValidateC2BPaymentMutation
+
+  """Update building automatic notification settings."""
+  updateBuildingNotificationPreferences(blockAll: Boolean, buildingId: ID!, notificationPreferences: GenericScalar): UpdateBuildingNotificationPreferencesMutation
   sendSms(input: SendSMSInput!): SendSMSPayload
 
   """
@@ -6327,12 +6364,43 @@ type CreateOccupancyMutation {
   message: String
 }
 
+"""Transfer an active occupancy to a different vacant unit."""
+type TransferOccupancyMutation {
+  success: Boolean
+  message: String
+  newOccupancy: UnitOccupancyType
+  voidedCount: Int
+  voidedTotal: Decimal
+  depositChargeCreated: Boolean
+}
+
 """Issue a vacation notice for a currently occupied unit."""
 type CreateVacationNoticeMutation {
   success: Boolean
   message: String
   noticeId: Int
   vacationDateOut: Date
+}
+
+"""Cancel a pending vacation notice before its vacation date."""
+type CancelVacationNoticeMutation {
+  success: Boolean
+  message: String
+}
+
+"""Send an immediate custom tenant message through selected channels."""
+type SendTenantCustomMessageMutation {
+  success: Boolean
+  message: String
+  sent: GenericScalar
+  details: [String]
+}
+
+"""Queue rent schedule generation for a specific tenant and period."""
+type GenerateTenantRentScheduleMutation {
+  success: Boolean
+  message: String
+  queued: Boolean
 }
 
 """Generate rent schedules for all occupied units for a given month."""
@@ -6416,6 +6484,16 @@ type CopyBuildingMutation {
 type ValidateC2BPaymentMutation {
   success: Boolean
   message: String
+}
+
+"""Update building automatic notification settings."""
+type UpdateBuildingNotificationPreferencesMutation {
+  success: Boolean
+  message: String
+  status: String
+  blockAll: Boolean
+  preferences: GenericScalar
+  blockedLabels: [String]
 }
 
 type SendSMSPayload {

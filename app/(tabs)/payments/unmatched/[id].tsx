@@ -41,7 +41,8 @@ function formatAmount(v: number | null | undefined, currency = 'KES') {
 }
 
 export default function GatewayBufferDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: string | string[] }>();
+  const gatewayBufferId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -56,9 +57,9 @@ export default function GatewayBufferDetail() {
   const [unitError, setUnitError] = useState('');
 
   const { data, loading, error, refetch } = useQuery(GATEWAY_BUFFER_DETAIL, {
-    variables: { id },
+    variables: { id: gatewayBufferId },
     fetchPolicy: 'cache-and-network',
-    skip: !id,
+    skip: !gatewayBufferId,
   });
 
   const { data: unitsData, loading: unitsLoading } = useQuery(UNITS_DROPDOWN, {
@@ -143,6 +144,25 @@ export default function GatewayBufferDetail() {
     },
   });
 
+  async function executeReconcile() {
+    if (!gatewayBufferId) {
+      Alert.alert('Missing payment reference', 'Unable to reconcile because payment id is missing. Please go back and try again.');
+      return;
+    }
+
+    try {
+      await reconcile({
+        variables: {
+          gatewayBufferId,
+          unitId: selectedUnitId,
+          tenantId: selectedTenantId || undefined,
+        },
+      });
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Failed to reconcile payment. Please try again.');
+    }
+  }
+
   function submitReconcile() {
     if (!selectedUnitId) {
       setUnitError('Please select a unit to reconcile against.');
@@ -157,14 +177,9 @@ export default function GatewayBufferDetail() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Reconcile',
-          onPress: () =>
-            reconcile({
-              variables: {
-                gatewayBufferId: id,
-                unitId: selectedUnitId,
-                tenantId: selectedTenantId || undefined,
-              },
-            }),
+          onPress: () => {
+            executeReconcile();
+          },
         },
       ]
     );
@@ -201,7 +216,7 @@ export default function GatewayBufferDetail() {
                 <Ionicons name="swap-horizontal" size={26} color={colors.primary} />
               </View>
               <View style={{ flex: 1, marginLeft: Spacing.sm }}>
-                <Text style={styles.heroRef}>{buffer.reference ?? `Buffer #${id}`}</Text>
+                <Text style={styles.heroRef}>{buffer.reference ?? `Buffer #${gatewayBufferId ?? ''}`}</Text>
                 <Text style={styles.heroSub}>{buffer.payerName ?? '—'}</Text>
               </View>
             </View>

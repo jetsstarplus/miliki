@@ -14,11 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const PAYMENT_PERIODS = ['MONTHLY', 'QUARTERLY', 'YEARLY'];
@@ -42,7 +42,22 @@ const EMPTY_FORM = {
 
 export default function AddEditUnit() {
   const router = useRouter();
-  const { unitId, buildingId: presetBuildingId } = useLocalSearchParams<{ unitId?: string; buildingId?: string }>();
+  const {
+    unitId: unitIdParam,
+    buildingId: presetBuildingIdParam,
+    returnTo: returnToParam,
+    returnBuildingId: returnBuildingIdParam,
+  } = useLocalSearchParams<{
+    unitId?: string | string[];
+    buildingId?: string | string[];
+    returnTo?: string | string[];
+    returnBuildingId?: string | string[];
+  }>();
+
+  const unitId = Array.isArray(unitIdParam) ? unitIdParam[0] : unitIdParam;
+  const presetBuildingId = Array.isArray(presetBuildingIdParam) ? presetBuildingIdParam[0] : presetBuildingIdParam;
+  const returnTo = Array.isArray(returnToParam) ? returnToParam[0] : returnToParam;
+  const returnBuildingId = Array.isArray(returnBuildingIdParam) ? returnBuildingIdParam[0] : returnBuildingIdParam;
   const isEdit = !!unitId;
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -53,6 +68,20 @@ export default function AddEditUnit() {
   const [selectedBuildingId, setSelectedBuildingId] = useState(presetBuildingId ?? '');
   const [selectedUnitTypeId, setSelectedUnitTypeId] = useState('');
   const [autofilled, setAutofilled] = useState(false);
+
+  function navigateBackTarget() {
+    if (returnTo === 'building' && returnBuildingId) {
+      router.replace({ pathname: '/(tabs)/building/[id]', params: { id: returnBuildingId, tab: 'units' } } as any);
+      return;
+    }
+
+    if (returnTo === 'unit-detail' && unitId) {
+      router.replace({ pathname: '/(tabs)/units/[id]', params: { id: unitId } } as any);
+      return;
+    }
+
+    router.replace('/(tabs)/units' as any);
+  }
 
   const { data: editData, loading: editLoading } = useQuery(UNIT_DETAIL_QUERY, {
     variables: { id: unitId },
@@ -126,7 +155,7 @@ export default function AddEditUnit() {
     refetchQueries: [{ query: UNITS_QUERY }],
     onCompleted(data) {
       if (data?.createUpdateUnit?.success) {
-        router.back();
+        navigateBackTarget();
       } else {
         setServerError(data?.createUpdateUnit?.message ?? 'Something went wrong.');
       }
@@ -186,7 +215,7 @@ export default function AddEditUnit() {
   }
 
   return (
-    <FormLayout title={isEdit ? 'Edit Unit' : 'Add Unit'}>
+    <FormLayout title={isEdit ? 'Edit Unit' : 'Add Unit'} onBack={navigateBackTarget}>
       <ServerErrorBanner message={serverError} />
 
       {/* Building picker — only shown when creating */}

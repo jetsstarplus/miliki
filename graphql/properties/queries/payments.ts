@@ -91,12 +91,16 @@ export const MANUAL_RECEIPTS_QUERY = gql`
     $after: String
     $state: DarajaManualReceiptStateChoices
     $search: String
+    $tenant: ID
+    $unit: ID
   ) {
     manualReceipts(
       first: $first
       after: $after
       state: $state
       search: $search
+      tenant: $tenant
+      unit: $unit
     ) {
       edges {
         node {
@@ -131,6 +135,18 @@ export const MANUAL_RECEIPTS_QUERY = gql`
         endCursor
       }
     }
+  }
+`;
+
+export const PAYMENT_ALLOCATION_BREAKDOWN_QUERY = gql`
+  query UnitPaymentBreakdown($unitId: ID!) {
+    paymentAllocationBreakdown(unitId: $unitId)
+  }
+`;
+
+export const PREVIEW_PAYMENT_ALLOCATION_QUERY = gql`
+  query PreviewPaymentAllocation($unitId: Int!, $amount: Decimal!) {
+    previewPaymentAllocation(unitId: $unitId, amount: $amount)
   }
 `;
 
@@ -261,6 +277,17 @@ export const GATEWAY_BUFFER_DETAIL = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const PAYMENT_RECEIPT_PDF_QUERY = gql`
+  query PaymentReceiptPdf($paymentId: Int!) {
+    paymentReceiptPdf(paymentId: $paymentId) {
+      success
+      message
+      filename
+      pdfBase64
     }
   }
 `;

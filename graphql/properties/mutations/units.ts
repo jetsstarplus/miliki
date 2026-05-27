@@ -58,3 +58,54 @@ mutation CreateUpdateUnit(
     message
   }
 }`;
+
+export const COPY_UNIT_MUTATION = gql`
+  mutation CopyUnit(
+    $unitId: ID!
+    $copyCount: Int!
+    $startingUnitNumber: String!
+    $numberingPattern: String
+    $incrementFloor: Boolean
+  ) {
+    copyUnit(
+      unitId: $unitId
+      copyCount: $copyCount
+      startingUnitNumber: $startingUnitNumber
+      numberingPattern: $numberingPattern
+      incrementFloor: $incrementFloor
+    ) {
+      success
+      message
+      createdCount
+      duplicates
+    }
+  }
+`;
+
+export const PROCESS_MOVE_OUT_MUTATION = gql`
+  mutation ProcessMoveOut(
+    $occupancyId: Int!
+    $endDate: Date!
+    $moveOutReason: String
+    $damageAmount: Decimal
+    $damageNotes: String
+  ) {
+    processMoveOut(
+      occupancyId: $occupancyId
+      endDate: $endDate
+      moveOutReason: $moveOutReason
+      damageAmount: $damageAmount
+      damageNotes: $damageNotes
+    ) {
+      success
+      message
+      finalBalance
+      depositRefund
+      occupancy {
+        id
+        isCurrent
+        endDate
+      }
+    }
+  }
+`;

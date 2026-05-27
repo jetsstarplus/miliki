@@ -1,6 +1,7 @@
 import { MESSAGING_BALANCES, SUBSCRIPTION_STATUS } from '@/graphql/properties/queries/subscription';
 import { useLazyQuery } from '@apollo/client';
-import React, { createContext, useCallback, useContext, useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 import { useAuth } from './auth';
 
 export interface MessagingBalances {
@@ -46,7 +47,7 @@ const MessagingContext = createContext<MessagingContextValue>({
   refetchSubscription: () => {},
 });
 
-export function MessagingProvider({ children }: { children: React.ReactNode }) {
+export function MessagingProvider({ children }: { children: ReactNode }) {
   const { activeCompany, isAuthenticated } = useAuth();
   const lastCompanyId = useRef<string | null>(null);
 

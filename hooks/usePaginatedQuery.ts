@@ -1,5 +1,5 @@
 import { DocumentNode, OperationVariables, useQuery } from '@apollo/client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface PageInfo {
   hasNextPage: boolean;
@@ -29,18 +29,19 @@ export function usePaginatedQuery<T = any>(
   const [refreshing, setRefreshing] = useState(false);
   const isFetchingMore = useRef(false);
 
-  const { loading, error, fetchMore, refetch } = useQuery(query, {
+  const { data, loading, error, fetchMore, refetch } = useQuery(query, {
     variables: { first: pageSize, after: null, ...variables },
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
-    onCompleted(data) {
-      const connection = data?.[rootField];
-      if (!connection) return;
-      const newNodes: T[] = connection.edges?.map((e: any) => e.node) ?? [];
-      setNodes(newNodes);
-      setPageInfo(connection.pageInfo ?? { hasNextPage: false, endCursor: null });
-    },
   });
+
+  useEffect(() => {
+    const connection = data?.[rootField];
+    if (!connection) return;
+    const newNodes: T[] = connection.edges?.map((e: any) => e.node) ?? [];
+    setNodes(newNodes);
+    setPageInfo(connection.pageInfo ?? { hasNextPage: false, endCursor: null });
+  }, [data, rootField]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

@@ -7,17 +7,18 @@ import { useTheme } from '@/context/theme';
 import { RENT_SCHEDULES } from '@/graphql/properties/queries/rentschedules';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -125,6 +126,8 @@ function ScheduleCard({ item }: { item: RentSchedule }) {
 export default function RentSchedules() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -215,9 +218,16 @@ export default function RentSchedules() {
 
       {!error && (
         <FlatList
+          key={isTablet ? 'tablet-grid' : 'mobile-list'}
           data={filtered}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <ScheduleCard item={item} />}
+          numColumns={isTablet ? 2 : 1}
+          renderItem={({ item }) => (
+            <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+              <ScheduleCard item={item} />
+            </View>
+          )}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onEndReached={onEndReached}
@@ -249,6 +259,9 @@ function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
     list: { padding: Spacing.md, paddingBottom: 80 },
+    columnWrap: { justifyContent: 'space-between' },
+    itemWrap: { width: '100%' },
+    itemWrapTablet: { width: '48.5%' },
     footer: { paddingVertical: Spacing.md },
 
     searchWrap: {

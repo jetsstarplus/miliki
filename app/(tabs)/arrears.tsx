@@ -13,6 +13,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -127,6 +128,8 @@ function SummaryCard({ summary }: { summary: Summary }) {
 export default function Arrears() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const [refreshing, setRefreshing] = React.useState(false);
 
   const { data, loading, error, refetch } = useQuery(ARREARS_REPORT_QUERY, {
@@ -159,9 +162,16 @@ export default function Arrears() {
 
       {!error && (
         <FlatList
+          key={isTablet ? 'tablet-grid' : 'mobile-list'}
           data={schedules}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <ArrearCard item={item} />}
+          numColumns={isTablet ? 2 : 1}
+          renderItem={({ item }) => (
+            <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+              <ArrearCard item={item} />
+            </View>
+          )}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -189,6 +199,9 @@ function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
     list: { padding: Spacing.md, paddingBottom: 80 },
+    columnWrap: { justifyContent: 'space-between' },
+    itemWrap: { width: '100%' },
+    itemWrapTablet: { width: '48.5%' },
 
     summaryCard: {
       backgroundColor: c.surface,

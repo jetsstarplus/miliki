@@ -7,7 +7,7 @@ import { UNRECONCILED_GATEWAY_BUFFERS_QUERY } from '@/graphql/properties/queries
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,6 +16,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -97,6 +98,8 @@ export default function UnreconciledList() {
   const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -123,14 +126,16 @@ export default function UnreconciledList() {
 
   const renderItem = useCallback(
     ({ item }: { item: GatewayBufferNode }) => (
-      <BufferCard
-        item={item}
-        onPress={() =>
-          router.push({ pathname: '/(tabs)/payments/unmatched/[id]', params: { id: item.id } } as any)
-        }
-      />
+      <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+        <BufferCard
+          item={item}
+          onPress={() =>
+            router.push({ pathname: '/(tabs)/payments/unmatched/[id]', params: { id: item.id } } as any)
+          }
+        />
+      </View>
     ),
-    [router]
+    [router, isTablet, styles.itemWrap, styles.itemWrapTablet]
   );
 
   const renderFooter = useCallback(() => {
@@ -186,15 +191,18 @@ export default function UnreconciledList() {
         />
       ) : (
         <FlatList
+          key={isTablet ? 'tablet-grid' : 'mobile-list'}
           data={nodes}
           keyExtractor={(item) => item.id}
+          numColumns={isTablet ? 2 : 1}
           renderItem={renderItem}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={nodes.length === 0 ? styles.emptyContainer : styles.listContent}
           ListEmptyComponent={
             <EmptyState
               icon="swap-horizontal-outline"
               title="No unreconciled payments"
-              message={
+              description={
                 debouncedSearch
                   ? 'No payments match your search.'
                   : 'All gateway payments are reconciled.'
@@ -259,6 +267,9 @@ function makeStyles(c: AppColors) {
     },
     searchInput: { flex: 1, fontSize: Typography.fontSizeSm, color: c.text, paddingVertical: 0 },
     listContent: { padding: Spacing.md, paddingBottom: 80 },
+    columnWrap: { justifyContent: 'space-between' },
+    itemWrap: { width: '100%' },
+    itemWrapTablet: { width: '48.5%' },
     emptyContainer: { flexGrow: 1 },
     card: {
       backgroundColor: c.surface,

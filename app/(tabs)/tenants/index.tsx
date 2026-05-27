@@ -9,7 +9,7 @@ import { TENANTS_QUERY } from '@/graphql/properties/queries/tenants';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -18,6 +18,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -114,7 +115,9 @@ function TenantCard({ tenant }: { tenant: Tenant }) {
 export default function Tenants() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const isTablet = width >= 768;
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,11 +183,24 @@ export default function Tenants() {
         />
       )}
 
-      {!error && (
+      {!error && !(loading && tenants.length === 0) && (
         <FlatList
+          key={isTablet ? 'tenants-grid-2' : 'tenants-list-1'}
+          style={styles.flatList}
           data={tenants}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => <TenantCard tenant={item} />}
+          numColumns={isTablet ? 2 : 1}
+          columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
+          renderItem={({ item, index }) => (
+            <View
+              style={[
+                isTablet ? styles.listItemHalf : styles.listItemWrap,
+                isTablet && (index % 2 === 0 ? styles.listItemLeft : styles.listItemRight),
+              ]}
+            >
+              <TenantCard tenant={item} />
+            </View>
+          )}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onEndReached={onEndReached}
@@ -216,7 +232,13 @@ export default function Tenants() {
 function makeStyles(c: AppColors) {
   return StyleSheet.create({
   safe: { flex: 1, backgroundColor: c.background },
+  flatList: { flex: 1, backgroundColor: c.background },
   list: { padding: Spacing.md, paddingBottom: 80 },
+  columnWrapper: { alignItems: 'stretch', justifyContent: 'flex-start' },
+  listItemWrap: { flex: 1 },
+  listItemHalf: { width: '50%' },
+  listItemLeft: { paddingRight: Spacing.xs },
+  listItemRight: { paddingLeft: Spacing.xs },
   footer: { paddingVertical: Spacing.md },
   addBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
 

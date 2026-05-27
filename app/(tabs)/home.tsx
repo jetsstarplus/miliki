@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -105,7 +106,7 @@ function QuickAction({
   );
 }
 
-function MessagingPanel() {
+function MessagingPanel({ isTablet }: { isTablet: boolean }) {
   const { colors } = useTheme();
   const { activeCompany } = useAuth();
   const { balances, subscription, refetchBalances, refetchSubscription } = useMessaging();
@@ -117,7 +118,7 @@ function MessagingPanel() {
     const end = new Date(subscription.currentPeriodEnd);
     const now = new Date();
     return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  }, [subscription?.currentPeriodEnd]);
+  }, [subscription]);
 
   if (!activeCompany) return null;
 
@@ -138,7 +139,7 @@ function MessagingPanel() {
   return (
     <>
       {/* ── Messaging Credits ── */}
-      <View style={styles.msgCard}>
+      <View style={[styles.msgCard, isTablet && styles.cardTablet]}>
         <View style={styles.msgCardHeader}>
           <Text style={styles.cardTitle}>Messaging Credits</Text>
           <TouchableOpacity
@@ -184,7 +185,7 @@ function MessagingPanel() {
       {/* ── Subscription due ── */}
       {showSubWarning && (
         <TouchableOpacity
-          style={styles.subDueCard}
+          style={[styles.subDueCard, isTablet && styles.cardTablet]}
           onPress={() => setModalMode('subscription')}
           activeOpacity={0.85}
         >
@@ -232,6 +233,9 @@ export default function Dashboard() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isWideTablet = width >= 1200;
   const [refreshing, setRefreshing] = React.useState(false);
 
   const { data, refetch } = useQuery(DASHBOARD, {
@@ -247,15 +251,6 @@ export default function Dashboard() {
   const admin = data?.dashboard?.adminSection;
   const accountant = data?.dashboard?.accountantSection;
 
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  })();
-
-  const firstName = user?.firstName ?? user?.username ?? 'there';
-
   // Occupancy bar segments
   const totalUnits = stats?.totalUnits ?? 0;
   const occupiedPct = totalUnits > 0 ? Math.round((stats.occupiedUnits / totalUnits) * 100) : 0;
@@ -266,7 +261,11 @@ export default function Dashboard() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          isTablet && styles.scrollTablet,
+          isWideTablet && styles.scrollWideTablet,
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
@@ -300,7 +299,7 @@ export default function Dashboard() {
         )}
 
         {/* ── Key Metrics ── */}
-        <View style={styles.metricsRow}>
+        <View style={[styles.metricsRow, isTablet && styles.metricsRowTablet]}>
           <MetricCard
             label="Buildings"
             value={stats?.totalBuildings ?? '—'}
@@ -329,168 +328,184 @@ export default function Dashboard() {
           />
         </View>
 
-        {/* ── Occupancy ── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.cardTitle}>Occupancy</Text>
-            <Text style={styles.occupancyPct}>{occupiedPct}%</Text>
+        <View style={[styles.dashboardGrid, isTablet && styles.dashboardGridTablet]}>
+          <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemTablet]}>
+            {/* ── Occupancy ── */}
+            <View style={[styles.card, isTablet && styles.cardTablet]}>
+              <View style={styles.cardHeaderRow}>
+                <Text style={styles.cardTitle}>Occupancy</Text>
+                <Text style={styles.occupancyPct}>{occupiedPct}%</Text>
+              </View>
+
+              {/* Segmented bar */}
+              <View style={styles.segBar}>
+                {occupiedPct > 0 && (
+                  <View style={[styles.segFill, { flex: occupiedPct, backgroundColor: Colors.success }]} />
+                )}
+                {reservedPct > 0 && (
+                  <View style={[styles.segFill, { flex: reservedPct, backgroundColor: Colors.warning }]} />
+                )}
+                {vacantPct > 0 && (
+                  <View style={[styles.segFill, { flex: Math.max(vacantPct, 1), backgroundColor: colors.borderLight }]} />
+                )}
+              </View>
+
+              <View style={styles.segLegend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: Colors.success }]} />
+                  <Text style={styles.legendText}>Occupied</Text>
+                  <Text style={styles.legendVal}>{stats?.occupiedUnits ?? '—'}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: Colors.warning }]} />
+                  <Text style={styles.legendText}>Reserved</Text>
+                  <Text style={styles.legendVal}>{stats?.reservedUnits ?? '—'}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
+                  <Text style={styles.legendText}>Vacant</Text>
+                  <Text style={styles.legendVal}>{stats?.vacantUnits ?? '—'}</Text>
+                </View>
+              </View>
+            </View>
           </View>
 
-          {/* Segmented bar */}
-          <View style={styles.segBar}>
-            {occupiedPct > 0 && (
-              <View style={[styles.segFill, { flex: occupiedPct, backgroundColor: Colors.success }]} />
-            )}
-            {reservedPct > 0 && (
-              <View style={[styles.segFill, { flex: reservedPct, backgroundColor: Colors.warning }]} />
-            )}
-            {vacantPct > 0 && (
-              <View style={[styles.segFill, { flex: Math.max(vacantPct, 1), backgroundColor: colors.borderLight }]} />
-            )}
-          </View>
+          {/* ── Arrears ── */}
+          {(stats?.totalArrears != null) && (
+            <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemTablet]}>
+              <TouchableOpacity
+                style={[styles.card, styles.arrearsCard, isTablet && styles.cardTablet]}
+                onPress={() => router.push('/(tabs)/arrears' as any)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.arrearsInner}>
+                  <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                    <Ionicons name="warning-outline" size={18} color={Colors.error} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.arrearsAmount}>
+                      {stats.totalArrears > 0
+                        ? `KES ${Number(stats.totalArrears).toLocaleString()}`
+                        : 'No arrears'}
+                    </Text>
+                    <Text style={styles.arrearsLabel}>Outstanding arrears</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
 
-          <View style={styles.segLegend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.success }]} />
-              <Text style={styles.legendText}>Occupied</Text>
-              <Text style={styles.legendVal}>{stats?.occupiedUnits ?? '—'}</Text>
+          {/* ── Revenue (admin) ── */}
+          {admin?.totalRevenue != null && (
+            <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemTablet]}>
+              <View style={[styles.card, isTablet && styles.cardTablet]}>
+                <Text style={styles.sectionLabel}>Revenue this month</Text>
+                <Text style={styles.revenueAmount}>
+                  KES {Number(admin.totalRevenue).toLocaleString()}
+                </Text>
+              </View>
             </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: Colors.warning }]} />
-              <Text style={styles.legendText}>Reserved</Text>
-              <Text style={styles.legendVal}>{stats?.reservedUnits ?? '—'}</Text>
+          )}
+
+          {/* ── Admin alerts ── */}
+          {admin && (admin.unmatchedPaymentsCount > 0 || admin.pendingValidations > 0) && (
+            <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemTablet]}>
+              <View style={[styles.card, isTablet && styles.cardTablet]}>
+                <Text style={styles.sectionLabel}>Needs attention</Text>
+                <AlertBadge
+                  count={admin.unmatchedPaymentsCount}
+                  label="Unmatched payments"
+                  icon="alert-circle-outline"
+                  color={Colors.warning}
+                />
+                <AlertBadge
+                  count={admin.pendingValidations}
+                  label="Pending validations"
+                  icon="hourglass-outline"
+                  color={Colors.info}
+                />
+              </View>
             </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
-              <Text style={styles.legendText}>Vacant</Text>
-              <Text style={styles.legendVal}>{stats?.vacantUnits ?? '—'}</Text>
+          )}
+
+          {/* ── Team overview (admin) ── */}
+          {admin && (
+            <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemTablet]}>
+              <View style={[styles.card, isTablet && styles.cardTablet]}>
+                <Text style={styles.sectionLabel}>Team</Text>
+                <View style={styles.teamRow}>
+                  <MetricCard
+                    label="Agents"
+                    value={admin.agentsCount ?? '—'}
+                    icon="briefcase-outline"
+                    iconColor={Colors.info}
+                    iconBg="rgba(59,130,246,0.1)"
+                  />
+                  <View style={styles.metricSep} />
+                  <MetricCard
+                    label="Landlords"
+                    value={admin.landlordsCount ?? '—'}
+                    icon="home-outline"
+                    iconColor={colors.primary}
+                    iconBg={colors.overlay}
+                  />
+                  <View style={styles.metricSep} />
+                  <MetricCard
+                    label="Accountants"
+                    value={admin.accountantsCount ?? '—'}
+                    icon="calculator-outline"
+                    iconColor={Colors.success}
+                    iconBg="rgba(16,185,129,0.1)"
+                  />
+                </View>
+              </View>
             </View>
+          )}
+
+          {/* ── Collections (accountant) ── */}
+          {accountant && (
+            <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemFullTablet]}>
+              <View style={styles.collectionsRow}>
+                <View style={[styles.collectionCard, { borderLeftColor: Colors.success }]}>
+                  <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
+                    <Ionicons name="cash-outline" size={18} color={Colors.success} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.collectionAmount}>
+                      {accountant.totalCollected != null
+                        ? `KES ${Number(accountant.totalCollected).toLocaleString()}`
+                        : '—'}
+                    </Text>
+                    <Text style={styles.collectionLabel}>Total collected</Text>
+                  </View>
+                </View>
+                <View style={[styles.collectionCard, { borderLeftColor: Colors.warning }]}>
+                  <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
+                    <Ionicons name="time-outline" size={18} color={Colors.warning} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.collectionAmount, { color: Colors.warning }]}>
+                      {accountant.pendingReconciliation != null
+                        ? `KES ${Number(accountant.pendingReconciliation).toLocaleString()}`
+                        : '—'}
+                    </Text>
+                    <Text style={styles.collectionLabel}>Pending reconciliation</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* ── Messaging Credits + Subscription ── */}
+          <View style={[styles.dashboardGridItem, isTablet && styles.dashboardGridItemFullTablet]}>
+            <MessagingPanel isTablet={isTablet} />
           </View>
         </View>
 
-        {/* ── Arrears ── */}
-        {(stats?.totalArrears != null) && (
-          <TouchableOpacity
-            style={[styles.card, styles.arrearsCard]}
-            onPress={() => router.push('/(tabs)/arrears' as any)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.arrearsInner}>
-              <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                <Ionicons name="warning-outline" size={18} color={Colors.error} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.arrearsAmount}>
-                  {stats.totalArrears > 0
-                    ? `KES ${Number(stats.totalArrears).toLocaleString()}`
-                    : 'No arrears'}
-                </Text>
-                <Text style={styles.arrearsLabel}>Outstanding arrears</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* ── Revenue (admin) ── */}
-        {admin?.totalRevenue != null && (
-          <View style={styles.card}>
-            <Text style={styles.sectionLabel}>Revenue this month</Text>
-            <Text style={styles.revenueAmount}>
-              KES {Number(admin.totalRevenue).toLocaleString()}
-            </Text>
-          </View>
-        )}
-
-        {/* ── Collections (accountant) ── */}
-        {accountant && (
-          <View style={styles.collectionsRow}>
-            <View style={[styles.collectionCard, { borderLeftColor: Colors.success }]}>
-              <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
-                <Ionicons name="cash-outline" size={18} color={Colors.success} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.collectionAmount}>
-                  {accountant.totalCollected != null
-                    ? `KES ${Number(accountant.totalCollected).toLocaleString()}`
-                    : '—'}
-                </Text>
-                <Text style={styles.collectionLabel}>Total collected</Text>
-              </View>
-            </View>
-            <View style={[styles.collectionCard, { borderLeftColor: Colors.warning }]}>
-              <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
-                <Ionicons name="time-outline" size={18} color={Colors.warning} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.collectionAmount, { color: Colors.warning }]}>
-                  {accountant.pendingReconciliation != null
-                    ? `KES ${Number(accountant.pendingReconciliation).toLocaleString()}`
-                    : '—'}
-                </Text>
-                <Text style={styles.collectionLabel}>Pending reconciliation</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* ── Admin alerts ── */}
-        {admin && (admin.unmatchedPaymentsCount > 0 || admin.pendingValidations > 0) && (
-          <View style={styles.card}>
-            <Text style={styles.sectionLabel}>Needs attention</Text>
-            <AlertBadge
-              count={admin.unmatchedPaymentsCount}
-              label="Unmatched payments"
-              icon="alert-circle-outline"
-              color={Colors.warning}
-            />
-            <AlertBadge
-              count={admin.pendingValidations}
-              label="Pending validations"
-              icon="hourglass-outline"
-              color={Colors.info}
-            />
-          </View>
-        )}
-
-        {/* ── Team overview (admin) ── */}
-        {admin && (
-          <View style={styles.card}>
-            <Text style={styles.sectionLabel}>Team</Text>
-            <View style={styles.teamRow}>
-              <MetricCard
-                label="Agents"
-                value={admin.agentsCount ?? '—'}
-                icon="briefcase-outline"
-                iconColor={Colors.info}
-                iconBg="rgba(59,130,246,0.1)"
-              />
-              <View style={styles.metricSep} />
-              <MetricCard
-                label="Landlords"
-                value={admin.landlordsCount ?? '—'}
-                icon="home-outline"
-                iconColor={colors.primary}
-                iconBg={colors.overlay}
-              />
-              <View style={styles.metricSep} />
-              <MetricCard
-                label="Accountants"
-                value={admin.accountantsCount ?? '—'}
-                icon="calculator-outline"
-                iconColor={Colors.success}
-                iconBg="rgba(16,185,129,0.1)"
-              />
-            </View>
-          </View>
-        )}
-
-        {/* ── Messaging Credits + Subscription ── */}
-        <MessagingPanel />
-
         {/* ── Quick Actions ── */}
         <Text style={[styles.sectionLabel, { marginTop: Spacing.sm }]}>Quick actions</Text>
-        <View style={styles.quickGrid}>
+        <View style={[styles.quickGrid, isTablet && styles.quickGridTablet]}>
           <QuickAction
             icon="card-outline"
             label="Payments"
@@ -527,6 +542,16 @@ function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
     scroll: { padding: Spacing.md, paddingBottom: Spacing.xxl },
+    scrollTablet: {
+      paddingHorizontal: Spacing.lg,
+      paddingTop: Spacing.lg,
+      alignSelf: 'center',
+      width: '100%',
+      maxWidth: 1024,
+    },
+    scrollWideTablet: {
+      maxWidth: 1220,
+    },
 
     // Header
     topHeader: {
@@ -600,6 +625,9 @@ function makeStyles(c: AppColors) {
       marginBottom: Spacing.sm,
       ...Shadow.sm,
     },
+    metricsRowTablet: {
+      paddingHorizontal: Spacing.md,
+    },
     metricCard: { flex: 1, alignItems: 'center', gap: 3 },
     metricIconWrap: {
       width: 34,
@@ -659,6 +687,27 @@ function makeStyles(c: AppColors) {
     // Team
     teamRow: { flexDirection: 'row', marginTop: Spacing.xs },
 
+    dashboardGrid: {
+      width: '100%',
+    },
+    dashboardGridTablet: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    dashboardGridItem: {
+      width: '100%',
+    },
+    dashboardGridItemTablet: {
+      width: '49.2%',
+    },
+    dashboardGridItemFullTablet: {
+      width: '100%',
+    },
+    cardTablet: {
+      marginBottom: Spacing.md,
+    },
+
     // Collections
     collectionsRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
     collectionCard: {
@@ -682,6 +731,9 @@ function makeStyles(c: AppColors) {
       flexDirection: 'row',
       gap: Spacing.sm,
       marginBottom: Spacing.sm,
+    },
+    quickGridTablet: {
+      justifyContent: 'space-between',
     },
     quickAction: {
       flex: 1,

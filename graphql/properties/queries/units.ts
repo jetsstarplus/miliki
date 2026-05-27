@@ -168,8 +168,11 @@ query UNIT_DETAIL($id: ID!) {
     occupancies {
       edges {
         node {
+          id
           tenant {
+            id
             fullName
+            email
             idNumber
             phone
           }

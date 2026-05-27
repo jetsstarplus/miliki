@@ -2,20 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { Gesture, GestureDetector, ScrollView } from 'react-native-gesture-handler';
 import Animated, {
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
+    interpolate,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Typography } from '../constants/theme';
@@ -215,6 +215,7 @@ export function DrawerMenu() {
             <Image
               source={require('../assets/images/favicons/logo-wide.png')}
               style={styles.logo}
+              tintColor="#fff"
               resizeMode="cover"
             />
             {activeCompany && (
@@ -332,7 +333,6 @@ const styles = StyleSheet.create({
     width: 130,
     height: 40,
     marginBottom: Spacing.md,
-    tintColor: '#fff',
   },
   companyRow: {
     flexDirection: 'row',

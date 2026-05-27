@@ -7,7 +7,7 @@ import { MANUAL_RECEIPTS_QUERY } from '@/graphql/properties/queries/payments';
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -17,6 +17,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -119,6 +120,8 @@ export default function ManualReceiptsList() {
   const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -144,14 +147,16 @@ export default function ManualReceiptsList() {
 
   const renderItem = useCallback(
     ({ item }: { item: ManualReceiptNode }) => (
-      <ReceiptCard
-        item={item}
-        onPress={() =>
-          router.push({ pathname: '/(tabs)/payments/manual/[id]', params: { id: item.id } } as any)
-        }
-      />
+      <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+        <ReceiptCard
+          item={item}
+          onPress={() =>
+            router.push({ pathname: '/(tabs)/payments/manual/[id]', params: { id: item.id } } as any)
+          }
+        />
+      </View>
     ),
-    [router]
+    [router, isTablet, styles.itemWrap, styles.itemWrapTablet]
   );
 
   const renderFooter = useCallback(() => {
@@ -229,15 +234,18 @@ export default function ManualReceiptsList() {
         />
       ) : (
         <FlatList
+          key={isTablet ? 'tablet-grid' : 'mobile-list'}
           data={nodes}
           keyExtractor={(item) => item.id}
+          numColumns={isTablet ? 2 : 1}
           renderItem={renderItem}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={nodes.length === 0 ? styles.emptyContainer : styles.listContent}
           ListEmptyComponent={
             <EmptyState
               icon="receipt-outline"
               title="No manual receipts"
-              message={
+              description={
                 activeState || debouncedSearch
                   ? 'No receipts match your filter.'
                   : 'Create a receipt to get started.'
@@ -334,6 +342,9 @@ function makeStyles(c: AppColors) {
     },
     chipTextActive: { color: c.primary },
     listContent: { padding: Spacing.md, paddingBottom: 100 },
+    columnWrap: { justifyContent: 'space-between' },
+    itemWrap: { width: '100%' },
+    itemWrapTablet: { width: '48.5%' },
     emptyContainer: { flexGrow: 1 },
     card: {
       backgroundColor: c.surface,

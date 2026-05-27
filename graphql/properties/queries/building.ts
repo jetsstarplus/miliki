@@ -144,6 +144,8 @@ query BuildingDetail($id: ID!) {
     occupiedUnitsCount
     vacantUnitsCount
     totalMonthlyRent
+    blockAutomaticNotifications
+    notificationPreferences
     
   }
 }`;
@@ -159,4 +161,145 @@ query BuildingsForDropdown {
     }
   }
 }
+`;
+
+export const BUILDING_IMAGES_QUERY = gql`
+  query BuildingImages($buildingId: Int) {
+    buildingImages(buildingId: $buildingId) {
+      id
+      imageUrl
+      thumbnailUrl
+      isPrimary
+      caption
+      createdAt
+    }
+  }
+`;
+
+export const BUILDING_DOCUMENTS_QUERY = gql`
+  query BuildingDocuments($buildingId: Int) {
+    buildingDocuments(buildingId: $buildingId) {
+      id
+      fileUrl
+      name
+      createdAt
+    }
+  }
+`;
+
+export const PENALTY_RULES_QUERY = gql`
+  query PenaltyRules($buildingId: Int, $isActive: Boolean, $search: String) {
+    penaltyRules(buildingId: $buildingId, isActive: $isActive, search: $search) {
+      id
+      name
+      calculationType
+      isActive
+      gracePeriodDays
+      priority
+    }
+  }
+`;
+
+export const APPLIED_PENALTIES_QUERY = gql`
+  query AppliedPenalties($buildingId: Int, $notificationSent: Boolean, $search: String, $limit: Int) {
+    appliedPenalties(
+      buildingId: $buildingId
+      notificationSent: $notificationSent
+      search: $search
+      limit: $limit
+    ) {
+      id
+      rentSchedule {
+        id
+      }
+      penaltyRule {
+        id
+        name
+      }
+      amount
+      notificationSent
+      createdAt
+    }
+  }
+`;
+
+export const BUILDING_CHARGES_REPORT_QUERY = gql`
+  query BuildingChargesReport(
+    $buildingId: Int!
+    $search: String
+    $unitId: Int
+    $tenantId: Int
+    $status: String
+    $serviceTypeId: Int
+    $fromDate: Date
+    $toDate: Date
+    $page: Int
+  ) {
+    buildingChargesReport(
+      buildingId: $buildingId
+      search: $search
+      unitId: $unitId
+      tenantId: $tenantId
+      status: $status
+      serviceTypeId: $serviceTypeId
+      fromDate: $fromDate
+      toDate: $toDate
+      page: $page
+    )
+  }
+`;
+
+export const BUILDING_EXTRA_CHARGES_DATA_QUERY = gql`
+  query BuildingExtraChargesData($buildingId: Int!, $historyMonth: String, $historySearch: String, $page: Int) {
+    buildingExtraChargesData(
+      buildingId: $buildingId
+      historyMonth: $historyMonth
+      historySearch: $historySearch
+      page: $page
+    )
+  }
+`;
+
+export const TENANT_CHARGES_HISTORY_QUERY = gql`
+  query TenantChargesHistory(
+    $tenantId: Int!
+    $search: String
+    $status: String
+    $serviceTypeId: Int
+    $fromDate: Date
+    $toDate: Date
+    $page: Int
+  ) {
+    tenantChargesHistory(
+      tenantId: $tenantId
+      search: $search
+      status: $status
+      serviceTypeId: $serviceTypeId
+      fromDate: $fromDate
+      toDate: $toDate
+      page: $page
+    )
+  }
+`;
+
+export const UNIT_CHARGES_HISTORY_QUERY = gql`
+  query UnitChargesHistory(
+    $unitId: Int!
+    $search: String
+    $status: String
+    $serviceTypeId: Int
+    $fromDate: Date
+    $toDate: Date
+    $page: Int
+  ) {
+    unitChargesHistory(
+      unitId: $unitId
+      search: $search
+      status: $status
+      serviceTypeId: $serviceTypeId
+      fromDate: $fromDate
+      toDate: $toDate
+      page: $page
+    )
+  }
 `;

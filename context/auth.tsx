@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { ACTIVE_COMPANY_KEY, API_URL, HAS_SUBSCRIPTION_KEY, LAST_REFRESH_KEY, REFRESH_TOKEN_KEY, TOKEN_KEY } from '../constants/api';
 import { apolloClient } from '../lib/apollo';
@@ -101,7 +102,7 @@ const SIGNED_OUT_STATE: AuthState = {
   hasSubscription: false,
 };
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     ...SIGNED_OUT_STATE,
     isLoading: true,

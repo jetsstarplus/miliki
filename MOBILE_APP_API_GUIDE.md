@@ -1288,6 +1288,46 @@ On subscription event, update the Apollo cache via `cache.modify()` or trigger a
 
 ## 21. Technical Requirements
 
+## 22. Web CORS + Dev Proxy
+
+When running the app on web (`http://localhost:8081`), direct calls to a private backend host (for example `http://victor-personal:8000/graphql`) can fail with CORS errors.
+
+### Backend CORS checklist
+
+Ensure your backend CORS policy allows:
+
+- Origin: `http://localhost:8081`
+- Methods: `POST, OPTIONS`
+- Headers: `Content-Type, Authorization, X-COMPANY-ID`
+- Credentials handling: consistent with your auth strategy (allow or block cookies explicitly)
+
+If you use Django + Graphene with `django-cors-headers`, verify:
+
+- `CORS_ALLOWED_ORIGINS` includes `http://localhost:8081`
+- `CORS_ALLOW_HEADERS` includes `authorization` and `x-company-id`
+- The GraphQL endpoint responds to preflight `OPTIONS`
+
+### Dev-only proxy option (already wired in this app)
+
+This app now supports a web dev proxy route at `POST /api/graphql`:
+
+- File: `app/api/graphql+api.ts`
+- Upstream target: `GRAPHQL_UPSTREAM_URL` from `constants/api.ts`
+
+Behavior in `constants/api.ts`:
+
+- Web + development: `API_URL = /api/graphql`
+- Native or non-dev web: `API_URL = GRAPHQL_UPSTREAM_URL` unless overridden by env
+
+Supported env overrides:
+
+- `EXPO_PUBLIC_GRAPHQL_UPSTREAM_URL`
+- `EXPO_PUBLIC_API_URL`
+- `EXPO_PUBLIC_WS_API_URL`
+- `EXPO_PUBLIC_PORTAL_URL`
+
+This lets web development avoid browser CORS blocks without changing production networking behavior.
+
 ### Apollo Client Setup
 
 ```ts

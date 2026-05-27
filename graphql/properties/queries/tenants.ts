@@ -145,9 +145,11 @@ query TENANT_DETAIL($id: ID!){
     occupancies{
       edges{
         node{
+          id
           unit{
           	id
             building{
+              id
               name
             }
             accountNumber
@@ -182,6 +184,18 @@ query TENANT_DETAIL($id: ID!){
       
     }
     totalArrears
+    notificationLogs(first: 20) {
+      edges {
+        node {
+          id
+          sentAt
+          smsSent
+          emailSent
+          whatsappSent
+          messageContent
+        }
+      }
+    }
     rentSchedules{
       edges{
         node{
@@ -207,3 +221,79 @@ query TENANT_DETAIL($id: ID!){
     }
   }
 }`;
+
+export const TENANT_CHARGES_HISTORY_QUERY = gql`
+  query TenantChargesHistory(
+    $tenantId: ID!
+    $search: String
+    $status: String
+    $serviceTypeId: Int
+    $fromDate: Date
+    $toDate: Date
+    $page: Int
+  ) {
+    tenantChargesHistory(
+      tenantId: $tenantId
+      search: $search
+      status: $status
+      serviceTypeId: $serviceTypeId
+      fromDate: $fromDate
+      toDate: $toDate
+      page: $page
+    )
+  }
+`;
+
+export const TENANT_MANUAL_RECEIPTS_QUERY = gql`
+  query TenantManualReceipts($tenantNodeId: ID!, $first: Int!, $after: String) {
+    manualReceipts(tenant: $tenantNodeId, first: $first, after: $after) {
+      edges {
+        node {
+          id
+          receiptNumber
+          amount
+          paymentDate
+          state
+          stateLabel
+          canValidate
+          canCreatePayment
+          paymentTransaction {
+            id
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const TENANT_VACATION_NOTICES_QUERY = gql`
+  query TenantVacationNotices($tenantId: ID!, $status: String, $limit: Int) {
+    tenantVacationNotices(tenantId: $tenantId, status: $status, limit: $limit)
+  }
+`;
+
+export const TENANT_STATEMENT_DATA_QUERY = gql`
+  query TenantStatementData(
+    $tenantId: ID!
+    $dateFrom: Date
+    $dateTo: Date
+    $buildingId: Int
+    $unitId: Int
+    $page: Int
+    $pageSize: Int
+  ) {
+    tenantStatementData(
+      tenantId: $tenantId
+      dateFrom: $dateFrom
+      dateTo: $dateTo
+      buildingId: $buildingId
+      unitId: $unitId
+      page: $page
+      pageSize: $pageSize
+    )
+  }
+`;

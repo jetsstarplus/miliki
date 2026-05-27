@@ -11,19 +11,20 @@ import { SmsReaderConfig, useSmsReader } from '@/hooks/useSmsReader';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Linking,
-    PermissionsAndroid,
-    Platform,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Linking,
+  PermissionsAndroid,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -213,6 +214,8 @@ function CredentialCardWithReader({
 export default function SmsCredentials() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
   const router = useRouter();
   const { deviceId, ready: deviceReady } = useDeviceId();
 
@@ -334,15 +337,20 @@ export default function SmsCredentials() {
 
       {!error && deviceReady && (
         <FlatList
+          key={isTablet ? 'tablet-grid' : 'mobile-list'}
           data={credentials}
           keyExtractor={(item) => item.id}
+          numColumns={isTablet ? 2 : 1}
           renderItem={({ item }) => (
-            <CredentialCardWithReader
-              item={item}
-              isThisDevice={item.deviceIdentifier === deviceId}
-              onEdit={handleEdit}
-            />
+            <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+              <CredentialCardWithReader
+                item={item}
+                isThisDevice={item.deviceIdentifier === deviceId}
+                onEdit={handleEdit}
+              />
+            </View>
           )}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -376,6 +384,9 @@ function makeStyles(c: AppColors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.background },
     list: { padding: Spacing.md, paddingBottom: 100 },
+    columnWrap: { justifyContent: 'space-between' },
+    itemWrap: { width: '100%' },
+    itemWrapTablet: { width: '48.5%' },
 
     fab: {
       position: 'absolute',

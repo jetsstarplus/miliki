@@ -9,7 +9,7 @@ import { SMS_MESSAGE_LOGS_QUERY } from '@/graphql/properties/queries/sms';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -18,6 +18,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -163,6 +164,8 @@ export default function SmsMessageLogs() {
   }>();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
 
   const [activeFilter, setActiveFilter] = useState<ExtractionStatus | null>(null);
 
@@ -283,9 +286,16 @@ export default function SmsMessageLogs() {
         <ErrorState message={error.message} onRetry={() => refetch()} />
       ) : (
         <FlatList
+          key={isTablet ? 'tablet-grid-3' : 'mobile-list'}
           data={messages}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <MessageCard item={item} />}
+          numColumns={isTablet ? 3 : 1}
+          renderItem={({ item }) => (
+            <View style={[styles.itemWrap, isTablet && styles.itemWrapTablet]}>
+              <MessageCard item={item} />
+            </View>
+          )}
+          columnWrapperStyle={isTablet ? styles.columnWrap : undefined}
           contentContainerStyle={messages.length === 0 ? styles.emptyContainer : styles.listContent}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={() => refetch()} tintColor={colors.primary} />
@@ -353,6 +363,15 @@ function makeStyles(c: ReturnType<typeof useTheme>['colors']) {
     listContent: {
       padding: Spacing.md,
       gap: Spacing.sm,
+    },
+    columnWrap: {
+      justifyContent: 'space-between',
+    },
+    itemWrap: {
+      width: '100%',
+    },
+    itemWrapTablet: {
+      width: '32%',
     },
     emptyContainer: {
       flex: 1,
