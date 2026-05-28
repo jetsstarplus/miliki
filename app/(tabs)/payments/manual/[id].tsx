@@ -5,28 +5,28 @@ import { SectionCard } from '@/components/ui/SectionCard';
 import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
 import {
-  CREATE_MANUAL_RECEIPT_PAYMENT,
-  DELETE_MANUAL_RECEIPT,
-  REJECT_MANUAL_RECEIPT,
-  VALIDATE_MANUAL_RECEIPT,
+    CREATE_MANUAL_RECEIPT_PAYMENT,
+    DELETE_MANUAL_RECEIPT,
+    REJECT_MANUAL_RECEIPT,
+    VALIDATE_MANUAL_RECEIPT,
 } from '@/graphql/properties/mutations/payments';
 import {
-  MANUAL_RECEIPT_DETAIL,
-  MANUAL_RECEIPTS_QUERY,
+    MANUAL_RECEIPT_DETAIL,
+    MANUAL_RECEIPTS_QUERY,
 } from '@/graphql/properties/queries/payments';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -52,23 +52,36 @@ function formatAmount(v: number | null | undefined) {
 }
 
 export default function ManualReceiptDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, returnType, returnId } = useLocalSearchParams<{ id: string; returnType?: string; returnId?: string }>();
   const router = useRouter();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const receiptId = Array.isArray(id) ? id[0] : id;
+  const sourceType = Array.isArray(returnType) ? returnType[0] : returnType;
+  const sourceId = Array.isArray(returnId) ? returnId[0] : returnId;
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectInput, setShowRejectInput] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   const { data, loading, error, refetch } = useQuery(MANUAL_RECEIPT_DETAIL, {
-    variables: { id },
+    variables: { id: receiptId },
     fetchPolicy: 'cache-and-network',
-    skip: !id,
+    skip: !receiptId,
   });
 
   const receipt = data?.manualReceipt;
 
   const refetchQueries = [
-    { query: MANUAL_RECEIPT_DETAIL, variables: { id } },
+    { query: MANUAL_RECEIPT_DETAIL, variables: { id: receiptId } },
     { query: MANUAL_RECEIPTS_QUERY, variables: { first: 20 } },
   ];
 
@@ -77,7 +90,20 @@ export default function ManualReceiptDetail() {
     onCompleted(d: any) {
       const r = d?.validateManualReceipt;
       const msg = r?.message ?? 'Receipt validated and payment created.';
-      Alert.alert('Validated', msg);
+      setToastMessage(msg);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setToastMessage('');
+        if (sourceType === 'tenant' && sourceId) {
+          router.replace({ pathname: '/(tabs)/tenants/[id]', params: { id: sourceId } } as any);
+          return;
+        }
+        if (sourceType === 'unit' && sourceId) {
+          router.replace({ pathname: '/(tabs)/units/[id]', params: { id: sourceId } } as any);
+          return;
+        }
+        router.replace('/(tabs)/payments/manual' as any);
+      }, 1200);
     },
     onError(err: any) {
       Alert.alert('Error', err.message);
@@ -124,29 +150,31 @@ export default function ManualReceiptDetail() {
   });
 
   function confirmValidate() {
-    Alert.alert(
-      'Validate Receipt',
-      `Validate receipt ${receipt?.receiptNumber}? This will create a payment transaction.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Validate',
-          onPress: () => validateReceipt({ variables: { receiptId: id } }),
-        },
-      ]
-    );
+    if (!receiptId) {
+      Alert.alert('Missing receipt', 'Could not determine the receipt id for validation.');
+      return;
+    }
+    validateReceipt({ variables: { receiptId } });
   }
 
   function submitReject() {
+    if (!receiptId) {
+      Alert.alert('Missing receipt', 'Could not determine the receipt id for rejection.');
+      return;
+    }
     const reason = rejectReason.trim();
     if (!reason) {
       Alert.alert('Required', 'Please enter a rejection reason.');
       return;
     }
-    rejectReceiptMutation({ variables: { receiptId: id, reason } });
+    rejectReceiptMutation({ variables: { receiptId, reason } });
   }
 
   function confirmDelete() {
+    if (!receiptId) {
+      Alert.alert('Missing receipt', 'Could not determine the receipt id for deletion.');
+      return;
+    }
     Alert.alert(
       'Delete Receipt',
       'Delete this receipt? This cannot be undone.',
@@ -155,13 +183,17 @@ export default function ManualReceiptDetail() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => deleteReceipt({ variables: { receiptId: id } }),
+          onPress: () => deleteReceipt({ variables: { receiptId } }),
         },
       ]
     );
   }
 
   function confirmRecoverPayment() {
+    if (!receiptId) {
+      Alert.alert('Missing receipt', 'Could not determine the receipt id for payment recovery.');
+      return;
+    }
     Alert.alert(
       'Recover Payment',
       'Create a payment transaction for this validated receipt?',
@@ -169,7 +201,7 @@ export default function ManualReceiptDetail() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Create',
-          onPress: () => createPayment({ variables: { receiptId: id } }),
+          onPress: () => createPayment({ variables: { receiptId } }),
         },
       ]
     );
@@ -186,6 +218,14 @@ export default function ManualReceiptDetail() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {toastMessage ? (
+        <View style={styles.toastWrap} pointerEvents="none">
+          <View style={styles.toast}>
+            <Ionicons name="checkmark-circle-outline" size={16} color="#fff" />
+            <Text style={styles.toastText}>{toastMessage}</Text>
+          </View>
+        </View>
+      ) : null}
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
@@ -524,5 +564,30 @@ function makeStyles(c: AppColors) {
       textAlignVertical: 'top',
     },
     rejectBtnRow: { flexDirection: 'row', marginTop: Spacing.sm },
+    toastWrap: {
+      position: 'absolute',
+      left: Spacing.md,
+      right: Spacing.md,
+      bottom: Spacing.lg,
+      zIndex: 50,
+      alignItems: 'center',
+    },
+    toast: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      maxWidth: 520,
+      backgroundColor: c.success,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      borderRadius: Radius.md,
+      ...Shadow.sm,
+    },
+    toastText: {
+      color: '#fff',
+      fontSize: Typography.fontSizeSm,
+      fontWeight: Typography.fontWeightSemibold,
+      flexShrink: 1,
+    },
   });
 }

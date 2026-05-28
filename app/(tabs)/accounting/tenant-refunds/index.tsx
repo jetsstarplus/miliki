@@ -330,7 +330,11 @@ export default function TenantRefundsScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
           ListEmptyComponent={<ErrorState title="No refunds found" message="Create your first tenant refund." onRetry={openCreate} />}
           renderItem={({ item }) => (
-            <View style={[styles.card, isTablet && styles.cardTablet]}>
+            <TouchableOpacity
+              style={[styles.card, isTablet && styles.cardTablet]}
+              activeOpacity={0.9}
+              onPress={() => loadDetail({ variables: { refundId: item?.id } })}
+            >
               {(() => {
                 const currentStatus = normalizeStatus(item?.status);
                 const canApprove = currentStatus === 'PENDING';
@@ -341,9 +345,6 @@ export default function TenantRefundsScreen() {
                   <>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item?.refundNumber ?? 'Refund'}</Text>
-                <TouchableOpacity style={styles.iconBtn} onPress={() => loadDetail({ variables: { refundId: item?.id } })}>
-                  <Ionicons name="eye-outline" size={18} color={colors.primary} />
-                </TouchableOpacity>
               </View>
               <Text style={styles.meta}>Tenant: {item?.tenantName ?? item?.tenant?.fullName ?? '-'}</Text>
               <Text style={styles.meta}>Amount: {item?.amount ?? '-'}</Text>
@@ -360,7 +361,7 @@ export default function TenantRefundsScreen() {
                   </>
                 );
               })()}
-            </View>
+            </TouchableOpacity>
           )}
         />
       </View>

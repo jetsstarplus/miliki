@@ -12,21 +12,21 @@ import { CREATE_ACCOUNT, UPDATE_ACCOUNT } from '@/graphql/properties/mutations/a
 import { CHART_OF_ACCOUNTS_PAGE_DATA } from '@/graphql/properties/queries/accounting';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    FlatList,
-    Modal,
-    Pressable,
-    RefreshControl,
-    ScrollView as RNScrollView,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View
+  FlatList,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView as RNScrollView,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -120,8 +120,10 @@ export default function ChartOfAccountsScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { isAuthenticated, activeCompany } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ editAccountId?: string }>();
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
+  const didOpenEditRef = useRef(false);
 
   const [search, setSearch] = useState('');
   const [accountType, setAccountType] = useState('');
@@ -190,6 +192,8 @@ export default function ChartOfAccountsScreen() {
     [parentAccountOptions, form.parentId],
   );
 
+  const editAccountId = String(params.editAccountId ?? '').trim();
+
   async function onRefresh() {
     setRefreshing(true);
     try {
@@ -205,6 +209,10 @@ export default function ChartOfAccountsScreen() {
     setFormOpen(true);
   }
 
+  function openEditFromDetail(item: any) {
+    openEdit(item);
+  }
+
   function openEdit(item: any) {
     setServerError('');
     setForm({
@@ -218,6 +226,26 @@ export default function ChartOfAccountsScreen() {
       isActive: typeof item?.isActive === 'boolean' ? item.isActive : true,
     });
     setFormOpen(true);
+  }
+
+  useEffect(() => {
+    if (!editAccountId || didOpenEditRef.current) return;
+    const item = items.find((entry: any) => String(entry?.id ?? '').trim() === editAccountId);
+    if (!item) return;
+    didOpenEditRef.current = true;
+    openEdit(item);
+  }, [editAccountId, items]);
+
+  function openAccountEntries(item: any) {
+    router.push({
+      pathname: '/(tabs)/accounting/chart-of-accounts/account-entries',
+      params: {
+        accountId: String(item?.id ?? ''),
+        accountName: String(item?.name ?? ''),
+        accountCode: String(item?.code ?? ''),
+        accountType: String(item?.accountType ?? ''),
+      },
+    } as any);
   }
 
   async function saveAccount() {
@@ -371,28 +399,12 @@ export default function ChartOfAccountsScreen() {
           </View>
         }
           renderItem={({ item }) => (
-            <View style={[styles.card, isTablet && styles.cardTablet]}>
+            <TouchableOpacity style={[styles.card, isTablet && styles.cardTablet]} activeOpacity={0.9} onPress={() => openAccountEntries(item)}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item?.name ?? 'Unnamed account'}</Text>
                 <View style={styles.actionsRow}>
-                  <TouchableOpacity style={styles.iconBtn} onPress={() => openEdit(item)}>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => openEditFromDetail(item)}>
                     <Ionicons name="create-outline" size={18} color={colors.primary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/(tabs)/accounting/chart-of-accounts/account-entries',
-                        params: {
-                          accountId: String(item?.id ?? ''),
-                          accountName: String(item?.name ?? ''),
-                          accountCode: String(item?.code ?? ''),
-                          accountType: String(item?.accountType ?? ''),
-                        },
-                      } as any)
-                    }
-                  >
-                    <Ionicons name="eye-outline" size={18} color={colors.primary} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -401,7 +413,7 @@ export default function ChartOfAccountsScreen() {
               <Text style={styles.meta}>Parent: {item?.parent?.name ?? '-'}</Text>
               <Text style={styles.meta}>Status: {item?.isActive ? 'Active' : 'Inactive'}</Text>
               {item?.description ? <Text style={styles.desc}>{item.description}</Text> : null}
-            </View>
+            </TouchableOpacity>
           )}
       />
 

@@ -8,6 +8,7 @@ import { useAuth } from '@/context/auth';
 import { useTheme } from '@/context/theme';
 import { ACCOUNT_DETAIL_PAGE_DATA } from '@/graphql/properties/queries/accounting';
 import { useQuery } from '@apollo/client';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -216,7 +217,22 @@ export default function AccountEntriesScreen() {
 
 	return (
 		<SafeAreaView style={styles.safe} edges={['top']}>
-			<AppHeader title="Account Entries" showBack />
+			<AppHeader
+				title="Account Entries"
+				showBack
+				rightElement={
+					<TouchableOpacity
+						onPress={() =>
+							router.push({
+								pathname: '/(tabs)/accounting/chart-of-accounts',
+								params: { editAccountId: accountId },
+							} as any)
+						}
+					>
+						<Ionicons name="create-outline" size={22} color={colors.primary} />
+					</TouchableOpacity>
+				}
+			/>
 
 			<FlatList
 				style={styles.page}

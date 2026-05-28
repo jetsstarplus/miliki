@@ -27,6 +27,7 @@ function routeFromEndpoint(endpoint?: string): string | undefined {
   if (!key) return undefined;
 
   const map: Record<string, string> = {
+    accountingDashboardPageData: '/(tabs)/accounting/dashboard',
     chartOfAccountsPageData: '/(tabs)/accounting/chart-of-accounts',
     accountFormPageData: '/(tabs)/accounting/chart-of-accounts',
     accountDetailPageData: '/(tabs)/accounting/chart-of-accounts',
@@ -36,6 +37,16 @@ function routeFromEndpoint(endpoint?: string): string | undefined {
     tenantRefundsPageData: '/(tabs)/accounting/tenant-refunds',
     tenantRefundFormPageData: '/(tabs)/accounting/tenant-refunds',
     tenantRefundDetailPageData: '/(tabs)/accounting/tenant-refunds',
+    manualTransferFormData: '/(tabs)/accounting/manual-transfer',
+    accountingSettingsPageData: '/(tabs)/accounting/account-settings',
+    trialBalanceReportData: '/(tabs)/accounting/dashboard/reports',
+    balanceSheetReportData: '/(tabs)/accounting/dashboard/reports',
+    incomeStatementReportData: '/(tabs)/accounting/dashboard/reports',
+    cashFlowReportData: '/(tabs)/accounting/dashboard/reports',
+    retainedEarningsReportData: '/(tabs)/accounting/dashboard/reports',
+    comparativePerformanceReportData: '/(tabs)/accounting/dashboard/reports',
+    revenueTrendReportData: '/(tabs)/accounting/dashboard/reports',
+    accountTrendReportData: '/(tabs)/accounting/dashboard/reports',
   };
 
   return map[key];
@@ -78,6 +89,7 @@ const FALLBACK_MENU: MenuCard[] = [
     title: 'Accounting Dashboard',
     subtitle: 'Trends, balances, and quick financial insights.',
     icon: 'analytics-outline',
+    route: '/(tabs)/accounting/dashboard',
     endpoint: 'accountingDashboardPageData',
   },
   {
@@ -116,7 +128,7 @@ const FALLBACK_MENU: MenuCard[] = [
     title: 'Manual Transfer',
     subtitle: 'Move funds between accounts with audit trail.',
     icon: 'shuffle-outline',
-    route: '/(tabs)/manual-transfer',
+    route: '/(tabs)/accounting/manual-transfer',
     endpoint: 'manualTransferFormData',
   },
   {
@@ -124,6 +136,7 @@ const FALLBACK_MENU: MenuCard[] = [
     title: 'Accounting Settings',
     subtitle: 'Configure method, fiscal start, and periods.',
     icon: 'settings-outline',
+    route: '/(tabs)/accounting/account-settings',
     endpoint: 'accountingSettingsPageData',
   },
 ];
@@ -147,7 +160,6 @@ export default function Accounting() {
   });
 
   const menuPayload = normalizeGenericScalarPayload((menuQuery.data as any)?.accountingMenuData ?? {});
-  const workflowPayload = normalizeGenericScalarPayload((workflowsQuery.data as any)?.accountingTemplateWorkflows ?? {});
 
   const menuItems = Array.isArray(menuPayload?.items)
     ? menuPayload.items

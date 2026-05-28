@@ -8,22 +8,22 @@ import { AppColors, Colors, Radius, Shadow, Spacing, Typography } from '@/consta
 import { useTheme } from '@/context/theme';
 import { VOID_TENANT_CHARGE_MUTATION } from '@/graphql/properties/mutations/building';
 import {
-    CREATE_MANUAL_RECEIPT,
+  CREATE_MANUAL_RECEIPT,
 } from '@/graphql/properties/mutations/payments';
 import {
-    CANCEL_VACATION_NOTICE_MUTATION,
-    CREATE_VACATION_NOTICE_MUTATION,
-    DELETE_TENANT,
-    GENERATE_TENANT_RENT_SCHEDULE_MUTATION,
-    SEND_TENANT_CUSTOM_MESSAGE_MUTATION,
-    TRANSFER_OCCUPANCY_MUTATION,
+  CANCEL_VACATION_NOTICE_MUTATION,
+  CREATE_VACATION_NOTICE_MUTATION,
+  DELETE_TENANT,
+  GENERATE_TENANT_RENT_SCHEDULE_MUTATION,
+  SEND_TENANT_CUSTOM_MESSAGE_MUTATION,
+  TRANSFER_OCCUPANCY_MUTATION,
 } from '@/graphql/properties/mutations/tenants';
 import { CONFIG_PAYMENT_MODES_QUERY } from '@/graphql/properties/queries/payments';
 import {
-    TENANT_CHARGES_HISTORY_QUERY,
-    TENANT_DETAIL_QUERY,
-    TENANT_VACATION_NOTICES_QUERY,
-    TENANTS_QUERY,
+  TENANT_CHARGES_HISTORY_QUERY,
+  TENANT_DETAIL_QUERY,
+  TENANT_VACATION_NOTICES_QUERY,
+  TENANTS_QUERY,
 } from '@/graphql/properties/queries/tenants';
 import { UNITS_QUERY } from '@/graphql/properties/queries/units';
 import { useMutation, useQuery } from '@apollo/client';
@@ -31,18 +31,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
-    Alert,
-    Linking,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  Alert,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -390,18 +390,11 @@ export default function TenantDetail() {
   }
 
   function runCreateManualReceipt() {
-    if (!tenant?.id) {
-      Alert.alert('Missing tenant', 'Tenant is required to create manual receipt.');
-      return;
-    }
+    const currentOccupancy = tenant?.occupancies?.edges?.find(({ node }: any) => node?.isCurrent)?.node ?? tenant?.occupancies?.edges?.[0]?.node;
+    const currentUnit = currentOccupancy?.unit;
 
-    const selectedOccupancyNode = tenant?.occupancies?.edges?.find(
-      ({ node }: any) => node.id === manualReceiptForm.occupancyId,
-    )?.node;
-    const selectedUnit = selectedOccupancyNode?.unit;
-
-    if (!selectedUnit?.id) {
-      Alert.alert('Missing unit', 'Select an occupancy/unit before creating manual receipt.');
+    if (!tenant?.id || !currentUnit?.id) {
+      Alert.alert('Missing allocation', 'Select a tenant with an active occupancy before creating a manual receipt.');
       return;
     }
 
@@ -417,48 +410,22 @@ export default function TenantDetail() {
       return;
     }
 
-    if (!manualReceiptForm.amount || Number.isNaN(Number(manualReceiptForm.amount))) {
-      Alert.alert('Invalid amount', 'Provide a valid receipt amount.');
-      return;
-    }
-    if (!manualReceiptForm.paymentDate || !isValidDateInput(manualReceiptForm.paymentDate)) {
-      Alert.alert('Invalid date', 'Payment date must be in YYYY-MM-DD format.');
-      return;
-    }
-
-    const paymentModes = paymentModesData?.configPaymentModes?.edges?.map((e: any) => e.node) ?? [];
-    const paymentMethodConfigId =
-      manualReceiptForm.paymentMethodConfigId ||
-      paymentModes.find((mode: any) => mode?.isActive !== false)?.id;
-    if (!paymentMethodConfigId) {
-      Alert.alert('Missing payment mode', 'Select a payment mode for manual receipt.');
-      return;
-    }
-
-    const selectedPaymentMode = paymentModes.find((mode: any) => mode.id === paymentMethodConfigId);
-    if (selectedPaymentMode?.requiresReference && !manualReceiptForm.referenceNumber.trim()) {
-      Alert.alert('Missing reference number', 'Reference number is required for this payment mode.');
-      return;
-    }
-
-    createManualReceipt({
-      variables: {
-        input: {
-          tenantId: tenant.id,
-          unitId: selectedUnit.id,
-          firstName,
-          middleName: middleName || undefined,
-          lastName,
-          phoneNumber,
-          email: email || undefined,
-          amount: Number(manualReceiptForm.amount),
-          paymentMethodConfigId,
-          referenceNumber: manualReceiptForm.referenceNumber.trim() || undefined,
-          paymentDate: manualReceiptForm.paymentDate,
-          notes: manualReceiptForm.notes.trim() || undefined,
-        },
+    router.push({
+      pathname: '/(tabs)/payments/manual/create',
+      params: {
+        tenantId: tenant.id,
+        tenantDisplay: tenant.fullName || `${firstName} ${lastName}`,
+        unitId: currentUnit.id,
+        unitDisplay: `${currentUnit.unitNumber}${currentUnit.building?.name ? ` · ${currentUnit.building.name}` : ''}`,
+        returnType: 'tenant',
+        returnId: tenant.id,
+        firstName,
+        middleName,
+        lastName,
+        phoneNumber,
+        email,
       },
-    });
+    } as any);
   }
 
   function runVoidCharge(chargeId: string) {
@@ -1046,9 +1013,8 @@ export default function TenantDetail() {
                     Alert.alert('No occupancy', 'Manual receipt requires at least one occupancy/unit.');
                     return;
                   }
-                  setManualReceiptForm((s) => ({ ...s, occupancyId: s.occupancyId || effectiveManualOccupancyId }));
-                  setActiveAction('receipt');
-                  showToast('Manual receipt opened');
+                  runCreateManualReceipt();
+                  showToast('Opening manual receipt creator');
                 }}
               >
                 <Ionicons name="document-text-outline" size={16} color={colors.primary} />

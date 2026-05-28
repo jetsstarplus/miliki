@@ -13,8 +13,8 @@ import { TENANTS_DROPDOWN } from '@/graphql/properties/queries/tenants';
 import { UNITS_DROPDOWN } from '@/graphql/properties/queries/units';
 import { useMutation, useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface FormState {
@@ -43,16 +43,41 @@ interface FormErrors {
 
 export default function CreateManualReceipt() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    tenantId?: string;
+    tenantDisplay?: string;
+    unitId?: string;
+    unitDisplay?: string;
+    returnType?: 'manual' | 'tenant' | 'unit';
+    returnId?: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    email?: string;
+  }>();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
+  const initialTenantId = typeof params.tenantId === 'string' ? params.tenantId : '';
+  const initialUnitId = typeof params.unitId === 'string' ? params.unitId : '';
+  const initialTenantDisplay = typeof params.tenantDisplay === 'string' ? params.tenantDisplay : '';
+  const initialUnitDisplay = typeof params.unitDisplay === 'string' ? params.unitDisplay : '';
+  const initialReturnType = typeof params.returnType === 'string' ? params.returnType : 'manual';
+  const initialReturnId = typeof params.returnId === 'string' ? params.returnId : '';
+  const initialFirstName = typeof params.firstName === 'string' ? params.firstName : '';
+  const initialMiddleName = typeof params.middleName === 'string' ? params.middleName : '';
+  const initialLastName = typeof params.lastName === 'string' ? params.lastName : '';
+  const initialPhoneNumber = typeof params.phoneNumber === 'string' ? params.phoneNumber : '';
+  const initialEmail = typeof params.email === 'string' ? params.email : '';
+
   const [serverError, setServerError] = useState('');
   const [form, setForm] = useState<FormState>({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    phoneNumber: '',
-    email: '',
+    firstName: initialFirstName,
+    middleName: initialMiddleName,
+    lastName: initialLastName,
+    phoneNumber: initialPhoneNumber,
+    email: initialEmail,
     amount: '',
     paymentDate: new Date().toISOString().split('T')[0],
     referenceNumber: '',
@@ -61,12 +86,12 @@ export default function CreateManualReceipt() {
   const [errors, setErrors] = useState<FormErrors>({});
 
   // Selector state
-  const [selectedTenantId, setSelectedTenantId] = useState('');
-  const [tenantDisplay, setTenantDisplay] = useState('');
+  const [selectedTenantId, setSelectedTenantId] = useState(initialTenantId);
+  const [tenantDisplay, setTenantDisplay] = useState(initialTenantDisplay);
   const [tenantSearch, setTenantSearch] = useState('');
 
-  const [selectedUnitId, setSelectedUnitId] = useState('');
-  const [unitDisplay, setUnitDisplay] = useState('');
+  const [selectedUnitId, setSelectedUnitId] = useState(initialUnitId);
+  const [unitDisplay, setUnitDisplay] = useState(initialUnitDisplay);
   const [unitSearch, setUnitSearch] = useState('');
 
   const [selectedPaymentModeId, setSelectedPaymentModeId] = useState('');
@@ -158,7 +183,14 @@ export default function CreateManualReceipt() {
     onCompleted(d: any) {
       const r = d?.createManualReceipt?.manualReceipt;
       if (r?.id) {
-        router.replace({ pathname: '/(tabs)/payments/manual/[id]', params: { id: r.id } } as any);
+        router.replace({
+          pathname: '/(tabs)/payments/manual/[id]',
+          params: {
+            id: r.id,
+            returnType: initialReturnType,
+            returnId: initialReturnId || undefined,
+          },
+        } as any);
       }
     },
     onError(err: any) {

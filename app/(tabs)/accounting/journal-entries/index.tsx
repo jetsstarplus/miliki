@@ -360,28 +360,26 @@ export default function JournalEntriesScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
           ListEmptyComponent={<ErrorState title="No journal entries" message="Create your first journal entry." onRetry={openCreate} />}
           renderItem={({ item }) => (
-            <View style={[styles.card, isTablet && styles.cardTablet]}>
+            <TouchableOpacity
+              style={[styles.card, isTablet && styles.cardTablet]}
+              activeOpacity={0.9}
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/accounting/journal-entries/lines',
+                  params: {
+                    journalEntryId: String(item?.id ?? ''),
+                    entryNumber: String(item?.entryNumber ?? ''),
+                    status: String(item?.status ?? ''),
+                    entryType: String(item?.entryType ?? ''),
+                    description: String(item?.description ?? ''),
+                    reference: String(item?.reference ?? ''),
+                    entryDate: String(item?.entryDate ?? item?.date ?? ''),
+                  },
+                } as any)
+              }
+            >
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item?.entryNumber ?? 'Journal Entry'}</Text>
-                <TouchableOpacity
-                  style={styles.iconBtn}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/(tabs)/accounting/journal-entries/lines',
-                      params: {
-                        journalEntryId: String(item?.id ?? ''),
-                        entryNumber: String(item?.entryNumber ?? ''),
-                        status: String(item?.status ?? ''),
-                        entryType: String(item?.entryType ?? ''),
-                        description: String(item?.description ?? ''),
-                        reference: String(item?.reference ?? ''),
-                        entryDate: String(item?.entryDate ?? item?.date ?? ''),
-                      },
-                    } as any)
-                  }
-                >
-                  <Ionicons name="eye-outline" size={18} color={colors.primary} />
-                </TouchableOpacity>
               </View>
               <Text style={styles.meta}>Date: {item?.entryDate ?? item?.date ?? '-'}</Text>
               <Text style={styles.meta}>Type: {item?.entryType ?? '-'}</Text>
@@ -392,7 +390,7 @@ export default function JournalEntriesScreen() {
                 <Button title="Void" size="sm" variant="outline" onPress={() => runEntryAction(String(item?.id ?? ''), 'void')} />
                 {String(item?.status ?? '').toUpperCase() === 'DRAFT' ? <Button title="Delete" size="sm" variant="danger" onPress={() => runEntryAction(String(item?.id ?? ''), 'delete')} /> : null}
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       </View>

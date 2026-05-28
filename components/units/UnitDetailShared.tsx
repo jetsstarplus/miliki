@@ -10,40 +10,40 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { AppColors, Radius, Shadow, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/context/theme';
 import {
-  POST_TENANT_EXTRA_CHARGE_MUTATION,
-  VOID_RENT_SCHEDULE_MUTATION,
-  VOID_TENANT_CHARGE_MUTATION,
+    POST_TENANT_EXTRA_CHARGE_MUTATION,
+    VOID_RENT_SCHEDULE_MUTATION,
+    VOID_TENANT_CHARGE_MUTATION,
 } from '@/graphql/properties/mutations/building';
 import {
-  CREATE_MANUAL_RECEIPT,
-  CREATE_MANUAL_RECEIPT_PAYMENT,
-  VALIDATE_MANUAL_RECEIPT,
+    CREATE_MANUAL_RECEIPT,
+    CREATE_MANUAL_RECEIPT_PAYMENT,
+    VALIDATE_MANUAL_RECEIPT,
 } from '@/graphql/properties/mutations/payments';
 import {
-  CANCEL_VACATION_NOTICE_MUTATION,
-  CREATE_OCCUPANCY_MUTATION,
-  CREATE_VACATION_NOTICE_MUTATION,
+    CANCEL_VACATION_NOTICE_MUTATION,
+    CREATE_OCCUPANCY_MUTATION,
+    CREATE_VACATION_NOTICE_MUTATION,
 } from '@/graphql/properties/mutations/tenants';
 import {
-  COPY_UNIT_MUTATION,
-  DELETE_UNIT,
-  PROCESS_MOVE_OUT_MUTATION,
+    COPY_UNIT_MUTATION,
+    DELETE_UNIT,
+    PROCESS_MOVE_OUT_MUTATION,
 } from '@/graphql/properties/mutations/units';
 import {
-  BUILDING_EXTRA_CHARGES_DATA_QUERY,
-  UNIT_CHARGES_HISTORY_QUERY,
+    BUILDING_EXTRA_CHARGES_DATA_QUERY,
+    UNIT_CHARGES_HISTORY_QUERY,
 } from '@/graphql/properties/queries/building';
 import {
-  CONFIG_PAYMENT_MODES_QUERY,
-  MANUAL_RECEIPTS_QUERY,
-  PAYMENT_ALLOCATION_BREAKDOWN_QUERY,
-  PAYMENT_RECEIPT_PDF_QUERY,
-  PREVIEW_PAYMENT_ALLOCATION_QUERY,
+    CONFIG_PAYMENT_MODES_QUERY,
+    MANUAL_RECEIPTS_QUERY,
+    PAYMENT_ALLOCATION_BREAKDOWN_QUERY,
+    PAYMENT_RECEIPT_PDF_QUERY,
+    PREVIEW_PAYMENT_ALLOCATION_QUERY,
 } from '@/graphql/properties/queries/payments';
 import {
-  TENANT_STATEMENT_DATA_QUERY,
-  TENANT_VACATION_NOTICES_QUERY,
-  TENANTS_DROPDOWN,
+    TENANT_STATEMENT_DATA_QUERY,
+    TENANT_VACATION_NOTICES_QUERY,
+    TENANTS_DROPDOWN,
 } from '@/graphql/properties/queries/tenants';
 import { UNIT_DETAIL_QUERY, UNITS_QUERY } from '@/graphql/properties/queries/units';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
@@ -51,17 +51,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useWindowDimensions,
-  View
+    Alert,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useWindowDimensions,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -616,7 +616,7 @@ export function UnitDetailShared({ unitId, embedded = false, onBack, onEdit, onD
 
   function runCreateManualReceipt() {
     if (!currentTenant?.id || !unit?.id) {
-      Alert.alert('Missing tenant', 'Current tenant is required to create manual receipt from unit flow.');
+      Alert.alert('Missing allocation', 'Current tenant and unit are required to create manual receipt from unit flow.');
       return;
     }
 
@@ -632,48 +632,22 @@ export function UnitDetailShared({ unitId, embedded = false, onBack, onEdit, onD
       return;
     }
 
-    if (!manualReceiptForm.amount || Number.isNaN(Number(manualReceiptForm.amount))) {
-      Alert.alert('Invalid amount', 'Provide a valid receipt amount.');
-      return;
-    }
-    if (!manualReceiptForm.paymentDate) {
-      Alert.alert('Missing payment date', 'Provide payment date.');
-      return;
-    }
-
-    const paymentMethodConfigId =
-      manualReceiptForm.paymentMethodConfigId ||
-      paymentModesData?.configPaymentModes?.edges?.find((e: any) => e?.node?.isActive !== false)?.node?.id;
-    if (!paymentMethodConfigId) {
-      Alert.alert('Missing payment mode', 'Select a payment mode for manual receipt.');
-      return;
-    }
-
-    const selectedPaymentMode = paymentModes.find((mode: any) => mode.id === paymentMethodConfigId);
-    const paymentModeRequiresReference = Boolean(selectedPaymentMode?.requiresReference);
-    if (paymentModeRequiresReference && !manualReceiptForm.referenceNumber.trim()) {
-      Alert.alert('Missing reference number', 'Reference number is required for this payment mode.');
-      return;
-    }
-
-    createManualReceipt({
-      variables: {
-        input: {
-          tenantId: currentTenant.id,
-          unitId: unit.id,
-          firstName,
-          middleName: middleName || undefined,
-          lastName,
-          phoneNumber,
-          email: email || undefined,
-          amount: Number(manualReceiptForm.amount),
-          paymentMethodConfigId,
-          referenceNumber: manualReceiptForm.referenceNumber.trim() || undefined,
-          paymentDate: manualReceiptForm.paymentDate,
-          notes: manualReceiptForm.notes.trim() || undefined,
-        },
+    router.push({
+      pathname: '/(tabs)/payments/manual/create',
+      params: {
+        tenantId: currentTenant.id,
+        tenantDisplay: currentTenant.fullName || `${firstName} ${lastName}`,
+        unitId: unit.id,
+        unitDisplay: `Unit ${unit.unitNumber}${unit.building?.name ? ` · ${unit.building.name}` : ''}`,
+        returnType: 'unit',
+        returnId: unit.id,
+        firstName,
+        middleName,
+        lastName,
+        phoneNumber,
+        email,
       },
-    });
+    } as any);
   }
 
   function runValidateReceipt(receiptId: string) {
