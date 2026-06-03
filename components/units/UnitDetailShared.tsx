@@ -381,8 +381,21 @@ export function UnitDetailShared({ unitId, embedded = false, onBack, onEdit, onD
   const [createManualReceipt, { loading: creatingManualReceipt }] = useMutation(CREATE_MANUAL_RECEIPT, {
     onCompleted: (res: any) => {
       const r = res?.createManualReceipt;
-      Alert.alert(r?.manualReceipt?.id ? 'Created' : 'Failed', r?.errors?.join('\n') || 'Manual receipt action completed.');
-      refetchManualReceipts();
+      const receiptId = r?.manualReceipt?.id;
+      if (!receiptId) {
+        Alert.alert('Failed', r?.errors?.join('\n') || 'Manual receipt action completed.');
+        return;
+      }
+
+      closeActionModal();
+      router.push({
+        pathname: '/(tabs)/payments/manual/[id]',
+        params: {
+          id: receiptId,
+          returnType: 'unit',
+          returnId: unit?.id,
+        },
+      } as any);
     },
     onError: (err: any) => Alert.alert('Error', err.message),
   });
@@ -620,6 +633,29 @@ export function UnitDetailShared({ unitId, embedded = false, onBack, onEdit, onD
       return;
     }
 
+    const paymentMethodConfigId =
+      manualReceiptForm.paymentMethodConfigId || paymentModes.find((mode: any) => mode?.isActive !== false)?.id || '';
+    const selectedPaymentMode = paymentModes.find((mode: any) => mode.id === paymentMethodConfigId);
+    const requiresReference = Boolean(selectedPaymentMode?.requiresReference);
+    const amount = Number(manualReceiptForm.amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      Alert.alert('Invalid amount', 'Enter a valid receipt amount greater than zero.');
+      return;
+    }
+    if (!isValidDateInput(manualReceiptForm.paymentDate)) {
+      Alert.alert('Invalid date', 'Payment date must use YYYY-MM-DD format.');
+      return;
+    }
+    if (!paymentMethodConfigId) {
+      Alert.alert('Missing payment mode', 'Select a payment mode before creating a receipt.');
+      return;
+    }
+    if (requiresReference && !manualReceiptForm.referenceNumber.trim()) {
+      Alert.alert('Missing reference', 'This payment mode requires a reference number.');
+      return;
+    }
+
     const fullNameParts = (currentTenant.fullName ?? '').trim().split(/\s+/).filter(Boolean);
     const firstName = (currentTenant.firstName ?? fullNameParts[0] ?? '').trim();
     const lastName = (currentTenant.lastName ?? fullNameParts.slice(1).join(' ') ?? '').trim();
@@ -632,22 +668,24 @@ export function UnitDetailShared({ unitId, embedded = false, onBack, onEdit, onD
       return;
     }
 
-    router.push({
-      pathname: '/(tabs)/payments/manual/create',
-      params: {
-        tenantId: currentTenant.id,
-        tenantDisplay: currentTenant.fullName || `${firstName} ${lastName}`,
-        unitId: unit.id,
-        unitDisplay: `Unit ${unit.unitNumber}${unit.building?.name ? ` · ${unit.building.name}` : ''}`,
-        returnType: 'unit',
-        returnId: unit.id,
-        firstName,
-        middleName,
-        lastName,
-        phoneNumber,
-        email,
+    createManualReceipt({
+      variables: {
+        input: {
+          tenantId: currentTenant.id,
+          unitId: unit.id,
+          paymentMethodConfigId,
+          firstName,
+          middleName: middleName || undefined,
+          lastName,
+          phoneNumber,
+          email: email || undefined,
+          amount,
+          paymentDate: manualReceiptForm.paymentDate,
+          referenceNumber: manualReceiptForm.referenceNumber.trim() || undefined,
+          notes: manualReceiptForm.notes.trim() || undefined,
+        },
       },
-    } as any);
+    });
   }
 
   function runValidateReceipt(receiptId: string) {

@@ -48,5 +48,14 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-### Release The AP
-Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue; $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"; $env:ANDROID_HOME = "C:\Users\Administrator\AppData\Local\Android\Sdk"; $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME; cmd /c "cd /d C:\vobits\code\mobile\monerom\android && gradlew.bat assembleRelease 2>&1"
+## Build Signed Android App Bundle (AAB)
+
+Run this command from the project root on Windows:
+
+```powershell
+cmd /c "set ANDROID_HOME=C:\Users\Administrator\AppData\Local\Android\Sdk&& set ANDROID_SDK_ROOT=C:\Users\Administrator\AppData\Local\Android\Sdk&& cd /d C:\vobits\code\mobile\monerom\android&& gradlew.bat bundleRelease"
+```
+
+Generated file:
+
+`android/app/build/outputs/bundle/release/app-release.aab`

@@ -73,7 +73,6 @@ const NAV: NavSection[] = [
         //   { label: 'Successful Payments', route: '/(tabs)/payments/transactions' },
         //   { label: 'Unmatched Payments', route: '/(tabs)/payments/unmatched' },
         //   { label: 'Manual Receipts', route: '/(tabs)/payments/manual-receipts' },
-        //   { label: 'SMS Read Policies', route: '/(tabs)/payments/sms-read-policies' },
         // ],
       },
       { label: 'Communication', icon: 'chatbubbles', route: '/(tabs)/communication' },

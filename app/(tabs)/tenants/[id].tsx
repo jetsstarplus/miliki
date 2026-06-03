@@ -255,7 +255,21 @@ export default function TenantDetail() {
   const [createManualReceipt, { loading: creatingManualReceipt }] = useMutation(CREATE_MANUAL_RECEIPT, {
     onCompleted: (res: any) => {
       const payload = res?.createManualReceipt;
-      Alert.alert(payload?.manualReceipt?.id ? 'Created' : 'Failed', payload?.errors?.join('\n') || 'Manual receipt action completed.');
+      const receiptId = payload?.manualReceipt?.id;
+      if (!receiptId) {
+        Alert.alert('Failed', payload?.errors?.join('\n') || 'Manual receipt action completed.');
+        return;
+      }
+
+      closeActionModal();
+      router.push({
+        pathname: '/(tabs)/payments/manual/[id]',
+        params: {
+          id: receiptId,
+          returnType: 'tenant',
+          returnId: tenant?.id,
+        },
+      } as any);
     },
     onError: (err: any) => Alert.alert('Error', err.message),
   });
@@ -391,10 +405,36 @@ export default function TenantDetail() {
 
   function runCreateManualReceipt() {
     const currentOccupancy = tenant?.occupancies?.edges?.find(({ node }: any) => node?.isCurrent)?.node ?? tenant?.occupancies?.edges?.[0]?.node;
-    const currentUnit = currentOccupancy?.unit;
+    const occupancyId = manualReceiptForm.occupancyId || currentOccupancy?.id;
+    const selectedOccupancy = tenant?.occupancies?.edges?.find(({ node }: any) => node?.id === occupancyId)?.node ?? currentOccupancy;
+    const selectedUnit = selectedOccupancy?.unit;
 
-    if (!tenant?.id || !currentUnit?.id) {
+    const paymentModes = paymentModesData?.configPaymentModes?.edges?.map((e: any) => e.node) ?? [];
+    const paymentMethodConfigId =
+      manualReceiptForm.paymentMethodConfigId || paymentModes.find((mode: any) => mode?.isActive !== false)?.id || '';
+    const selectedPaymentMode = paymentModes.find((mode: any) => mode.id === paymentMethodConfigId);
+    const paymentModeRequiresReference = Boolean(selectedPaymentMode?.requiresReference);
+
+    const amount = Number(manualReceiptForm.amount);
+
+    if (!tenant?.id || !selectedUnit?.id || !occupancyId) {
       Alert.alert('Missing allocation', 'Select a tenant with an active occupancy before creating a manual receipt.');
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      Alert.alert('Invalid amount', 'Enter a valid receipt amount greater than zero.');
+      return;
+    }
+    if (!isValidDateInput(manualReceiptForm.paymentDate)) {
+      Alert.alert('Invalid date', 'Payment date must use YYYY-MM-DD format.');
+      return;
+    }
+    if (!paymentMethodConfigId) {
+      Alert.alert('Missing payment mode', 'Select a payment mode before creating a receipt.');
+      return;
+    }
+    if (paymentModeRequiresReference && !manualReceiptForm.referenceNumber.trim()) {
+      Alert.alert('Missing reference', 'This payment mode requires a reference number.');
       return;
     }
 
@@ -410,22 +450,24 @@ export default function TenantDetail() {
       return;
     }
 
-    router.push({
-      pathname: '/(tabs)/payments/manual/create',
-      params: {
-        tenantId: tenant.id,
-        tenantDisplay: tenant.fullName || `${firstName} ${lastName}`,
-        unitId: currentUnit.id,
-        unitDisplay: `${currentUnit.unitNumber}${currentUnit.building?.name ? ` · ${currentUnit.building.name}` : ''}`,
-        returnType: 'tenant',
-        returnId: tenant.id,
-        firstName,
-        middleName,
-        lastName,
-        phoneNumber,
-        email,
+    createManualReceipt({
+      variables: {
+        input: {
+          tenantId: tenant.id,
+          unitId: selectedUnit.id,
+          paymentMethodConfigId,
+          firstName,
+          middleName: middleName || undefined,
+          lastName,
+          phoneNumber,
+          email: email || undefined,
+          amount,
+          paymentDate: manualReceiptForm.paymentDate,
+          referenceNumber: manualReceiptForm.referenceNumber.trim() || undefined,
+          notes: manualReceiptForm.notes.trim() || undefined,
+        },
       },
-    } as any);
+    });
   }
 
   function runVoidCharge(chargeId: string) {
@@ -1013,8 +1055,12 @@ export default function TenantDetail() {
                     Alert.alert('No occupancy', 'Manual receipt requires at least one occupancy/unit.');
                     return;
                   }
-                  runCreateManualReceipt();
-                  showToast('Opening manual receipt creator');
+                  setManualReceiptForm((s) => ({
+                    ...s,
+                    occupancyId: effectiveManualOccupancyId,
+                  }));
+                  setActiveAction('receipt');
+                  showToast('Manual receipt opened');
                 }}
               >
                 <Ionicons name="document-text-outline" size={16} color={colors.primary} />

@@ -4,7 +4,7 @@ import { useTheme } from '@/context/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface MenuItem {
@@ -56,16 +56,9 @@ export default function PaymentsMenu() {
       route: '/(tabs)/payments/mpesa-setup',
       accentColor: '#00A651',
     },
-    {
-      label: 'SMS Read Policies',
-      description: 'Configure per-device SMS reading policies to auto-capture payment receipts.',
-      icon: 'phone-portrait-outline',
-      route: '/(tabs)/payments/sms-credentials',
-      accentColor: '#8B5CF6',
-    },
   ];
 
-  const menuItems = menuItemsBase.filter(() => Platform.OS !== 'ios');
+  const menuItems = menuItemsBase;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

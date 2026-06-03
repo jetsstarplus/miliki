@@ -25,6 +25,10 @@
       "matchCommandLine": true
     },
     "npm install": true,
-    ".\\gradlew.bat": true
+    ".\\gradlew.bat": true,
+    "/^cmd /c \"set ANDROID_HOME=C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Android\\\\Sdk&& set ANDROID_SDK_ROOT=C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Android\\\\Sdk&& cd /d C:\\\\vobits\\\\code\\\\mobile\\\\monerom\\\\android&& gradlew\\.bat bundleRelease\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }
