@@ -1,20 +1,27 @@
 import { ApolloProvider } from '@apollo/client';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View, ImageBackground } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider, useAuth } from '../context/auth';
-import { MessagingProvider } from '../context/messaging';
-import { ThemeProvider, useTheme } from '../context/theme';
-import { apolloClient } from '../lib/apollo';
+import * as SplashScreen from 'expo-splash-screen'; // Added import
+import { AuthProvider, useAuth } from '@/context/auth';
+import { MessagingProvider } from '@/context/messaging';
+import { ThemeProvider, useTheme } from '@/context/theme';
+import { apolloClient } from '@/lib/apollo';
+
+// Prevent the native splash screen from auto-hiding immediately
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* Prevent unhandled promise rejections on fast refreshes */
+});
 
 function RootNavigator() {
   const { isAuthenticated, isLoading, hasCompany, hasSubscription } = useAuth();
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const segments = useSegments();
+  const [navigationReady, setNavigationReady] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -32,25 +39,39 @@ function RootNavigator() {
     } else {
       if (!inTabs) router.replace('/(tabs)/home' as any);
     }
+    
+    // Mark navigation layout as successfully handled
+    setNavigationReady(true);
   }, [isAuthenticated, isLoading, hasCompany, hasSubscription, segments, router]);
+
+  // Hide native splash screen only when loading is done AND router has navigated
+  const onLayoutRootView = async () => {
+    if (!isLoading && navigationReady) {
+      await SplashScreen.hideAsync();
+    }
+  };
 
   if (isLoading) {
     return (
-      <View style={[styles.splash, { backgroundColor: colors.background }]}>
+      <ImageBackground 
+        source={require('../assets/images/splash-image.png')} 
+        style={styles.splash}
+        resizeMode="cover"
+      >
         <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      </ImageBackground>
     );
   }
 
   return (
-    <>
+    <View style={styles.flexContainer} onLayout={onLayoutRootView}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
       </Stack>
-    </>
+    </View>
   );
 }
 
@@ -77,5 +98,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flexContainer: {
+    flex: 1,
   },
 });

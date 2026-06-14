@@ -2,7 +2,7 @@
   "expo": {
     "name": "Miliki",
     "slug": "miliki",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "miliki",
@@ -16,6 +16,7 @@
         }
       }
     },
+    
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -23,7 +24,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "usesCleartextTraffic": true,
       "package": "com.vobits.miliki"
@@ -32,24 +32,37 @@
       "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
+    "splash": {
+      "image": "./assets/images/favicon.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#E6F4FE",
+      "dark": {
+        "backgroundColor": "#0F172A"
+      }
+    },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 1242,
+          "image": "./assets/images/favicon.png",
+          "imageWidth": 200,
           "resizeMode": "cover",
-          "backgroundColor": "#000000",
+          "backgroundColor": "#E6F4FE",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#0F172A"
           }
         }
       ],
       "@react-native-community/datetimepicker",
       "expo-font",
       "expo-image",
-      "expo-status-bar",
+      [
+        "expo-status-bar",
+        {
+          "statusBarStyle": "auto"
+        }
+      ],
       "expo-web-browser",
       "expo-sharing"
     ],
